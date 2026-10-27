@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>L'Équipage</title>
+<title>L'Équipage Cycliste de Marsilly</title>
 <meta name="description" content="L'app des membres de L'Équipage Cycliste de Marsilly">
 <meta name="theme-color" content="#f2ece3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)">
@@ -45,16 +45,20 @@ a{color:inherit}
 :focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .logo-n{display:block} .logo-b{display:none}
 @media (prefers-color-scheme:dark){.logo-n{display:none} .logo-b{display:block}}
-.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px calc(110px + env(safe-area-inset-bottom,0px));display:grid;gap:14px}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px calc(110px + env(safe-area-inset-bottom,0px));display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 /* En-tête */
-.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand-l{display:flex;align-items:center;gap:10px;min-width:0}
-.brand img{width:52px;height:auto}
-.brand-t{display:grid;line-height:1}
-.brand-t b{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:.02em;text-transform:uppercase}
-.brand-t span{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px}
-.user{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;border:0;background:none;padding:0}
-.avatar{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:18px;flex:none}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand-l{display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{width:50px;height:auto;flex:none}
+.brand-t{display:grid;line-height:1;min-width:0}
+.brand-t b{font-family:var(--display);font-weight:800;font-size:23px;line-height:.95;letter-spacing:.02em;text-transform:uppercase;text-wrap:balance}
+.brand-t span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.user{display:flex;align-items:center;gap:6px;border:0;background:none;padding:0;flex:none}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--wash);color:var(--muted);display:grid;place-items:center;flex:none;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar svg{width:70%;height:70%;fill:currentColor;margin-top:12%}
+.avatar.s{width:24px;height:24px}
+.avatar.l{width:76px;height:76px}
 .role{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:1px 5px}
 .sect{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px;padding-top:6px}
 .sect::before{content:"×";color:var(--red);font-family:var(--body);font-weight:600;font-size:16px;letter-spacing:0}
@@ -66,7 +70,8 @@ a{color:inherit}
 .chips::-webkit-scrollbar{display:none}
 .chips button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500}
 .chips button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
-.list{display:grid;gap:12px}
+.list{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.wrap>*,.list>*,.card>*{min-width:0}
 /* Cartes */
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;box-shadow:0 1px 0 rgb(0 0 0 / .03)}
 .card.tap{cursor:pointer}
@@ -100,7 +105,7 @@ h2{margin:0;font-family:var(--display);font-weight:800;font-size:23px;line-heigh
 .tag.y{background:var(--ink);color:var(--on-ink)} .tag.n{background:var(--red-soft);color:var(--red)}
 .tag.me{outline:2px solid var(--red);outline-offset:1px}
 .done{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--muted);justify-self:start}
-.empty{text-align:center;color:var(--muted);padding:34px 10px;display:grid;gap:6px;justify-items:center}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;display:grid;gap:6px;justify-items:center}
 .empty b{font-family:var(--display);font-size:20px;text-transform:uppercase;color:var(--ink);letter-spacing:.04em}
 /* Onglets du bas */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
@@ -134,7 +139,7 @@ input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--ink)}
 input[type=file]{font-size:14px;padding:8px}
 .check{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:var(--ink)}
 .row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
-.btn{border:0;border-radius:8px;padding:11px 16px;font-weight:700;font-size:15px}
+.btn{border:0;border-radius:8px;padding:11px 16px;font-weight:700;font-size:15px;text-decoration:none;display:inline-block;text-align:center}
 .btn.pri{background:var(--ink);color:var(--on-ink)} .btn.sec{background:var(--wash)} .btn.del{background:var(--red-soft);color:var(--red)} .btn.acc{background:var(--red);color:#fff}
 .btn.small{padding:7px 11px;font-size:14px}
 .btn:disabled,.cta:disabled{opacity:.55;cursor:wait}
@@ -147,7 +152,7 @@ input[type=file]{font-size:14px;padding:8px}
 .file.empty-f{border-style:dashed;color:var(--muted);cursor:pointer}
 .file.empty-f .ic{background:var(--wash);color:var(--muted);font-size:20px}
 .status{font-family:var(--mono);font-size:11.5px;font-weight:600;border-radius:4px;padding:2px 7px;justify-self:start;white-space:nowrap}
-.status.ok{background:var(--ok-soft);color:var(--ok)} .status.warn{background:var(--warn-soft);color:var(--warn)} .status.ko{background:var(--red-soft);color:var(--red)}
+.status.ok{background:var(--ok-soft);color:var(--ok)} .status.warn{background:var(--warn-soft);color:var(--warn)} .status.ko{background:var(--wash);color:var(--muted)}
 /* Sondages */
 .opt{position:relative;border:2px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--card);display:flex;justify-content:space-between;align-items:center;gap:10px;overflow:hidden;text-align:left;width:100%}
 .opt .fill{position:absolute;inset:0 auto 0 0;background:var(--wash);z-index:0;transition:width .3s}
@@ -162,18 +167,34 @@ input[type=file]{font-size:14px;padding:8px}
 .opts{display:grid;gap:8px}
 .hint{font-size:14px;color:var(--muted)}
 table{border-collapse:collapse;width:100%;font-size:15px}
-th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:middle}
 th{font-family:var(--mono);font-weight:500;text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:var(--muted)}
 td{font-variant-numeric:tabular-nums}
 tr.off td{opacity:.5}
 .tw{overflow-x:auto}
+.cell-m{display:flex;align-items:center;gap:8px}
+/* Palmarès */
+.palm{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:150px;padding-top:6px}
+.palm .col{display:grid;grid-template-rows:auto 1fr;height:100%;text-align:center;gap:4px}
+.palm .v{font-family:var(--mono);font-weight:600;font-size:18px}
+.palm .tr{display:flex;align-items:flex-end;border-bottom:2px solid var(--ink)}
+.palm .b{width:100%;background:var(--ink);border-radius:4px 4px 0 0;min-height:2px;transition:height .4s}
+.palm .col:last-child .b{background:var(--red)}
+.palm-l{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;text-align:center}
+.podium .p{display:grid;justify-items:center;gap:4px;min-width:0}
+.podium .p b{font-family:var(--display);font-weight:800;font-size:18px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.podium .p span{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.podium .step{width:100%;background:var(--ink);color:var(--on-ink);font-family:var(--display);font-weight:800;font-size:22px;border-radius:6px 6px 0 0;display:grid;place-items:center}
+.podium .p1 .step{height:54px;background:var(--red);color:#fff} .podium .p2 .step{height:40px} .podium .p3 .step{height:30px}
+.podium .avatar{width:56px;height:56px} .podium .p1 .avatar{width:70px;height:70px;outline:3px solid var(--red);outline-offset:2px}
 /* Résultats */
 .res{display:grid;grid-template-columns:30px 1fr auto;gap:4px 10px;align-items:center;border-bottom:1px solid var(--line);padding-block:10px}
 .res:last-child{border-bottom:0}
 .rank{font-family:var(--display);font-weight:800;font-size:24px;color:var(--muted);text-align:center}
 .res:first-child .rank{color:var(--red)}
 .res .nm{min-width:0;display:grid}
-.res .nm b{font-size:16px;font-weight:600}
+.res .nm b{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px}
 .res .nm span{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
 .chrono{font-family:var(--mono);font-weight:600;font-size:17px;text-align:right}
 .res .acts{grid-column:2/4;display:flex;gap:6px}
@@ -194,14 +215,27 @@ tr.off td{opacity:.5}
 .tri button[aria-pressed="true"].y{background:var(--ink);color:var(--on-ink)}
 .tri button[aria-pressed="true"].n{background:var(--red);color:#fff}
 .tri button[aria-pressed="true"].z{background:var(--wash);color:var(--ink)}
+/* Liens et notes */
+.lien{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-block:10px}
+.lien:last-child{border-bottom:0}
+.lien .t{min-width:0;flex:1;display:grid}
+.lien .t b{font-weight:600}
+.lien .t span{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.lien .acts{display:flex;gap:6px;flex:none}
+.note{border-bottom:1px solid var(--line);padding-block:10px;cursor:pointer;display:grid;gap:2px}
+.note:last-child{border-bottom:0}
+.note b{font-weight:600}
+.note p{margin:0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+.note small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.photo-row{display:flex;align-items:center;gap:14px}
 /* Connexion */
 .login{min-height:100vh;min-height:100dvh;display:grid;align-content:center;position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px}
 .login::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--paper) url("img/montagne.webp") right bottom/cover no-repeat}
 @media (prefers-color-scheme:dark){.login::before{background-image:var(--fond)}}
 .login-in{max-width:400px;width:100%;margin:0 auto;display:grid;gap:16px;background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:16px;padding:22px 20px}
-.login img{width:min(230px,62vw);height:auto;justify-self:center}
-.login h1{margin:0;font-family:var(--display);font-weight:800;font-size:44px;line-height:.95;text-transform:uppercase;text-align:center;letter-spacing:.02em}
-.login h1 span{display:block;font-size:20px;letter-spacing:.24em;color:var(--muted);font-weight:700;margin-top:6px}
+.login img{width:min(220px,58vw);height:auto;justify-self:center}
+.login h1{margin:0;font-family:var(--display);font-weight:800;font-size:40px;line-height:.95;text-transform:uppercase;text-align:center;letter-spacing:.02em}
+.login h1 span{display:block;font-size:19px;letter-spacing:.24em;color:var(--muted);font-weight:700;margin-top:8px}
 .login .lead{margin:0;text-align:center;color:var(--muted)}
 .login form{display:grid;gap:10px}
 .code{font-family:var(--mono);font-size:28px;letter-spacing:.35em;text-align:center;padding:12px}
@@ -226,7 +260,7 @@ tr.off td{opacity:.5}
 <div class="wrap" id="app" hidden>
   <header class="brand">
     <div class="brand-l"><img class="logo-n" src="img/logo-noir.png" alt=""><img class="logo-b" src="img/logo-blanc.png" alt="">
-      <div class="brand-t"><b>L'Équipage</b><span>Cycliste · Marsilly</span></div></div>
+      <div class="brand-t"><b>L'Équipage Cycliste</b><span>de Marsilly</span></div></div>
     <button class="user" id="user" data-v="profil" aria-label="Mon profil"></button>
   </header>
   <section id="v-agenda">
@@ -257,15 +291,20 @@ tr.off td{opacity:.5}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
+const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
 const sb = configOK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}) : null;
 
 // ================= État =================
-const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},urls:{},gpx:{},charge:0};
-let vue="agenda",tab="up",filtre="Tous",L={etape:"email"};
+const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},urls:{},gpx:{},charge:0};
+let vue="agenda",tab="up",filtre="Tous",saisonPalm="Toutes",L={etape:"email"};
 const TYPES=["Sortie club","Cyclosportive","Route","Gravel","VTT","Triathlon","Duathlon","Course à pied","Trail","Aventure","Social"];
 const TAILLES=["","XS","S","M","L","XL","XXL","3XL"];
+const FEDS=["FFC","FFTri"];
+const DOCS=[["licence_ffc","Licence FFC"],["licence_fftri","Licence FFTri"],["certificat","Certificat médical"],["autre","Autres documents"]];
+const NOM_DOC={licence:"Licence",licence_ffc:"Licence FFC",licence_fftri:"Licence FFTri",certificat:"Certificat médical",autre:"Autre document"};
+const SIL=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.6"/><path d="M2.5 24c.6-5.3 4.6-8.6 9.5-8.6s8.9 3.3 9.5 8.6z"/></svg>`;
 
 // ================= Outils =================
 const $=s=>document.querySelector(s);
@@ -283,7 +322,12 @@ const nul=v=>v===""||v===undefined?null:v;
 const taille=o=>!o?"":o<1e6?Math.max(1,Math.round(o/1e3))+" Ko":(o/1e6).toFixed(1).replace(".",",")+" Mo";
 const ext=n=>(String(n).split(".").pop()||"").toUpperCase().slice(0,4);
 const nomPropre=n=>String(n).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9.]+/g,"-").replace(/^-+|-+$/g,"").slice(-60)||"fichier";
-const lienSur=u=>/^https?:\/\//i.test(u||"")?u:"";
+const lienSur=u=>/^(https?:\/\/|mailto:)/i.test(u||"")?u:"";
+const quand=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+const photoDe=id=>S.membres.find(m=>m.id==id)?.photo||(id==me()?S.profils[id]?.photo:null);
+const avatar=(id,cls="")=>{const u=photoDe(id)&&S.urls["avatars/"+photoDe(id)];return `<span class="avatar ${cls}">${u?`<img src="${esc(u)}" alt="">`:SIL}</span>`};
+const placeTxt=x=>x?.place?`${x.place}${x.place===1?"er":"e"}${x.partants?" / "+x.partants:""}`:x?.classement||"";
+const rangDe=x=>x?.place||(/^\s*(\d+)/.exec(x?.classement||"")?.[1]|0)||null;
 function toast(t,ms=2400){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,ms)}
 function erreur(e,ctx){
   console.error(ctx,e);const m=String(e?.message||e||"");
@@ -307,15 +351,17 @@ async function ouvrirFichier(bucket,chemin,nom){
   if(error){w&&w.close();return erreur(error,"Ouverture")}
   if(w)w.location.href=data.signedUrl;else location.href=data.signedUrl;
 }
-// Réduit les photos (2000 px max) avant envoi pour économiser le stockage
-async function compresser(f){
+// Réduit les photos avant envoi (cote max en px) ; carre=true recadre au centre
+async function compresser(f,max=2000,carre=false){
   if(!f.type.startsWith("image/")||/gif|svg/.test(f.type))return f;
   try{
     const bmp=await createImageBitmap(f,{imageOrientation:"from-image"});
-    const k=Math.min(1,2000/Math.max(bmp.width,bmp.height));
-    if(k===1&&f.size<1.5e6)return f;
-    const c=document.createElement("canvas");c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
-    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    let sx=0,sy=0,sw=bmp.width,sh=bmp.height;
+    if(carre){const c=Math.min(sw,sh);sx=(sw-c)/2;sy=(sh-c)/2;sw=sh=c}
+    const k=Math.min(1,max/Math.max(sw,sh));
+    if(k===1&&!carre&&f.size<1.5e6)return f;
+    const c=document.createElement("canvas");c.width=Math.round(sw*k);c.height=Math.round(sh*k);
+    c.getContext("2d").drawImage(bmp,sx,sy,sw,sh,0,0,c.width,c.height);
     const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.85));
     return b?new File([b],f.name.replace(/\.\w+$/,"")+".jpg",{type:"image/jpeg"}):f;
   }catch{return f}
@@ -325,7 +371,7 @@ async function compresser(f){
 async function charger(){
   const B=bureau();
   if(Date.now()-S.charge>6*3600e3)S.urls={};
-  const [ann,ev,pa,re,md,so,st,vo,pr,dc,mb]=await Promise.all([
+  const [ann,ev,pa,re,md,so,st,vo,pr,dc,li,mb,nb,nm]=await Promise.all([
     ok(sb.rpc("annuaire"),"Membres"),
     ok(sb.from("evenements").select("*").order("date_debut"),"Évènements"),
     ok(sb.from("participations").select("evenement_id,membre_id,reponse"),"Participations"),
@@ -336,9 +382,13 @@ async function charger(){
     ok(sb.from("votes").select("*"),"Votes"),
     ok(sb.from("profils").select("*"),"Profils"),
     ok(sb.from("documents").select("*").order("ajoute_le"),"Documents"),
-    B?ok(sb.from("membres").select("*").order("prenom"),"Membres"):Promise.resolve([])
+    ok(sb.from("liens").select("*").order("ordre"),"Liens"),
+    B?ok(sb.from("membres").select("*").order("prenom"),"Membres"):Promise.resolve([]),
+    B?ok(sb.from("notes_bureau").select("*").order("maj_le",{ascending:false}),"Notes"):Promise.resolve([]),
+    B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([])
   ]);
-  S.membres=ann||[];S.evts=ev||[];S.complets=mb||[];S.sondages=so||[];
+  S.membres=ann||[];S.evts=ev||[];S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];
+  S.notesM={};(nm||[]).forEach(n=>S.notesM[n.membre_id]=n);
   S.part={};(pa||[]).forEach(p=>(S.part[p.evenement_id]??={})[p.membre_id]=p.reponse);
   S.res={};(re||[]).forEach(r=>(S.res[r.evenement_id]??={})[r.membre_id]=r);
   S.medias={};(md||[]).forEach(m=>(S.medias[m.evenement_id]??=[]).push(m));
@@ -346,20 +396,20 @@ async function charger(){
   S.votes={};(vo||[]).forEach(v=>(S.votes[v.sondage_id]??={})[v.membre_id]=v.choix);
   S.profils={};(pr||[]).forEach(p=>S.profils[p.membre_id]=p);
   S.docs={};(dc||[]).forEach(d=>(S.docs[d.membre_id]??=[]).push(d));
+  const moi=S.membres.find(m=>m.id===me());if(moi)S.moi.prenom=moi.prenom;
   await signer();
   S.charge=Date.now();
 }
-// Liens temporaires pour afficher affiches, photos et vidéos
+// Liens temporaires pour afficher affiches, photos, vidéos et photos de profil
 async function signer(){
-  const lots=[["club",S.evts.map(e=>e.affiche).filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)]];
+  const lots=[["club",S.evts.map(e=>e.affiche).filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)],["avatars",[...S.membres.map(m=>m.photo),S.profils[me()]?.photo].filter(Boolean)]];
   for(const [b,l] of lots){
-    const manque=l.filter(p=>!S.urls[b+"/"+p]);if(!manque.length)continue;
+    const manque=[...new Set(l)].filter(p=>!S.urls[b+"/"+p]);if(!manque.length)continue;
     const {data,error}=await sb.storage.from(b).createSignedUrls(manque,86400);
     if(!error)(data||[]).forEach(d=>{if(d.signedUrl)S.urls[b+"/"+d.path]=d.signedUrl});
   }
 }
 async function recharger(){try{await charger()}catch(e){}render();rafraichirPanel()}
-// Action avec affichage immédiat, puis enregistrement et rechargement
 async function agir(local,appel,msg){
   if(local){local();render();rafraichirPanel()}
   const r=await appel();
@@ -371,8 +421,8 @@ async function agir(local,appel,msg){
 // ================= Connexion par code e-mail =================
 function renderLogin(){
   const e=L,box=$("#login-in");
-  const tete=`<img class="logo-n" src="img/logo-noir.png" alt="Logo de L'Équipage Cycliste"><img class="logo-b" src="img/logo-blanc.png" alt="Logo de L'Équipage Cycliste">
-    <h1>L'Équipage<span>Cycliste · Marsilly</span></h1>`;
+  const tete=`<img class="logo-n" src="img/logo-noir.png" alt="Logo de ${CLUB}"><img class="logo-b" src="img/logo-blanc.png" alt="Logo de ${CLUB}">
+    <h1>L'Équipage Cycliste<span>de Marsilly</span></h1>`;
   if(!configOK){box.innerHTML=tete+`<div class="msg ko">App pas encore configurée : renseigne SUPABASE_URL et SUPABASE_KEY en haut du fichier index.html.</div>`;return}
   if(e.etape==="inconnu"){box.innerHTML=tete+`<div class="msg ko">L'adresse <b>${esc(e.email)}</b> n'est pas inscrite au club. Demande à un membre du bureau de t'ajouter, puis reconnecte-toi.</div><button class="btn sec" id="l-out">Utiliser une autre adresse</button>`;
     $("#l-out").onclick=async()=>{await sb.auth.signOut();L={etape:"email"};renderLogin()};return}
@@ -506,6 +556,7 @@ function fiche(id){
     ${passe?"":boutons(e)}
     <div class="who"><div><span class="lbl">Viennent (${q.oui.length})</span>${tags(q.oui,"y")}</div>
       ${passe?"":`<div><span class="lbl">Ne viennent pas (${q.non.length})</span>${tags(q.non,"n")}</div><div><span class="lbl">Sans réponse (${q.sans.length})</span>${tags(q.sans,"")}</div>`}</div>
+    ${!passe&&q.r===true?`<span class="hint">Tu recevras un rappel par e-mail 10 jours et 1 jour avant${S.profils[me()]?.rappels===false?" (rappels désactivés dans ton profil)":""}.</span>`:""}
     ${bureau()?`<div class="row"><button class="btn sec" data-gerer="${e.id}">Gérer les participants</button><button class="btn sec" data-edit="${e.id}">Modifier</button></div>`:""}`,{k:"fiche",id:e.id});
 }
 function repondre(eid,rep){
@@ -515,12 +566,11 @@ function repondre(eid,rep){
       :sb.from("participations").upsert({evenement_id:eid,membre_id:m,reponse:rep,maj_le:new Date().toISOString()}),
     retirer?"Réponse retirée":rep?"C'est noté, tu viens !":"C'est noté, tu ne viens pas");
 }
-// Bureau : inscrire ou retirer n'importe quel membre
 function gererParticipants(id){
   const e=S.evts.find(x=>x.id==id);if(!e)return fermer();const p=S.part[id]||{};
   ouvrirPanel(`<div class="ph"><h3>Participants</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${esc(e.evenement)} · ${plage(e)}</span>
-    <div>${S.membres.map(m=>{const v=p[m.id];return `<div class="pm"><b>${esc(m.prenom)}</b><div class="tri" role="group" aria-label="Participation de ${esc(m.prenom)}">
+    <div>${S.membres.map(m=>{const v=p[m.id];return `<div class="pm"><b class="cell-m">${avatar(m.id,"s")}${esc(m.prenom)}</b><div class="tri" role="group" aria-label="Participation de ${esc(m.prenom)}">
       <button class="y" data-set="${id}:${m.id}:1" aria-pressed="${v===true}">Vient</button><button class="n" data-set="${id}:${m.id}:0" aria-pressed="${v===false}">Absent</button><button class="z" data-set="${id}:${m.id}:" aria-pressed="${v===undefined}">—</button></div></div>`}).join("")}</div>
     <button class="btn sec" data-open="${id}">Retour à la fiche</button>`,{k:"gererParticipants",id});
 }
@@ -529,6 +579,7 @@ function fixerParticipation(eid,mid,v){
     ()=>v===""?sb.from("participations").delete().eq("evenement_id",eid).eq("membre_id",mid)
       :sb.from("participations").upsert({evenement_id:eid,membre_id:mid,reponse:v==="1",maj_le:new Date().toISOString()}));
 }
+const saisonDe=s=>{const d=dt(s),y=d.getFullYear();return d.getMonth()>=8?`${y}-${y+1}`:`${y-1}-${y}`};
 function formEvt(e={}){
   ouvrirPanel(`<form id="f">
     <div class="ph"><h3>${e.id?"Modifier l'évènement":"Nouvel évènement"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
@@ -574,32 +625,56 @@ function formEvt(e={}){
       toast("Évènement enregistré");await recharger();fiche(r.id);
     }catch(err){occupe(b,false)}};
 }
-const saisonDe=s=>{const d=dt(s),y=d.getFullYear();return d.getMonth()>=8?`${y}-${y+1}`:`${y-1}-${y}`};
 
 // ================= Résultats =================
 const enSecondes=t=>{if(!t)return Infinity;const p=t.split(":").map(Number);return p.some(isNaN)?Infinity:p.reduce((a,b)=>a*60+b,0)};
+// Palmarès : nombre de top 10 / 5 / 3 / victoires et membres les plus prolifiques
+function palmares(saison){
+  const evs=new Set(S.evts.filter(e=>saison==="Toutes"||e.saison===saison).map(e=>e.id));
+  const tot={t10:0,t5:0,t3:0,t1:0},parM={};
+  for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;
+    for(const [mid,x] of Object.entries(r)){const p=rangDe(x),m=parM[mid]??={id:+mid,t10:0,t5:0,t3:0,t1:0,n:0};m.n++;
+      if(!p)continue;if(p<=10){tot.t10++;m.t10++}if(p<=5){tot.t5++;m.t5++}if(p<=3){tot.t3++;m.t3++}if(p===1){tot.t1++;m.t1++}}}
+  const top=Object.values(parM).filter(m=>m.t10>0&&S.membres.some(x=>x.id===m.id)).sort((a,b)=>b.t10-a.t10||b.t3-a.t3||b.t1-a.t1||b.n-a.n).slice(0,3);
+  return {tot,top};
+}
+function renderPalmares(){
+  const saisons=["Toutes",...[...new Set(S.evts.filter(e=>S.res[e.id]).map(e=>e.saison).filter(Boolean))].sort().reverse()];
+  if(!saisons.includes(saisonPalm))saisonPalm="Toutes";
+  const {tot,top}=palmares(saisonPalm),cols=[["Top 10",tot.t10],["Top 5",tot.t5],["Top 3",tot.t3],["Victoires",tot.t1]],max=Math.max(1,tot.t10);
+  const desc=m=>`${m.t10} top 10${m.t3?` · ${m.t3} podium${m.t3>1?"s":""}`:""}${m.t1?` · ${m.t1} victoire${m.t1>1?"s":""}`:""}`;
+  const ord=[top[1],top[0],top[2]],cls=["p2","p1","p3"],num=[2,1,3];
+  return `<article class="card"><div class="row"><h2>Palmarès du club</h2></div>
+    ${saisons.length>2?`<div class="chips">${saisons.map(s=>`<button data-saison="${esc(s)}" aria-pressed="${s===saisonPalm}">${s==="Toutes"?"Toutes saisons":"Saison "+esc(s)}</button>`).join("")}</div>`:""}
+    <div class="palm" role="img" aria-label="Top 10 : ${tot.t10}, top 5 : ${tot.t5}, top 3 : ${tot.t3}, victoires : ${tot.t1}">${cols.map(([l,v])=>`<div class="col"><span class="v">${v}</span><div class="tr"><div class="b" style="height:${v/max*100}%"></div></div></div>`).join("")}</div>
+    <div class="palm-l">${cols.map(([l])=>`<span>${l}</span>`).join("")}</div>
+    <div class="sect">Les plus prolifiques</div>
+    ${top.length?`<div class="podium">${ord.map((m,i)=>m?`<div class="p ${cls[i]}">${avatar(m.id)}<b>${esc(prenom(m.id))}</b><span>${desc(m)}</span><div class="step">${num[i]}</div></div>`:"<div></div>").join("")}</div>`
+      :`<span class="hint">Pas encore de top 10. Indique ta place dans tes résultats pour alimenter le palmarès.</span>`}
+  </article>`;
+}
 function renderResultats(){
   const l=S.evts.filter(e=>jours(e.date_debut)<=0).sort((a,b)=>b.date_debut.localeCompare(a.date_debut));
-  $("#results").innerHTML=l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
+  $("#results").innerHTML=renderPalmares()+(l.length?`<div class="sect">Évènements</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
     return `<article class="card tap" data-res="${e.id}">
       <div class="top">${bib(e)}<div class="info"><h2>${esc(e.evenement)}</h2>
         <div class="meta">${e.type?`<span class="type">${esc(e.type)}</span>`:""}${e.lieu?`<span>${esc(e.lieu)}</span>`:""}</div>
         <div class="extras"><span class="pill">${q.oui.length} participant${q.oui.length>1?"s":""}</span><span class="pill">${nr} résultat${nr>1?"s":""}</span><span class="pill">${m.length} média${m.length>1?"s":""}</span></div></div></div>
       ${m.length?`<div class="thumbs">${m.slice(-3).map(x=>{const u=S.urls["medias/"+x.chemin];return u?(x.type==="video"?`<video src="${esc(u)}#t=0.1" muted playsinline preload="metadata"></video>`:`<img src="${esc(u)}" alt="${esc(x.legende||"Photo")}" loading="lazy">`):""}).join("")}</div>`:""}
       <span class="more">${jours(e.date_debut)===0?"C'est aujourd'hui · ajoute ton résultat ›":"Voir les résultats ›"}</span>
-    </article>`}).join("")||`<div class="empty"><b>Pas encore de résultats</b>Les évènements apparaissent ici dès leur jour J.</div>`;
+    </article>`}).join("")||`<div class="empty"><b>Pas encore de résultats</b>Les évènements apparaissent ici dès leur jour J.</div>`);
 }
 function ficheResultats(id){
   const e=S.evts.find(x=>x.id==id);if(!e)return fermer();
   const r=S.res[id]||{},m=S.medias[id]||[],q=qui(e),moi=me();
-  const ids=[...new Set([...q.oui.map(x=>x.id),...Object.keys(r).map(Number)])].sort((a,b)=>enSecondes(r[a]?.temps)-enSecondes(r[b]?.temps)||prenom(a).localeCompare(prenom(b)));
+  const ids=[...new Set([...q.oui.map(x=>x.id),...Object.keys(r).map(Number)])].sort((a,b)=>enSecondes(r[a]?.temps)-enSecondes(r[b]?.temps)||(rangDe(r[a])||1e9)-(rangDe(r[b])||1e9)||prenom(a).localeCompare(prenom(b)));
   const peut=mid=>mid===moi||bureau();let rang=0;
   ouvrirPanel(`<div class="ph"><h3>${esc(e.evenement)}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${plage(e)}${e.lieu?" · "+esc(e.lieu):""}</span>
     <div class="sect">Résultats du club</div>
-    <div>${ids.map(mid=>{const x=r[mid],rg=x?.temps?++rang:"";return `<div class="res">
+    <div>${ids.map(mid=>{const x=r[mid],rg=(x?.temps||rangDe(x))?++rang:"";return `<div class="res">
       <div class="rank">${rg||"–"}</div>
-      <div class="nm"><b>${esc(prenom(mid))}${mid===moi?" (moi)":""}</b><span>${[x?.classement,x?.format,x?.commentaire].filter(Boolean).map(esc).join(" · ")||"Pas encore de résultat"}</span></div>
+      <div class="nm"><b>${avatar(mid,"s")}${esc(prenom(mid))}${mid===moi?" (moi)":""}</b><span>${[placeTxt(x),x?.format,x?.commentaire].filter(Boolean).map(esc).join(" · ")||"Pas encore de résultat"}</span></div>
       <div class="chrono">${esc(x?.temps||"")}</div>
       ${peut(mid)?`<div class="acts"><button class="btn sec small" data-editres="${id}:${mid}">${x?"Modifier":"Ajouter"} ${mid===moi?"mon résultat":"le résultat"}</button></div>`:""}
     </div>`}).join("")||`<div class="empty">Personne n'est encore indiqué comme participant.</div>`}</div>
@@ -616,8 +691,10 @@ function formResultat(eid,mid){
   if(mid!==me()&&!bureau())return toast("Tu ne peux modifier que ton propre résultat");
   const x=S.res[eid]?.[mid]||{};
   ouvrirPanel(`<form id="fr"><div class="ph"><h3>Résultat de ${esc(prenom(mid))}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
-    <div class="grid2"><label for="r-t">Temps (h:mm:ss)<input id="r-t" name="temps" value="${esc(x.temps)}" placeholder="1:12:45" pattern="\\d{1,2}(:\\d{2}){1,2}" inputmode="numeric" title="Format 1:12:45 ou 45:30"></label>
-      <label for="r-c">Classement<input id="r-c" name="classement" value="${esc(x.classement)}" placeholder="18e / 142"></label></div>
+    <label for="r-t">Temps (h:mm:ss)<input id="r-t" name="temps" value="${esc(x.temps)}" placeholder="1:12:45" pattern="\\d{1,2}(:\\d{2}){1,2}" inputmode="numeric" title="Format 1:12:45 ou 45:30"></label>
+    <div class="grid2"><label for="r-p">Place<input id="r-p" name="place" type="number" min="1" inputmode="numeric" value="${x.place??rangDe(x)??""}" placeholder="18"></label>
+      <label for="r-n">Sur (partants)<input id="r-n" name="partants" type="number" min="1" inputmode="numeric" value="${x.partants??""}" placeholder="142"></label></div>
+    <span class="hint">La place alimente le palmarès du club (top 10, top 5, podiums, victoires).</span>
     <label for="r-f">Format ou distance<input id="r-f" name="format" value="${esc(x.format)}" placeholder="Format S, 62 km…"></label>
     <label for="r-m">Commentaire<textarea id="r-m" name="commentaire" rows="2">${esc(x.commentaire)}</textarea></label>
     <div class="row">${x.membre_id?`<button type="button" class="btn del" id="r-del">Supprimer</button>`:"<span></span>"}
@@ -625,7 +702,9 @@ function formResultat(eid,mid){
   const del=$("#r-del");if(del)del.onclick=async()=>{occupe(del,true);const {error}=await sb.from("resultats").delete().eq("evenement_id",eid).eq("membre_id",mid);
     if(error){occupe(del,false);return erreur(error,"Suppression")}toast("Résultat supprimé");await recharger();ficheResultats(eid)};
   $("#fr").onsubmit=async ev=>{ev.preventDefault();const b=$("#r-ok");occupe(b,true);const d=Object.fromEntries(new FormData(ev.target));
-    const {error}=await sb.from("resultats").upsert({evenement_id:eid,membre_id:mid,temps:nul(d.temps.trim()),classement:nul(d.classement),format:nul(d.format),commentaire:nul(d.commentaire),maj_le:new Date().toISOString()});
+    const place=d.place?parseInt(d.place,10):null,partants=d.partants?parseInt(d.partants,10):null;
+    if(place&&partants&&place>partants){occupe(b,false);return toast("La place ne peut pas dépasser le nombre de partants")}
+    const {error}=await sb.from("resultats").upsert({evenement_id:eid,membre_id:mid,temps:nul(d.temps.trim()),place,partants,classement:null,format:nul(d.format),commentaire:nul(d.commentaire),maj_le:new Date().toISOString()});
     if(error){occupe(b,false);return erreur(error,"Résultat")}
     if(S.part[eid]?.[mid]!==true)await sb.from("participations").upsert({evenement_id:eid,membre_id:mid,reponse:true,maj_le:new Date().toISOString()});
     toast("Résultat enregistré");await recharger();ficheResultats(eid)};
@@ -703,50 +782,115 @@ function formSondage(){
     }catch(e){occupe(b,false)}};
 }
 
-// ================= Profil =================
-const statutLicence=fin=>{if(!fin)return `<span class="status ko">Licence non renseignée</span>`;const n=jours(fin);return n<0?`<span class="status ko">Licence expirée</span>`:n<=30?`<span class="status warn">Expire dans ${n} j</span>`:`<span class="status ok">Valable → ${fmt(fin,{day:"numeric",month:"short",year:"numeric"})}</span>`};
-const DOCS=[["licence","Licence"],["certificat","Certificat médical"],["autre","Autres documents"]];
+// ================= Profil, liens utiles, bureau =================
+const etatFed=(id,fed)=>{const p=S.profils[id]||{},cle=fed==="FFC"?"licence_ffc":"licence_fftri",doc=(S.docs[id]||[]).some(d=>d.type===cle);
+  return doc?`<span class="status ok">✓ déposée</span>`:(p.federations||[]).includes(fed)?`<span class="status warn">à déposer</span>`:`<span class="status ko">–</span>`};
+function renderLiens(){
+  return `<article class="card"><h2>${CLUB}</h2>
+    <div>${S.liens.map(l=>{const mail=/^mailto:/i.test(l.url),adr=l.url.replace(/^mailto:/i,"");
+      return `<div class="lien"><div class="t"><b>${esc(l.titre)}</b><span>${esc(mail?adr:l.url.replace(/^https?:\/\/(www\.)?/,""))}</span></div><div class="acts">
+        ${mail?`<button class="btn sec small" data-copier="${esc(adr)}">Copier</button><a class="btn pri small" href="${esc(l.url)}">Écrire</a>`:`<a class="btn pri small" href="${esc(lienSur(l.url))}" target="_blank" rel="noopener">Ouvrir ↗</a>`}
+        ${bureau()?`<button class="btn sec small" data-lien="${l.id}" aria-label="Modifier ${esc(l.titre)}">✎</button>`:""}</div></div>`}).join("")||'<span class="hint">Aucun lien pour l\'instant.</span>'}</div>
+    ${bureau()?`<button class="btn sec" data-lien="nouveau">+ Ajouter un lien</button>`:""}
+  </article>`;
+}
+function formLien(id){
+  const l=S.liens.find(x=>x.id==id)||{};
+  ouvrirPanel(`<form id="fl"><div class="ph"><h3>${l.id?"Modifier le lien":"Nouveau lien"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <label for="lk-t">Titre<input id="lk-t" name="titre" required maxlength="60" value="${esc(l.titre)}" placeholder="Club Strava"></label>
+    <label for="lk-u">Adresse web ou e-mail<input id="lk-u" name="url" required value="${esc((l.url||"").replace(/^mailto:/i,""))}" placeholder="https://… ou club@exemple.fr"></label>
+    <label for="lk-o">Ordre d'affichage<input id="lk-o" name="ordre" type="number" value="${l.ordre??S.liens.length+1}"></label>
+    <div class="row">${l.id?`<button type="button" class="btn del" id="lk-del">Supprimer</button>`:"<span></span>"}<span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="lk-ok">Enregistrer</button></span></div></form>`);
+  const del=$("#lk-del");if(del)del.onclick=async()=>{if(!del.dataset.ok){del.dataset.ok=1;del.textContent="Confirmer";return}
+    const {error}=await sb.from("liens").delete().eq("id",l.id);if(error)return erreur(error,"Suppression");fermer();toast("Lien supprimé");recharger()};
+  $("#fl").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target));let u=d.url.trim();
+    if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u))u="mailto:"+u;else if(!/^(https?:\/\/|mailto:)/i.test(u))u="https://"+u;
+    const row={titre:d.titre.trim(),url:u,ordre:parseInt(d.ordre,10)||0},b=$("#lk-ok");occupe(b,true);
+    const {error}=l.id?await sb.from("liens").update(row).eq("id",l.id):await sb.from("liens").insert(row);
+    occupe(b,false);if(error)return erreur(error,"Lien");fermer();toast("Lien enregistré");recharger()};
+}
+function renderNotes(){
+  return `<article class="card"><div class="row"><h2>Notes du bureau</h2><span class="role">bureau</span></div>
+    <span class="hint">Invisibles pour les membres.</span>
+    <div>${S.notes.map(n=>`<div class="note" data-note="${n.id}" role="button" tabindex="0"><b>${esc(n.titre)}</b>${n.texte?`<p>${esc(n.texte)}</p>`:""}<small>${esc(prenom(n.auteur_id))} · ${quand(n.maj_le)}</small></div>`).join("")||'<span class="hint">Aucune note.</span>'}</div>
+    <button class="btn sec" data-note="nouveau">+ Nouvelle note</button></article>`;
+}
+function formNote(id){
+  const n=S.notes.find(x=>x.id==id)||{};
+  ouvrirPanel(`<form id="fn"><div class="ph"><h3>${n.id?"Note du bureau":"Nouvelle note"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <label for="n-t">Titre<input id="n-t" name="titre" required value="${esc(n.titre)}" placeholder="Réunion de bureau du 4 novembre"></label>
+    <label for="n-x">Texte<textarea id="n-x" name="texte" rows="10">${esc(n.texte)}</textarea></label>
+    ${n.id?`<span class="hint">Dernière modification : ${esc(prenom(n.auteur_id))}, ${quand(n.maj_le)}</span>`:""}
+    <div class="row">${n.id?`<button type="button" class="btn del" id="n-del">Supprimer</button>`:"<span></span>"}<span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="n-ok">Enregistrer</button></span></div></form>`);
+  const del=$("#n-del");if(del)del.onclick=async()=>{if(!del.dataset.ok){del.dataset.ok=1;del.textContent="Confirmer la suppression";return}
+    const {error}=await sb.from("notes_bureau").delete().eq("id",n.id);if(error)return erreur(error,"Suppression");fermer();toast("Note supprimée");recharger()};
+  $("#fn").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target)),b=$("#n-ok");occupe(b,true);
+    const row={titre:d.titre.trim(),texte:nul(d.texte),auteur_id:me(),maj_le:new Date().toISOString()};
+    const {error}=n.id?await sb.from("notes_bureau").update(row).eq("id",n.id):await sb.from("notes_bureau").insert(row);
+    occupe(b,false);if(error)return erreur(error,"Note");fermer();toast("Note enregistrée");recharger()};
+}
 function renderProfil(){
   const m=S.moi,p=S.profils[m.id]||{federations:[]},mesDocs=S.docs[m.id]||[];
   const bloc=(cle,titre)=>{const l=mesDocs.filter(d=>d.type===cle);return `<div style="display:grid;gap:6px"><span class="sect">${titre}</span>
     ${l.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer ${esc(d.nom)}">✕</button>`)).join("")}
-    ${!l.length||cle==="autre"?`<label class="file empty-f" for="d-${cle}"><div class="ic">+</div><div class="nm"><b>${l.length&&cle!=="autre"?"Remplacer":"Ajouter un fichier"}</b><span>PDF ou photo, 10 Mo max</span></div><input id="d-${cle}" type="file" accept=".pdf,image/*" data-doc="${cle}" hidden></label>`:""}</div>`};
+    ${!l.length||cle==="autre"?`<label class="file empty-f" for="d-${cle}"><div class="ic">+</div><div class="nm"><b>Ajouter un fichier</b><span>PDF ou photo, 10 Mo max</span></div><input id="d-${cle}" type="file" accept=".pdf,image/*" data-doc="${cle}" hidden></label>`:""}</div>`};
+  const anciens=mesDocs.filter(d=>d.type==="licence");
   const installe=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
   $("#profil").innerHTML=`
+  ${renderLiens()}
   <article class="card">
-    <div class="row"><h2>${esc(m.prenom)} ${esc(p.nom||"")}</h2>${statutLicence(p.licence_fin)}</div>
+    <div class="photo-row">${avatar(m.id,"l")}<div style="display:grid;gap:6px;justify-items:start">
+      <h2>${esc(m.prenom)} ${esc(p.nom||"")}</h2>
+      <div class="row" style="justify-content:flex-start;gap:6px"><label class="btn sec small" for="p-photo" style="cursor:pointer;color:var(--ink);font-size:14px">${p.photo?"Changer la photo":"Ajouter une photo"}<input id="p-photo" type="file" accept="image/*" hidden></label>${p.photo?`<button class="btn sec small" id="p-nophoto">Retirer</button>`:""}</div></div></div>
     <span class="hint">Connecté avec ${esc(m.email)}${m.role==="bureau"?" · membre du bureau":""}</span>
     <form id="fp" style="display:grid;gap:10px">
-      <div class="grid2"><label for="p-nom">Nom<input id="p-nom" name="nom" value="${esc(p.nom)}" autocomplete="family-name"></label><label for="p-tel">Téléphone<input id="p-tel" name="tel" type="tel" value="${esc(p.tel)}" autocomplete="tel"></label></div>
-      <label for="p-urg">Contact d'urgence<input id="p-urg" name="urgence" value="${esc(p.urgence)}" placeholder="Nom et téléphone"></label>
-      <span class="sect">Licence</span>
-      <div class="row" style="justify-content:flex-start;gap:16px">${["FFC","FFCT","FFTri"].map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> ${f}</label>`).join("")}</div>
-      <div class="grid2"><label for="p-num">N° de licence<input id="p-num" name="licence_num" value="${esc(p.licence_num)}"></label><label for="p-fin">Valable jusqu'au<input id="p-fin" type="date" name="licence_fin" value="${p.licence_fin||""}"></label></div>
+      <div class="grid2"><label for="p-pre">Prénom<input id="p-pre" name="prenom" required maxlength="40" value="${esc(m.prenom)}" autocomplete="given-name"></label><label for="p-nom">Nom<input id="p-nom" name="nom" value="${esc(p.nom)}" autocomplete="family-name"></label></div>
+      <div class="grid2"><label for="p-tel">Téléphone<input id="p-tel" name="tel" type="tel" value="${esc(p.tel)}" autocomplete="tel"></label><label for="p-urg">Contact d'urgence<input id="p-urg" name="urgence" value="${esc(p.urgence)}" placeholder="Nom et téléphone"></label></div>
+      <span class="sect">Fédérations</span>
+      <div class="row" style="justify-content:flex-start;gap:18px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> Licence ${f}</label>`).join("")}</div>
       <span class="sect">Tailles de tenue</span>
       <div class="grid2"><label for="p-tm">Maillot<select id="p-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="p-tc">Cuissard<select id="p-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
+      <label class="check" for="p-rap"><input id="p-rap" type="checkbox" name="rappels"${p.rappels===false?"":" checked"}> Recevoir un rappel par e-mail 10 jours et 1 jour avant les évènements où je viens</label>
       <button class="btn pri" id="p-ok">Enregistrer mon profil</button>
     </form>
   </article>
-  <article class="card"><h2>Mes documents</h2><span class="hint">Visibles uniquement par toi et le bureau.</span>${DOCS.map(([c,t])=>bloc(c,t)).join("")}</article>
-  ${bureau()?`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche et ses documents.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th><th>Licence</th><th>Docs</th></tr></thead><tbody>${S.complets.map(x=>{const q=S.profils[x.id];return `<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${x.user_id?"":' <span class="hint">· jamais connecté</span>'}</td><td>${x.actif?statutLicence(q?.licence_fin):'<span class="status ko">Retiré</span>'}</td><td>${(S.docs[x.id]||[]).length}</td></tr>`}).join("")}</tbody></table></div>
+  <article class="card"><h2>Mes documents</h2><span class="hint">Visibles uniquement par toi et le bureau.</span>
+    ${DOCS.map(([c,t])=>bloc(c,t)).join("")}
+    ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
+  </article>
+  ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
+    <div class="tw"><table><thead><tr><th>Membre</th><th>FFC</th><th>FFTri</th><th>Docs</th></tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td><td>${etatFed(x.id,"FFC")}</td><td>${etatFed(x.id,"FFTri")}</td><td>${(S.docs[x.id]||[]).length}</td></tr>`).join("")}</tbody></table></div>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
       <label for="i-e">E-mail<input id="i-e" name="email" type="email" required placeholder="prenom@exemple.fr"></label>
       <button class="btn pri" id="i-ok">Ajouter au club</button></form>
-    <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" id="copier">Copier le lien</button></div>
+    <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
   ${installe?"":`<article class="card"><h2>Installer l'app</h2><span class="hint"><b>iPhone</b> : dans Safari, bouton Partager puis « Sur l'écran d'accueil ».<br><b>Android</b> : dans Chrome, menu ⋮ puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</span></article>`}
   <button class="btn sec" id="logout">Se déconnecter</button>`;
   $("#fp").onsubmit=async ev=>{ev.preventDefault();const b=$("#p-ok");occupe(b,true);const fd=new FormData(ev.target),d=Object.fromEntries(fd);
-    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),licence_num:nul(d.licence_num),licence_fin:nul(d.licence_fin),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),maj_le:new Date().toISOString()});
+    const pre=d.prenom.trim();
+    if(pre&&pre!==m.prenom){const r=await sb.rpc("maj_mon_prenom",{p_prenom:pre});if(r.error){occupe(b,false);return erreur(r.error,"Prénom")}S.moi.prenom=pre}
+    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom?.trim()),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),rappels:!!d.rappels,maj_le:new Date().toISOString()});
     occupe(b,false);b.blur();if(error)return erreur(error,"Profil");toast("Profil enregistré");recharger()};
   $("#logout").onclick=deconnecter;
+  $("#p-photo").onchange=e=>{const f=e.target.files[0];if(f)envoyerPhoto(f);e.target.value=""};
+  const np=$("#p-nophoto");if(np)np.onclick=async()=>{const anc=p.photo;const {error}=await sb.from("profils").upsert({membre_id:m.id,photo:null});if(error)return erreur(error,"Photo");
+    sb.storage.from("avatars").remove([anc]);toast("Photo retirée");recharger()};
   const inv=$("#finv");if(inv)inv.onsubmit=async ev=>{ev.preventDefault();const b=$("#i-ok"),d=Object.fromEntries(new FormData(ev.target)),email=d.email.trim().toLowerCase();
     occupe(b,true);const {error}=await sb.from("membres").insert({email,prenom:d.prenom.trim(),role:d.role});occupe(b,false);
     if(error)return /duplicate|23505/.test(error.message)?toast("Cet e-mail est déjà inscrit"):erreur(error,"Ajout");
     toast(`${d.prenom.trim()} peut maintenant se connecter`,3500);recharger()};
-  const cp=$("#copier");if(cp)cp.onclick=()=>{const u=location.origin+location.pathname;navigator.clipboard?.writeText(u).then(()=>toast("Lien copié : "+u),()=>toast(u,6000))||toast(u,6000)};
+}
+async function envoyerPhoto(f){
+  if(!f.type.startsWith("image/"))return toast("Choisis une image");
+  toast("Envoi de la photo…",60000);
+  const img=await compresser(f,480,true),ch=`${me()}/photo-${Date.now()}.jpg`,anc=S.profils[me()]?.photo;
+  const up=await sb.storage.from("avatars").upload(ch,img,{contentType:"image/jpeg"});if(up.error)return erreur(up.error,"Photo");
+  const {error}=await sb.from("profils").upsert({membre_id:me(),photo:ch});
+  if(error){await sb.storage.from("avatars").remove([ch]);return erreur(error,"Photo")}
+  if(anc)sb.storage.from("avatars").remove([anc]);
+  toast("Photo enregistrée");recharger();
 }
 async function envoyerDoc(type,f){
   if(f.size>10e6)return toast("Fichier trop lourd (10 Mo maximum)");
@@ -766,14 +910,17 @@ async function retirerDoc(id){
   await sb.storage.from("documents").remove([d.chemin]);toast("Document retiré");recharger();
 }
 function voirMembre(id){
-  const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[];
+  const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[],note=S.notesM[id]?.note||"";
   ouvrirPanel(`<div class="ph"><h3>${esc(m.prenom)} ${esc(p.nom||"")}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
-    <span class="hint">${esc(m.email)} · lecture seule : seul ${esc(m.prenom)} peut modifier son profil.</span>
-    ${statutLicence(p.licence_fin)}
-    <dl class="facts"><dt>Fédé.</dt><dd>${esc((p.federations||[]).join(", ")||"–")}</dd><dt>Licence</dt><dd>${esc(p.licence_num||"–")}</dd><dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd></dl>
-    ${docs.map(d=>fichierHTML(d.nom,(DOCS.find(x=>x[0]===d.type)?.[1]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
+    <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${esc(m.email)}<br>Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.</span></div>
+    <dl class="facts"><dt>FFC</dt><dd>${etatFed(id,"FFC")}</dd><dt>FFTri</dt><dd>${etatFed(id,"FFTri")}</dd><dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
+    ${docs.map(d=>fichierHTML(d.nom,(NOM_DOC[d.type]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
+    <label for="m-note">Note du bureau (invisible pour ${esc(m.prenom)})<textarea id="m-note" rows="4" placeholder="Cotisation réglée, matériel prêté…">${esc(note)}</textarea></label>
+    <button class="btn sec" id="m-note-ok">Enregistrer la note</button>
     ${m.id!==me()?`<label for="m-role">Rôle<select id="m-role"><option value="membre"${m.role==="membre"?" selected":""}>Membre</option><option value="bureau"${m.role==="bureau"?" selected":""}>Bureau</option></select></label>
       <button class="btn ${m.actif?"del":"sec"}" id="m-actif">${m.actif?"Retirer du club":"Réintégrer au club"}</button>`:""}`);
+  $("#m-note-ok").onclick=async e=>{const b=e.target;occupe(b,true);const {error}=await sb.from("notes_membres").upsert({membre_id:m.id,note:nul($("#m-note").value.trim()),maj_le:new Date().toISOString()});
+    occupe(b,false);if(error)return erreur(error,"Note");toast("Note enregistrée");recharger()};
   const r=$("#m-role");if(r)r.onchange=async()=>{const {error}=await sb.from("membres").update({role:r.value}).eq("id",m.id);if(error)return erreur(error,"Rôle");toast("Rôle mis à jour");recharger()};
   const a=$("#m-actif");if(a)a.onclick=async()=>{if(m.actif&&!a.dataset.ok){a.dataset.ok=1;a.textContent="Confirmer : retirer "+m.prenom;return}
     const {error}=await sb.from("membres").update({actif:!m.actif}).eq("id",m.id);if(error)return erreur(error,"Mise à jour");toast(m.actif?m.prenom+" a été retiré du club":m.prenom+" est de retour");fermer();recharger()};
@@ -786,7 +933,7 @@ function render(){
   $("#login").hidden=co;$("#app").hidden=!co;$("#nav").hidden=!co;
   if(!co){$("#fab").hidden=true;renderLogin();return}
   const m=S.moi;
-  $("#user").innerHTML=`${m.role==="bureau"?'<span class="role">bureau</span>':""}<span class="avatar">${esc(m.prenom[0]?.toUpperCase())}</span>`;
+  $("#user").innerHTML=avatar(m.id);
   for(const v of ["agenda","resultats","sondages","profil"])$("#v-"+v).hidden=v!==vue;
   document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===vue));
   const actif=document.activeElement,garde=vue==="profil"&&actif&&actif.closest("#profil form");
@@ -796,7 +943,7 @@ function render(){
 $("#t-up").onclick=()=>{tab="up";render()};$("#t-past").onclick=()=>{tab="past";render()};
 $("#fab").onclick=()=>vue==="agenda"?formEvt():formSondage();
 $("#sheet").onclick=e=>{if(e.target.id==="sheet")fermer()};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)fermer()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)fermer();if(e.key==="Enter"&&e.target.dataset?.note)formNote(e.target.dataset.note)});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset?.doc&&t.files?.[0]){envoyerDoc(t.dataset.doc,t.files[0]);t.value=""}
@@ -807,6 +954,10 @@ document.addEventListener("click",e=>{
   if(c("[data-close]"))return fermer();
   const nv=c("[data-v]");if(nv&&!c(".sheet")){vue=nv.dataset.v;fermer();render();scrollTo(0,0);return}
   const f=c("[data-f]");if(f){filtre=f.dataset.f;return render()}
+  const sa=c("[data-saison]");if(sa){saisonPalm=sa.dataset.saison;return render()}
+  const cp=c("[data-copier]");if(cp){const v=cp.dataset.copier;(navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast("Copié : "+v),()=>toast(v,6000));return}
+  const lk=c("[data-lien]");if(lk)return formLien(lk.dataset.lien);
+  const no=c("[data-note]");if(no)return formNote(no.dataset.note);
   const ed=c("[data-edit]");if(ed)return formEvt(S.evts.find(x=>x.id==ed.dataset.edit));
   const ge=c("[data-gerer]");if(ge)return gererParticipants(+ge.dataset.gerer);
   const st=c("[data-set]");if(st){const [eid,mid,v]=st.dataset.set.split(":");return fixerParticipation(+eid,+mid,v)}
@@ -825,7 +976,6 @@ document.addEventListener("click",e=>{
   const v=c("[data-vote]");if(v&&!v.disabled){const [sid,i]=v.dataset.vote.split(":").map(Number);return voter(sid,i)}
   const o=c("[data-open]");if(o&&(!c("a,button")||c("button[data-open]")))return fiche(+o.dataset.open);
 });
-// Recharge en revenant dans l'app
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.moi&&Date.now()-S.charge>30e3)recharger()});
 
 // ================= Démarrage =================

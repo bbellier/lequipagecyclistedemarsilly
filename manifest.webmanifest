@@ -1,7 +1,7 @@
 {
-  "name": "L'Équipage Cycliste",
+  "name": "L'Équipage Cycliste de Marsilly",
   "short_name": "L'Équipage",
-  "description": "Agenda, résultats, sondages et profils des membres de L'Équipage Cycliste de Marsilly",
+  "description": "L'app des membres de L'Équipage Cycliste de Marsilly",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
