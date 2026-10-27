@@ -136,6 +136,9 @@ h2{margin:0;font-family:var(--display);font-weight:800;font-size:23px;line-heigh
 label{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
 input,select,textarea{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:10px;font-weight:400;width:100%;min-width:0;font-size:16px;color:var(--ink)}
 input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--ink)}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238a8378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;padding-right:38px}
+.check.petit{font-size:13.5px;font-weight:400;color:var(--muted);align-items:flex-start}
+.check.petit input{margin-top:3px}
 input[type=file]{font-size:14px;padding:8px}
 .check{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:var(--ink)}
 .row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
@@ -228,6 +231,27 @@ tr.off td{opacity:.5}
 .note p{margin:0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
 .note small{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .photo-row{display:flex;align-items:center;gap:14px}
+/* Parcours */
+.pbox{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;background:var(--paper)}
+.pbox .row b{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.ultra{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;background:var(--red);color:#fff;border-radius:4px;padding:1px 6px;vertical-align:middle}
+.ab{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;border:1px solid var(--muted);color:var(--muted);border-radius:4px;padding:0 5px}
+.big{font-family:var(--display);font-weight:800;font-size:46px;line-height:1;color:var(--red)}
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.ugrid .u{display:grid;justify-items:center;gap:3px;text-align:center;min-width:0}
+.ugrid .u b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.ugrid .u .avatar{width:52px;height:52px;position:relative;overflow:visible}
+.ugrid .u .avatar img,.ugrid .u .avatar svg{border-radius:50%}
+.ugrid .u i{position:absolute;right:-6px;bottom:-4px;font-style:normal;font-family:var(--mono);font-weight:600;font-size:11px;background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;border:2px solid var(--card)}
+.uliste{display:grid;gap:0}
+.uliste div{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;border-bottom:1px solid var(--line);padding-block:8px;font-size:14px}
+.uliste div:last-child{border-bottom:0}
+.uliste span{color:var(--muted)}
+/* Partenaires */
+.partners{display:grid;gap:10px;padding-top:6px}
+.plogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.plogo{background:#fff;border:1px solid var(--line);border-radius:8px;height:62px;display:grid;place-items:center;padding:8px;text-decoration:none;color:#161514;font-weight:600;font-size:13px;text-align:center;overflow:hidden}
+.plogo img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 /* Connexion */
 .login{min-height:100vh;min-height:100dvh;display:grid;align-content:center;position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px}
 .login::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--paper) url("img/montagne.webp") right bottom/cover no-repeat}
@@ -273,6 +297,7 @@ tr.off td{opacity:.5}
   <section id="v-resultats" hidden><div class="list" id="results"></div></section>
   <section id="v-sondages" hidden><div class="list" id="polls"></div></section>
   <section id="v-profil" hidden><div class="list" id="profil"></div></section>
+  <div id="partners"></div>
 </div>
 <button class="fab" id="fab" hidden></button>
 <nav class="nav" id="nav" hidden><div role="tablist">
@@ -294,16 +319,19 @@ const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
-const sb = configOK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}) : null;
+const sb = configOK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}) : null;
 
 // ================= État =================
-const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},urls:{},gpx:{},charge:0};
+const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},parcours:[],partenaires:[],selP:{},urls:{},gpx:{},charge:0};
 let vue="agenda",tab="up",filtre="Tous",saisonPalm="Toutes",L={etape:"email"};
-const TYPES=["Sortie club","Cyclosportive","Route","Gravel","VTT","Triathlon","Duathlon","Course à pied","Trail","Aventure","Social"];
+const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","Gravel","VTT","Triathlon","Course à pied","Trail"];
+const DISC={velo:"Vélo",course:"Course à pied",triathlon:"Triathlon",autre:"Autre"};
+const FORMATS_TRI=["XS","S","M","L","XL","XXL"];
 const TAILLES=["","XS","S","M","L","XL","XXL","3XL"];
-const FEDS=["FFC","FFTri"];
-const DOCS=[["licence_ffc","Licence FFC"],["licence_fftri","Licence FFTri"],["certificat","Certificat médical"],["autre","Autres documents"]];
-const NOM_DOC={licence:"Licence",licence_ffc:"Licence FFC",licence_fftri:"Licence FFTri",certificat:"Certificat médical",autre:"Autre document"};
+const FEDS=["FFC","UFOLEP","FFTri","PPS"];
+const CLE_FED={FFC:"licence_ffc",UFOLEP:"licence_ufolep",FFTri:"licence_fftri",PPS:"pps"};
+const DOCS=[["licence_ffc","Licence FFC"],["licence_ufolep","Licence UFOLEP"],["licence_fftri","Licence FFTri"],["pps","PPS (Parcours Prévention Santé)"],["certificat","Certificat médical"],["autre","Autres documents"]];
+const NOM_DOC={licence:"Licence",licence_ffc:"Licence FFC",licence_ufolep:"Licence UFOLEP",licence_fftri:"Licence FFTri",pps:"PPS",certificat:"Certificat médical",autre:"Autre document"};
 const SIL=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.6"/><path d="M2.5 24c.6-5.3 4.6-8.6 9.5-8.6s8.9 3.3 9.5 8.6z"/></svg>`;
 
 // ================= Outils =================
@@ -327,6 +355,22 @@ const quand=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"shor
 const photoDe=id=>S.membres.find(m=>m.id==id)?.photo||(id==me()?S.profils[id]?.photo:null);
 const avatar=(id,cls="")=>{const u=photoDe(id)&&S.urls["avatars/"+photoDe(id)];return `<span class="avatar ${cls}">${u?`<img src="${esc(u)}" alt="">`:SIL}</span>`};
 const placeTxt=x=>x?.place?`${x.place}${x.place===1?"er":"e"}${x.partants?" / "+x.partants:""}`:x?.classement||"";
+const disciplineDe=t=>/Course|Trail/.test(t||"")?"course":t==="Triathlon"?"triathlon":t==="Évènement club"?"autre":"velo";
+const heure=h=>{if(!h)return "";const [a,b]=h.split(":");return `${+a} h${b&&b!=="00"?" "+b:""}`};
+const fmtKm=k=>(+k).toLocaleString("fr-FR",{maximumFractionDigits:1});
+const fmtTri=f=>f==="XXL"?"XXL (Ironman)":f;
+const parcoursDe=eid=>S.parcours.filter(p=>p.evenement_id==eid).sort((a,b)=>a.ordre-b.ordre||a.id-b.id);
+const distP=p=>p.discipline==="triathlon"?(p.format?"Format "+fmtTri(p.format):""):(p.km||p.gpx_km)?fmtKm(p.km||p.gpx_km)+" km":"";
+const labelP=p=>[p.nom,distP(p)].filter(Boolean).join(" · ")||"Parcours";
+// Distance, discipline et statut ultra d'un résultat (course > 40 km, vélo > 150 km, triathlon L / XL / XXL)
+function infosRes(eid,x){
+  const e=S.evts.find(v=>v.id==eid)||{},p=x?.parcours_id&&S.parcours.find(q=>q.id===x.parcours_id);
+  const disc=p?.discipline||x?.discipline||disciplineDe(e.type),km=+(p?(p.km||p.gpx_km):x?.km)||0,format=(p?p.format:x?.format)||"";
+  const fu=format.toUpperCase().replace("FORMAT","").replace(/\(.*\)/,"").trim();
+  const ultra=!!x&&!x.abandon&&((disc==="course"&&km>40)||(disc==="velo"&&km>150)||(disc==="triathlon"&&(["L","XL","XXL"].includes(fu)||/IRON ?MAN|70\.3/.test(fu))));
+  const lib=p?labelP(p):[km?fmtKm(km)+" km":"",format?(disc==="triathlon"&&FORMATS_TRI.includes(format)?"Format "+fmtTri(format):format):""].filter(Boolean).join(" · ");
+  return {disc,km,format,ultra,lib};
+}
 const rangDe=x=>x?.place||(/^\s*(\d+)/.exec(x?.classement||"")?.[1]|0)||null;
 function toast(t,ms=2400){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,ms)}
 function erreur(e,ctx){
@@ -371,7 +415,7 @@ async function compresser(f,max=2000,carre=false){
 async function charger(){
   const B=bureau();
   if(Date.now()-S.charge>6*3600e3)S.urls={};
-  const [ann,ev,pa,re,md,so,st,vo,pr,dc,li,mb,nb,nm]=await Promise.all([
+  const [ann,ev,pa,re,md,so,st,vo,pr,dc,li,pc,pt,mb,nb,nm]=await Promise.all([
     ok(sb.rpc("annuaire"),"Membres"),
     ok(sb.from("evenements").select("*").order("date_debut"),"Évènements"),
     ok(sb.from("participations").select("evenement_id,membre_id,reponse"),"Participations"),
@@ -383,11 +427,13 @@ async function charger(){
     ok(sb.from("profils").select("*"),"Profils"),
     ok(sb.from("documents").select("*").order("ajoute_le"),"Documents"),
     ok(sb.from("liens").select("*").order("ordre"),"Liens"),
+    ok(sb.from("parcours").select("*").order("ordre"),"Parcours"),
+    ok(sb.from("partenaires").select("*").order("ordre"),"Partenaires"),
     B?ok(sb.from("membres").select("*").order("prenom"),"Membres"):Promise.resolve([]),
     B?ok(sb.from("notes_bureau").select("*").order("maj_le",{ascending:false}),"Notes"):Promise.resolve([]),
     B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([])
   ]);
-  S.membres=ann||[];S.evts=ev||[];S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];
+  S.membres=ann||[];S.evts=ev||[];S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
   S.notesM={};(nm||[]).forEach(n=>S.notesM[n.membre_id]=n);
   S.part={};(pa||[]).forEach(p=>(S.part[p.evenement_id]??={})[p.membre_id]=p.reponse);
   S.res={};(re||[]).forEach(r=>(S.res[r.evenement_id]??={})[r.membre_id]=r);
@@ -402,7 +448,7 @@ async function charger(){
 }
 // Liens temporaires pour afficher affiches, photos, vidéos et photos de profil
 async function signer(){
-  const lots=[["club",S.evts.map(e=>e.affiche).filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)],["avatars",[...S.membres.map(m=>m.photo),S.profils[me()]?.photo].filter(Boolean)]];
+  const lots=[["club",[...S.evts.map(e=>e.affiche),...S.partenaires.map(p=>p.logo)].filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)],["avatars",[...S.membres.map(m=>m.photo),S.profils[me()]?.photo].filter(Boolean)]];
   for(const [b,l] of lots){
     const manque=[...new Set(l)].filter(p=>!S.urls[b+"/"+p]);if(!manque.length)continue;
     const {data,error}=await sb.storage.from(b).createSignedUrls(manque,86400);
@@ -442,6 +488,7 @@ function renderLogin(){
     return;
   }
   box.innerHTML=tete+`<p class="lead">Entre l'adresse e-mail donnée au bureau. Tu reçois un code à 6 chiffres, pas de mot de passe.</p>
+    <p class="hint" style="text-align:center;margin:0">Première connexion : si l'e-mail contient un lien au lieu d'un code, touche-le, il te connecte directement.</p>
     <form id="flog"><label for="l-email">Adresse e-mail<input id="l-email" type="email" required autocomplete="email" inputmode="email" placeholder="prenom@exemple.fr" value="${esc(e.email||"")}"></label>
     <button class="cta" id="l-env">Recevoir mon code</button></form>${e.erreur?`<div class="msg ko">${esc(e.erreur)}</div>`:""}`;
   $("#flog").onsubmit=ev=>{ev.preventDefault();envoyerCode($("#l-email").value.trim().toLowerCase(),$("#l-env"))};
@@ -486,11 +533,11 @@ function traceSVG(g){
   <svg viewBox="0 0 ${PW} ${PH}" role="img" aria-label="Profil altimétrique"><path d="M0,${PH} L${prof} L${PW},${PH}Z" fill="color-mix(in srgb,var(--ink) 14%,transparent)"/><path d="M${prof}" fill="none" stroke="var(--ink)" stroke-width="1.6"/><text x="4" y="11" font-size="10" font-family="var(--mono)" fill="var(--muted)">${Math.round(emax)} m</text></svg>
   <div class="stats"><div><b>${g.km.toFixed(1).replace(".",",")}</b><span>km</span></div><div><b>${Math.round(g.dplus)}</b><span>m D+</span></div><div><b>${Math.round(g.altmax)}</b><span>alt. max</span></div></div>`;
 }
-async function chargerGPX(e){
-  if(S.gpx[e.id]!==undefined)return;
-  S.gpx[e.id]=null;
-  const {data,error}=await sb.storage.from("club").download(e.gpx);
-  S.gpx[e.id]=error?false:lireGPX(await data.text())||false;
+async function chargerGPX(p){
+  if(S.gpx[p.id]!==undefined)return;
+  S.gpx[p.id]=null;
+  const {data,error}=await sb.storage.from("club").download(p.gpx);
+  S.gpx[p.id]=error?false:lireGPX(await data.text())||false;
   rafraichirPanel();
 }
 
@@ -510,7 +557,10 @@ const bib=e=>{const n=jours(e.date_debut),passe=jours(e.date_fin)<0;return `<div
 const tags=(l,c)=>l.map(m=>`<span class="tag ${c}${m.id===me()?" me":""}">${esc(m.prenom)}</span>`).join("")||`<span class="hint">personne</span>`;
 function carte(e){
   const passe=jours(e.date_fin)<0,q=qui(e);
-  const extras=[e.gpx_km&&`${Math.round(e.gpx_km)} km · ${e.gpx_dplus||0} m D+`,e.tarif,e.lien&&"Inscription en ligne"].filter(Boolean);
+  const ps=parcoursDe(e.id);let pt="";
+  if(ps.length===1)pt=[distP(ps[0]),ps[0].gpx_dplus?ps[0].gpx_dplus+" m D+":""].filter(Boolean).join(" · ");
+  else if(ps.length>1){const k=ps.map(p=>+(p.km||p.gpx_km)).filter(Boolean);pt=`${ps.length} parcours`+(k.length>1&&Math.min(...k)!==Math.max(...k)?` · ${fmtKm(Math.min(...k))} à ${fmtKm(Math.max(...k))} km`:"")}
+  const extras=[e.heure_depart&&"Départ "+heure(e.heure_depart),pt,e.tarif,e.lien&&"Inscription en ligne"].filter(Boolean);
   return `<article class="card tap" data-open="${e.id}">
     <div class="top">${bib(e)}
       <div class="info"><h2>${esc(e.evenement)}</h2>
@@ -537,12 +587,14 @@ function renderAgenda(){
 function fiche(id){
   const e=S.evts.find(x=>x.id==id);if(!e)return fermer();
   const q=qui(e),passe=jours(e.date_fin)<0,aRes=jours(e.date_debut)<=0,aff=e.affiche&&S.urls["club/"+e.affiche];
-  if(e.gpx)chargerGPX(e);
-  const g=S.gpx[e.id],lien=lienSur(e.lien);
+  const ps=parcoursDe(e.id),p=ps.find(x=>x.id==S.selP[e.id])||ps[0];
+  if(p?.gpx)chargerGPX(p);
+  const g=p&&S.gpx[p.id],lien=lienSur(e.lien);
   ouvrirPanel(`<div class="ph"><h3>${esc(e.evenement)}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     ${aff?`<img class="poster" src="${esc(aff)}" alt="Affiche de ${esc(e.evenement)}">`:""}
     <dl class="facts">
       <dt>Date</dt><dd>${plage(e)}${jours(e.date_debut)>0?` · J-${jours(e.date_debut)}`:""}</dd>
+      ${e.heure_depart?`<dt>Départ</dt><dd>${heure(e.heure_depart)}</dd>`:""}
       ${e.lieu?`<dt>Lieu</dt><dd>${esc(e.lieu)}</dd>`:""}
       ${e.type?`<dt>Type</dt><dd>${esc(e.type)}</dd>`:""}
       ${e.tarif?`<dt>Tarif</dt><dd>${esc(e.tarif)}</dd>`:""}
@@ -552,7 +604,10 @@ function fiche(id){
     ${!passe?inscription(e):""}
     ${lien&&!passe?`<a class="cta" href="${esc(lien)}" target="_blank" rel="noopener">S'inscrire sur le site de l'organisateur ↗</a>`:""}
     ${aRes?`<button class="btn acc" data-res="${e.id}">Résultats et photos</button>`:""}
-    ${e.gpx?`<div class="gpx"><div class="row"><b>Parcours</b><button class="btn sec small" data-dlgpx="${e.id}">Télécharger le GPX</button></div>${g?traceSVG(g):g===false?'<span class="hint">Tracé illisible, le fichier reste téléchargeable.</span>':'<span class="hint">Chargement du parcours…</span>'}</div>`:""}
+    ${p?`<div class="gpx"><div class="row"><b>${ps.length>1?ps.length+" parcours":"Parcours"}</b>${p.gpx?`<button class="btn sec small" data-dlgpx="${p.id}">Télécharger le GPX</button>`:""}</div>
+      ${ps.length>1?`<div class="chips">${ps.map(x=>`<button data-selp="${e.id}:${x.id}" aria-pressed="${x.id===p.id}">${esc(labelP(x))}</button>`).join("")}</div>`:""}
+      <dl class="facts">${p.nom?`<dt>Nom</dt><dd>${esc(p.nom)}</dd>`:""}<dt>Type</dt><dd>${DISC[p.discipline]||""}${distP(p)?" · "+distP(p):""}</dd>${p.heure_depart?`<dt>Départ</dt><dd>${heure(p.heure_depart)}</dd>`:""}</dl>
+      ${p.gpx?(g?traceSVG(g):g===false?'<span class="hint">Tracé illisible, le fichier reste téléchargeable.</span>':'<span class="hint">Chargement du parcours…</span>'):""}</div>`:""}
     ${passe?"":boutons(e)}
     <div class="who"><div><span class="lbl">Viennent (${q.oui.length})</span>${tags(q.oui,"y")}</div>
       ${passe?"":`<div><span class="lbl">Ne viennent pas (${q.non.length})</span>${tags(q.non,"n")}</div><div><span class="lbl">Sans réponse (${q.sans.length})</span>${tags(q.sans,"")}</div>`}</div>
@@ -580,47 +635,81 @@ function fixerParticipation(eid,mid,v){
       :sb.from("participations").upsert({evenement_id:eid,membre_id:mid,reponse:v==="1",maj_le:new Date().toISOString()}));
 }
 const saisonDe=s=>{const d=dt(s),y=d.getFullYear();return d.getMonth()>=8?`${y}-${y+1}`:`${y-1}-${y}`};
+let BP=[];
+function editeurParcours(){
+  const vis=BP.map((p,i)=>[p,i]).filter(([p])=>!p._suppr);
+  return vis.map(([p,i],n)=>`<div class="pbox">
+    <div class="row"><b>Parcours ${n+1}</b><button type="button" class="btn del small" data-prm="${i}">Retirer</button></div>
+    <div class="grid2"><label for="bp-${i}-nom">Nom<input id="bp-${i}-nom" data-pi="${i}" data-pk="nom" value="${esc(p.nom)}" placeholder="Grand parcours"></label>
+      <label for="bp-${i}-d">Discipline<select id="bp-${i}-d" data-pi="${i}" data-pk="discipline">${Object.entries(DISC).map(([k,v])=>`<option value="${k}"${k===p.discipline?" selected":""}>${v}</option>`).join("")}</select></label></div>
+    <div class="grid2">${p.discipline==="triathlon"
+      ?`<label for="bp-${i}-f">Format<select id="bp-${i}-f" data-pi="${i}" data-pk="format"><option value=""></option>${FORMATS_TRI.map(f=>`<option value="${f}"${f===p.format?" selected":""}>${fmtTri(f)}</option>`).join("")}</select></label>`
+      :`<label for="bp-${i}-k">Distance (km)<input id="bp-${i}-k" type="number" step="0.1" min="0" inputmode="decimal" data-pi="${i}" data-pk="km" value="${p.km??""}" placeholder="Auto avec le GPX"></label>`}
+      <label for="bp-${i}-h">Heure de départ<input id="bp-${i}-h" type="time" data-pi="${i}" data-pk="heure_depart" value="${(p.heure_depart||"").slice(0,5)}"></label></div>
+    <label for="bp-${i}-g">Trace GPX${p.gpx_nom?` <span class="hint">(actuelle : ${esc(p.gpx_nom)})</span>`:""}<input id="bp-${i}-g" type="file" accept=".gpx,application/gpx+xml,application/octet-stream" data-pi="${i}" data-pk="fichier"></label>
+  </div>`).join("")+`<button type="button" class="btn sec" id="bp-add">+ Ajouter un parcours</button>`;
+}
 function formEvt(e={}){
+  BP=parcoursDe(e.id).map(p=>({...p}));
+  const opts=TYPES.includes(e.type)||!e.type?TYPES:[e.type,...TYPES];
   ouvrirPanel(`<form id="f">
     <div class="ph"><h3>${e.id?"Modifier l'évènement":"Nouvel évènement"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
     <label for="f-evt">Évènement<input id="f-evt" name="evenement" required maxlength="120" value="${esc(e.evenement)}" placeholder="Sortie du dimanche"></label>
-    <div class="grid2"><label for="f-type">Type<select id="f-type" name="type">${TYPES.map(t=>`<option${t===e.type?" selected":""}>${t}</option>`).join("")}</select></label>
+    <div class="grid2"><label for="f-type">Type<select id="f-type" name="type">${opts.map(t=>`<option${t===e.type?" selected":""}>${t}</option>`).join("")}</select></label>
       <label for="f-saison">Saison<input id="f-saison" name="saison" value="${esc(e.saison||saisonDe(J(0)))}"></label></div>
     <label for="f-lieu">Lieu<input id="f-lieu" name="lieu" value="${esc(e.lieu)}"></label>
     <div class="grid2"><label for="f-dd">Date début<input id="f-dd" type="date" name="date_debut" required value="${e.date_debut||""}"></label>
       <label for="f-df">Date fin<input id="f-df" type="date" name="date_fin" value="${e.date_fin||""}"></label></div>
+    <label for="f-h">Heure de départ ou de rendez-vous<input id="f-h" type="time" name="heure_depart" value="${(e.heure_depart||"").slice(0,5)}"></label>
     <div class="grid2"><label for="f-io">Inscription (ouverture)<input id="f-io" type="date" name="inscription_ouverture" value="${e.inscription_ouverture||""}"></label>
       <label for="f-if">Inscription (fermeture)<input id="f-if" type="date" name="inscription_fermeture" value="${e.inscription_fermeture||""}"></label></div>
     <div class="grid2"><label for="f-tarif">Tarif<input id="f-tarif" name="tarif" value="${esc(e.tarif)}" placeholder="25 €"></label>
       <label for="f-lien">Lien d'inscription<input id="f-lien" type="url" name="lien" value="${esc(e.lien)}" placeholder="https://…"></label></div>
-    <div class="grid2"><label for="f-aff">Affiche (image)<input id="f-aff" type="file" accept="image/*"></label>
-      <label for="f-gpx">Trace GPX<input id="f-gpx" type="file" accept=".gpx,application/gpx+xml,application/octet-stream"></label></div>
-    <span class="hint">${[e.affiche&&"Affiche déjà ajoutée",e.gpx_nom&&"GPX : "+esc(e.gpx_nom)].filter(Boolean).join(" · ")||"Affiche et GPX facultatifs. Un nouveau fichier remplace l'ancien."}</span>
+    <label for="f-aff">Affiche (image)${e.affiche?' <span class="hint">(déjà ajoutée)</span>':""}<input id="f-aff" type="file" accept="image/*"></label>
+    <div class="sect">Parcours, distances et horaires</div>
+    <span class="hint">Un parcours par distance ou format, chacun avec son heure de départ et son GPX. Facultatif pour une simple sortie.</span>
+    <div id="bp" style="display:grid;gap:10px">${editeurParcours()}</div>
     <label for="f-com">Commentaires<textarea id="f-com" name="commentaires" rows="2">${esc(e.commentaires)}</textarea></label>
     <label class="check" for="f-real"><input id="f-real" type="checkbox" name="realise"${e.realise?" checked":""}> Réalisé</label>
     <div class="row">${e.id?`<button type="button" class="btn del" id="f-del">Supprimer</button>`:"<span></span>"}
       <span style="display:flex;gap:8px"><button type="button" class="btn sec" ${e.id?`data-open="${e.id}"`:"data-close"}>Annuler</button><button class="btn pri" id="f-ok">Enregistrer</button></span></div>
   </form>`);
+  const zone=$("#bp"),redessiner=()=>{zone.innerHTML=editeurParcours()};
+  zone.addEventListener("input",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined||t.type==="file")return;BP[i][t.dataset.pk]=t.value});
+  zone.addEventListener("change",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined)return;
+    if(t.type==="file")BP[i].fichier=t.files[0]||null;else{BP[i][t.dataset.pk]=t.value;if(t.dataset.pk==="discipline")redessiner()}});
+  zone.addEventListener("click",ev=>{const t=ev.target;
+    if(t.id==="bp-add"){BP.push({nom:"",discipline:disciplineDe($("#f-type").value),km:"",format:"",heure_depart:""});redessiner();return}
+    if(t.dataset.prm!==undefined){const p=BP[t.dataset.prm];if(p.id)p._suppr=true;else BP.splice(t.dataset.prm,1);redessiner()}});
   if(e.id)$("#f-del").onclick=async ev=>{const b=ev.target;if(!b.dataset.ok){b.dataset.ok=1;b.textContent="Confirmer la suppression";return}
     occupe(b,true);const {error}=await sb.from("evenements").delete().eq("id",e.id);
     if(error){occupe(b,false);return erreur(error,"Suppression")}
-    const fichiers=[e.affiche,e.gpx].filter(Boolean);if(fichiers.length)await sb.storage.from("club").remove(fichiers);
+    const fichiers=[e.affiche,e.gpx,...parcoursDe(e.id).map(p=>p.gpx)].filter(Boolean);if(fichiers.length)await sb.storage.from("club").remove(fichiers);
     const med=(S.medias[e.id]||[]).map(m=>m.chemin);if(med.length)await sb.storage.from("medias").remove(med);
     fermer();toast("Évènement supprimé");recharger()};
   $("#f").onsubmit=async ev=>{ev.preventDefault();const b=$("#f-ok");occupe(b,true);
     try{
       const d=Object.fromEntries(new FormData(ev.target));
-      const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.date_debut,date_fin:d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut,
+      const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.date_debut,date_fin:d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut,heure_depart:nul(d.heure_depart),
         inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),commentaires:nul(d.commentaires),realise:!!d.realise};
-      const aff=$("#f-aff").files[0],gf=$("#f-gpx").files[0],anciens=[];
+      const aff=$("#f-aff").files[0],anciens=[];
       if(aff){const f=await compresser(aff),ch=`affiches/${Date.now()}-${nomPropre(f.name)}`;
         await ok(sb.storage.from("club").upload(ch,f,{contentType:f.type||"image/jpeg"}),"Affiche");row.affiche=ch;if(e.affiche)anciens.push(e.affiche)}
-      if(gf){const t=await gf.text(),g=lireGPX(t);
-        if(!g)toast("Ce fichier GPX ne contient pas de trace lisible, il n'a pas été ajouté",3500);
-        else{const ch=`gpx/${Date.now()}-${nomPropre(gf.name)}`;
-          await ok(sb.storage.from("club").upload(ch,new Blob([t],{type:"application/gpx+xml"}),{contentType:"application/gpx+xml"}),"GPX");
-          Object.assign(row,{gpx:ch,gpx_nom:gf.name,gpx_km:+g.km.toFixed(2),gpx_dplus:Math.round(g.dplus)});if(e.gpx)anciens.push(e.gpx);delete S.gpx[e.id]}}
       const r=await ok(e.id?sb.from("evenements").update(row).eq("id",e.id).select().single():sb.from("evenements").insert(row).select().single(),"Enregistrement");
+      // Parcours : suppressions, mises à jour, ajouts
+      let ordre=0;
+      for(const p of BP){
+        if(p._suppr){if(p.id){await ok(sb.from("parcours").delete().eq("id",p.id),"Parcours");if(p.gpx)anciens.push(p.gpx)}continue}
+        const pr={evenement_id:r.id,nom:nul((p.nom||"").trim()),discipline:p.discipline||"velo",km:p.discipline!=="triathlon"&&p.km?+p.km:null,format:p.discipline==="triathlon"?nul(p.format):null,heure_depart:nul(p.heure_depart),ordre:ordre++};
+        if(p.fichier){const t=await p.fichier.text(),g=lireGPX(t);
+          if(!g)toast(`Le GPX « ${p.fichier.name} » ne contient pas de trace lisible`,3500);
+          else{const ch=`gpx/${Date.now()}-${nomPropre(p.fichier.name)}`;
+            await ok(sb.storage.from("club").upload(ch,new Blob([t],{type:"application/gpx+xml"}),{contentType:"application/gpx+xml"}),"GPX");
+            Object.assign(pr,{gpx:ch,gpx_nom:p.fichier.name,gpx_km:+g.km.toFixed(2),gpx_dplus:Math.round(g.dplus)});
+            if(!pr.km&&pr.discipline!=="triathlon")pr.km=+g.km.toFixed(1);
+            if(p.gpx)anciens.push(p.gpx);if(p.id)delete S.gpx[p.id]}}
+        await ok(p.id?sb.from("parcours").update(pr).eq("id",p.id):sb.from("parcours").insert(pr),"Parcours");
+      }
       if(anciens.length)sb.storage.from("club").remove(anciens);
       toast("Évènement enregistré");await recharger();fiche(r.id);
     }catch(err){occupe(b,false)}};
@@ -633,19 +722,22 @@ function palmares(saison){
   const evs=new Set(S.evts.filter(e=>saison==="Toutes"||e.saison===saison).map(e=>e.id));
   const tot={t10:0,t5:0,t3:0,t1:0},parM={};
   for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;
-    for(const [mid,x] of Object.entries(r)){const p=rangDe(x),m=parM[mid]??={id:+mid,t10:0,t5:0,t3:0,t1:0,n:0};m.n++;
+    for(const [mid,x] of Object.entries(r)){const p=x.abandon?null:rangDe(x),m=parM[mid]??={id:+mid,t10:0,t5:0,t3:0,t1:0,n:0};m.n++;
       if(!p)continue;if(p<=10){tot.t10++;m.t10++}if(p<=5){tot.t5++;m.t5++}if(p<=3){tot.t3++;m.t3++}if(p===1){tot.t1++;m.t1++}}}
   const top=Object.values(parM).filter(m=>m.t10>0&&S.membres.some(x=>x.id===m.id)).sort((a,b)=>b.t10-a.t10||b.t3-a.t3||b.t1-a.t1||b.n-a.n).slice(0,3);
   return {tot,top};
 }
-function renderPalmares(){
+const evsSaison=()=>new Set(S.evts.filter(e=>saisonPalm==="Toutes"||e.saison===saisonPalm).map(e=>e.id));
+function renderSaisons(){
   const saisons=["Toutes",...[...new Set(S.evts.filter(e=>S.res[e.id]).map(e=>e.saison).filter(Boolean))].sort().reverse()];
   if(!saisons.includes(saisonPalm))saisonPalm="Toutes";
+  return saisons.length>2?`<div class="chips">${saisons.map(s=>`<button data-saison="${esc(s)}" aria-pressed="${s===saisonPalm}">${s==="Toutes"?"Toutes saisons":"Saison "+esc(s)}</button>`).join("")}</div>`:"";
+}
+function renderPalmares(){
   const {tot,top}=palmares(saisonPalm),cols=[["Top 10",tot.t10],["Top 5",tot.t5],["Top 3",tot.t3],["Victoires",tot.t1]],max=Math.max(1,tot.t10);
   const desc=m=>`${m.t10} top 10${m.t3?` · ${m.t3} podium${m.t3>1?"s":""}`:""}${m.t1?` · ${m.t1} victoire${m.t1>1?"s":""}`:""}`;
   const ord=[top[1],top[0],top[2]],cls=["p2","p1","p3"],num=[2,1,3];
-  return `<article class="card"><div class="row"><h2>Palmarès du club</h2></div>
-    ${saisons.length>2?`<div class="chips">${saisons.map(s=>`<button data-saison="${esc(s)}" aria-pressed="${s===saisonPalm}">${s==="Toutes"?"Toutes saisons":"Saison "+esc(s)}</button>`).join("")}</div>`:""}
+  return `<article class="card"><h2>Palmarès du club</h2>
     <div class="palm" role="img" aria-label="Top 10 : ${tot.t10}, top 5 : ${tot.t5}, top 3 : ${tot.t3}, victoires : ${tot.t1}">${cols.map(([l,v])=>`<div class="col"><span class="v">${v}</span><div class="tr"><div class="b" style="height:${v/max*100}%"></div></div></div>`).join("")}</div>
     <div class="palm-l">${cols.map(([l])=>`<span>${l}</span>`).join("")}</div>
     <div class="sect">Les plus prolifiques</div>
@@ -653,9 +745,23 @@ function renderPalmares(){
       :`<span class="hint">Pas encore de top 10. Indique ta place dans tes résultats pour alimenter le palmarès.</span>`}
   </article>`;
 }
+function renderUltras(){
+  const evs=evsSaison(),liste=[],parM={};
+  for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;const e=S.evts.find(v=>v.id==eid);
+    for(const [mid,x] of Object.entries(r)){const i=infosRes(+eid,x);if(!i.ultra)continue;liste.push({mid:+mid,e,lib:i.lib});parM[mid]=(parM[mid]||0)+1}}
+  liste.sort((a,b)=>b.e.date_debut.localeCompare(a.e.date_debut));
+  const membres=Object.entries(parM).filter(([m])=>S.membres.some(x=>x.id==m)).sort((a,b)=>b[1]-a[1]||prenom(a[0]).localeCompare(prenom(b[0])));
+  return `<article class="card"><div class="row"><h2>Finishers d'ultra</h2><span class="big">${liste.length}</span></div>
+    <span class="hint">Course à pied de plus de 40 km, vélo de plus de 150 km, triathlon format L, XL ou XXL (Ironman).</span>
+    ${membres.length?`<div class="ugrid">${membres.map(([m,n])=>`<div class="u">${avatar(+m).replace("</span>",`<i>×${n}</i></span>`)}<b>${esc(prenom(m))}</b></div>`).join("")}</div>
+      <div class="sect">Derniers ultras</div>
+      <div class="uliste">${liste.slice(0,8).map(u=>`<div>${avatar(u.mid,"s")}<b>${esc(prenom(u.mid))} · ${esc(u.e.evenement)}</b><span></span><span>${fmt(u.e.date_debut,{day:"numeric",month:"short",year:"numeric"})}${u.lib?" · "+esc(u.lib):""}</span></div>`).join("")}</div>`
+      :`<span class="hint">Pas encore d'ultra enregistré. Choisis ton parcours (ou ta distance) dans tes résultats.</span>`}
+  </article>`;
+}
 function renderResultats(){
   const l=S.evts.filter(e=>jours(e.date_debut)<=0).sort((a,b)=>b.date_debut.localeCompare(a.date_debut));
-  $("#results").innerHTML=renderPalmares()+(l.length?`<div class="sect">Évènements</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
+  $("#results").innerHTML=renderSaisons()+renderPalmares()+renderUltras()+(l.length?`<div class="sect">Évènements</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
     return `<article class="card tap" data-res="${e.id}">
       <div class="top">${bib(e)}<div class="info"><h2>${esc(e.evenement)}</h2>
         <div class="meta">${e.type?`<span class="type">${esc(e.type)}</span>`:""}${e.lieu?`<span>${esc(e.lieu)}</span>`:""}</div>
@@ -672,9 +778,9 @@ function ficheResultats(id){
   ouvrirPanel(`<div class="ph"><h3>${esc(e.evenement)}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${plage(e)}${e.lieu?" · "+esc(e.lieu):""}</span>
     <div class="sect">Résultats du club</div>
-    <div>${ids.map(mid=>{const x=r[mid],rg=(x?.temps||rangDe(x))?++rang:"";return `<div class="res">
+    <div>${ids.map(mid=>{const x=r[mid],rg=!x?.abandon&&(x?.temps||rangDe(x))?++rang:"";return `<div class="res">
       <div class="rank">${rg||"–"}</div>
-      <div class="nm"><b>${avatar(mid,"s")}${esc(prenom(mid))}${mid===moi?" (moi)":""}</b><span>${[placeTxt(x),x?.format,x?.commentaire].filter(Boolean).map(esc).join(" · ")||"Pas encore de résultat"}</span></div>
+      <div class="nm"><b>${avatar(mid,"s")}${esc(prenom(mid))}${mid===moi?" (moi)":""}${x&&infosRes(id,x).ultra?' <span class="ultra">ULTRA</span>':""}${x?.abandon?' <span class="ab">ABANDON</span>':""}</b><span>${x?[placeTxt(x),infosRes(id,x).lib,x.commentaire].filter(Boolean).map(esc).join(" · ")||"Résultat enregistré":"Pas encore de résultat"}</span></div>
       <div class="chrono">${esc(x?.temps||"")}</div>
       ${peut(mid)?`<div class="acts"><button class="btn sec small" data-editres="${id}:${mid}">${x?"Modifier":"Ajouter"} ${mid===moi?"mon résultat":"le résultat"}</button></div>`:""}
     </div>`}).join("")||`<div class="empty">Personne n'est encore indiqué comme participant.</div>`}</div>
@@ -689,22 +795,36 @@ function ficheResultats(id){
 }
 function formResultat(eid,mid){
   if(mid!==me()&&!bureau())return toast("Tu ne peux modifier que ton propre résultat");
-  const x=S.res[eid]?.[mid]||{};
+  const e=S.evts.find(v=>v.id==eid)||{},x=S.res[eid]?.[mid]||{},ps=parcoursDe(eid);
+  const parSel=x.membre_id?(x.parcours_id??""):(ps[0]?.id??""),disc0=x.discipline||disciplineDe(e.type);
+  const formatX=FORMATS_TRI.includes(x.format)?x.format:"";
   ouvrirPanel(`<form id="fr"><div class="ph"><h3>Résultat de ${esc(prenom(mid))}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    ${ps.length?`<label for="r-par">Parcours effectué<select id="r-par" name="parcours_id">${ps.map(p=>`<option value="${p.id}"${p.id==parSel?" selected":""}>${esc(labelP(p))}</option>`).join("")}<option value=""${parSel===""?" selected":""}>Autre distance</option></select></label>`:""}
+    <div id="r-libre" style="display:grid;gap:12px">
+      <label for="r-d">Discipline<select id="r-d" name="discipline">${Object.entries(DISC).map(([k,v])=>`<option value="${k}"${k===disc0?" selected":""}>${v}</option>`).join("")}</select></label>
+      <label for="r-k" id="r-k-l">Distance (km)<input id="r-k" name="km" type="number" step="0.1" min="0" inputmode="decimal" value="${x.km??""}" placeholder="62"></label>
+      <label for="r-fo" id="r-fo-l">Format<select id="r-fo" name="format_tri"><option value=""></option>${FORMATS_TRI.map(f=>`<option value="${f}"${f===formatX?" selected":""}>${fmtTri(f)}</option>`).join("")}</select></label>
+    </div>
     <label for="r-t">Temps (h:mm:ss)<input id="r-t" name="temps" value="${esc(x.temps)}" placeholder="1:12:45" pattern="\\d{1,2}(:\\d{2}){1,2}" inputmode="numeric" title="Format 1:12:45 ou 45:30"></label>
     <div class="grid2"><label for="r-p">Place<input id="r-p" name="place" type="number" min="1" inputmode="numeric" value="${x.place??rangDe(x)??""}" placeholder="18"></label>
       <label for="r-n">Sur (partants)<input id="r-n" name="partants" type="number" min="1" inputmode="numeric" value="${x.partants??""}" placeholder="142"></label></div>
-    <span class="hint">La place alimente le palmarès du club (top 10, top 5, podiums, victoires).</span>
-    <label for="r-f">Format ou distance<input id="r-f" name="format" value="${esc(x.format)}" placeholder="Format S, 62 km…"></label>
+    <label class="check" for="r-ab"><input id="r-ab" type="checkbox" name="abandon"${x.abandon?" checked":""}> Abandon (pas finisher)</label>
+    <span class="hint">La place alimente le palmarès ; le parcours ou la distance alimente les finishers d'ultra.</span>
     <label for="r-m">Commentaire<textarea id="r-m" name="commentaire" rows="2">${esc(x.commentaire)}</textarea></label>
     <div class="row">${x.membre_id?`<button type="button" class="btn del" id="r-del">Supprimer</button>`:"<span></span>"}
       <span style="display:flex;gap:8px"><button type="button" class="btn sec" data-res="${eid}">Annuler</button><button class="btn pri" id="r-ok">Enregistrer</button></span></div></form>`);
+  const maj=()=>{const libre=!$("#r-par")||$("#r-par").value==="",tri=$("#r-d").value==="triathlon";
+    $("#r-libre").hidden=!libre;$("#r-k-l").hidden=tri;$("#r-fo-l").hidden=!tri};
+  maj();$("#r-d").onchange=maj;if($("#r-par"))$("#r-par").onchange=maj;
   const del=$("#r-del");if(del)del.onclick=async()=>{occupe(del,true);const {error}=await sb.from("resultats").delete().eq("evenement_id",eid).eq("membre_id",mid);
     if(error){occupe(del,false);return erreur(error,"Suppression")}toast("Résultat supprimé");await recharger();ficheResultats(eid)};
   $("#fr").onsubmit=async ev=>{ev.preventDefault();const b=$("#r-ok");occupe(b,true);const d=Object.fromEntries(new FormData(ev.target));
     const place=d.place?parseInt(d.place,10):null,partants=d.partants?parseInt(d.partants,10):null;
     if(place&&partants&&place>partants){occupe(b,false);return toast("La place ne peut pas dépasser le nombre de partants")}
-    const {error}=await sb.from("resultats").upsert({evenement_id:eid,membre_id:mid,temps:nul(d.temps.trim()),place,partants,classement:null,format:nul(d.format),commentaire:nul(d.commentaire),maj_le:new Date().toISOString()});
+    const par=d.parcours_id?+d.parcours_id:null,disc=d.discipline;
+    const {error}=await sb.from("resultats").upsert({evenement_id:eid,membre_id:mid,temps:nul((d.temps||"").trim()),place,partants,classement:null,
+      parcours_id:par,discipline:par?null:disc,km:par||disc==="triathlon"||!d.km?null:+d.km,format:par?null:(disc==="triathlon"?nul(d.format_tri):(FORMATS_TRI.includes(x.format)?null:nul(x.format))),
+      abandon:!!d.abandon,commentaire:nul(d.commentaire),maj_le:new Date().toISOString()});
     if(error){occupe(b,false);return erreur(error,"Résultat")}
     if(S.part[eid]?.[mid]!==true)await sb.from("participations").upsert({evenement_id:eid,membre_id:mid,reponse:true,maj_le:new Date().toISOString()});
     toast("Résultat enregistré");await recharger();ficheResultats(eid)};
@@ -783,8 +903,8 @@ function formSondage(){
 }
 
 // ================= Profil, liens utiles, bureau =================
-const etatFed=(id,fed)=>{const p=S.profils[id]||{},cle=fed==="FFC"?"licence_ffc":"licence_fftri",doc=(S.docs[id]||[]).some(d=>d.type===cle);
-  return doc?`<span class="status ok">✓ déposée</span>`:(p.federations||[]).includes(fed)?`<span class="status warn">à déposer</span>`:`<span class="status ko">–</span>`};
+const etatFed=(id,fed,long)=>{const p=S.profils[id]||{},doc=(S.docs[id]||[]).some(d=>d.type===CLE_FED[fed]);
+  return doc?`<span class="status ok" title="Déposée">${long?"✓ déposée":"✓"}</span>`:(p.federations||[]).includes(fed)?`<span class="status warn" title="À déposer">${long?"à déposer":"!"}</span>`:`<span class="status ko" title="Non concerné">–</span>`};
 function renderLiens(){
   return `<article class="card"><h2>${CLUB}</h2>
     <div>${S.liens.map(l=>{const mail=/^mailto:/i.test(l.url),adr=l.url.replace(/^mailto:/i,"");
@@ -847,10 +967,10 @@ function renderProfil(){
       <div class="grid2"><label for="p-pre">Prénom<input id="p-pre" name="prenom" required maxlength="40" value="${esc(m.prenom)}" autocomplete="given-name"></label><label for="p-nom">Nom<input id="p-nom" name="nom" value="${esc(p.nom)}" autocomplete="family-name"></label></div>
       <div class="grid2"><label for="p-tel">Téléphone<input id="p-tel" name="tel" type="tel" value="${esc(p.tel)}" autocomplete="tel"></label><label for="p-urg">Contact d'urgence<input id="p-urg" name="urgence" value="${esc(p.urgence)}" placeholder="Nom et téléphone"></label></div>
       <span class="sect">Fédérations</span>
-      <div class="row" style="justify-content:flex-start;gap:18px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> Licence ${f}</label>`).join("")}</div>
+      <div class="grid2" style="gap:8px 12px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> ${f==="PPS"?"PPS":"Licence "+f}</label>`).join("")}</div>
       <span class="sect">Tailles de tenue</span>
       <div class="grid2"><label for="p-tm">Maillot<select id="p-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="p-tc">Cuissard<select id="p-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
-      <label class="check" for="p-rap"><input id="p-rap" type="checkbox" name="rappels"${p.rappels===false?"":" checked"}> Recevoir un rappel par e-mail 10 jours et 1 jour avant les évènements où je viens</label>
+      <label class="check petit" for="p-rap"><input id="p-rap" type="checkbox" name="rappels"${p.rappels===false?"":" checked"}> Rappels par e-mail (J-10 et J-1) pour les évènements où je viens</label>
       <button class="btn pri" id="p-ok">Enregistrer mon profil</button>
     </form>
   </article>
@@ -859,7 +979,8 @@ function renderProfil(){
     ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
   </article>
   ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th><th>FFC</th><th>FFTri</th><th>Docs</th></tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td><td>${etatFed(x.id,"FFC")}</td><td>${etatFed(x.id,"FFTri")}</td><td>${(S.docs[x.id]||[]).length}</td></tr>`).join("")}</tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Membre</th>${FEDS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td>${FEDS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <span class="hint">✓ document déposé · ! à déposer (case cochée dans le profil) · – non concerné</span>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
       <label for="i-e">E-mail<input id="i-e" name="email" type="email" required placeholder="prenom@exemple.fr"></label>
@@ -913,7 +1034,7 @@ function voirMembre(id){
   const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[],note=S.notesM[id]?.note||"";
   ouvrirPanel(`<div class="ph"><h3>${esc(m.prenom)} ${esc(p.nom||"")}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${esc(m.email)}<br>Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.</span></div>
-    <dl class="facts"><dt>FFC</dt><dd>${etatFed(id,"FFC")}</dd><dt>FFTri</dt><dd>${etatFed(id,"FFTri")}</dd><dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
+    <dl class="facts">${FEDS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
     ${docs.map(d=>fichierHTML(d.nom,(NOM_DOC[d.type]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
     <label for="m-note">Note du bureau (invisible pour ${esc(m.prenom)})<textarea id="m-note" rows="4" placeholder="Cotisation réglée, matériel prêté…">${esc(note)}</textarea></label>
     <button class="btn sec" id="m-note-ok">Enregistrer la note</button>
@@ -924,6 +1045,37 @@ function voirMembre(id){
   const r=$("#m-role");if(r)r.onchange=async()=>{const {error}=await sb.from("membres").update({role:r.value}).eq("id",m.id);if(error)return erreur(error,"Rôle");toast("Rôle mis à jour");recharger()};
   const a=$("#m-actif");if(a)a.onclick=async()=>{if(m.actif&&!a.dataset.ok){a.dataset.ok=1;a.textContent="Confirmer : retirer "+m.prenom;return}
     const {error}=await sb.from("membres").update({actif:!m.actif}).eq("id",m.id);if(error)return erreur(error,"Mise à jour");toast(m.actif?m.prenom+" a été retiré du club":m.prenom+" est de retour");fermer();recharger()};
+}
+
+// ================= Partenaires =================
+function renderPartenaires(){
+  if(!S.partenaires.length&&!bureau())return "";
+  return `<footer class="partners"><div class="sect">Nos partenaires</div>
+    ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}" loading="lazy">`:esc(p.nom);
+      return p.url?`<a class="plogo" href="${esc(lienSur(p.url))}" target="_blank" rel="noopener" title="${esc(p.nom)}">${c}</a>`:`<span class="plogo" title="${esc(p.nom)}">${c}</span>`}).join("")}</div>`:'<span class="hint">Aucun partenaire pour l\'instant.</span>'}
+    ${bureau()?`<button class="btn sec small" data-partenaires style="justify-self:start">Gérer les partenaires</button>`:""}</footer>`;
+}
+function gererPartenaires(){
+  ouvrirPanel(`<div class="ph"><h3>Partenaires</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
+    <div>${S.partenaires.map(p=>`<div class="lien"><span class="plogo" style="width:84px;height:48px;flex:none">${p.logo&&S.urls["club/"+p.logo]?`<img src="${esc(S.urls["club/"+p.logo])}" alt="">`:""}</span><div class="t"><b>${esc(p.nom)}</b><span>${esc((p.url||"").replace(/^https?:\/\/(www\.)?/,""))}</span></div><div class="acts"><button class="btn del small" data-delpart="${p.id}">Retirer</button></div></div>`).join("")||'<span class="hint">Aucun partenaire.</span>'}</div>
+    <form id="fpa"><div class="sect">Ajouter un partenaire</div>
+      <label for="pa-n">Nom<input id="pa-n" name="nom" required maxlength="80"></label>
+      <label for="pa-u">Site web (facultatif)<input id="pa-u" name="url" placeholder="https://…"></label>
+      <label for="pa-l">Logo (PNG, JPG ou SVG, 2 Mo max)<input id="pa-l" type="file" accept="image/*"></label>
+      <button class="btn pri" id="pa-ok">Ajouter</button></form>`);
+  $("#fpa").onsubmit=async ev=>{ev.preventDefault();const b=$("#pa-ok"),d=Object.fromEntries(new FormData(ev.target)),f=$("#pa-l").files[0];
+    if(f&&f.size>2e6)return toast("Logo trop lourd (2 Mo maximum)");
+    let u=(d.url||"").trim();if(u&&!/^https?:\/\//i.test(u))u="https://"+u;
+    occupe(b,true);
+    try{const row={nom:d.nom.trim(),url:nul(u),ordre:S.partenaires.length+1};
+      if(f){const ch=`partenaires/${Date.now()}-${nomPropre(f.name)}`;await ok(sb.storage.from("club").upload(ch,f,{contentType:f.type||undefined}),"Logo");row.logo=ch}
+      await ok(sb.from("partenaires").insert(row),"Partenaire");toast("Partenaire ajouté");await recharger();gererPartenaires();
+    }catch(e){occupe(b,false)}};
+}
+async function retirerPartenaire(id){
+  const p=S.partenaires.find(x=>x.id==id);if(!p)return;
+  const {error}=await sb.from("partenaires").delete().eq("id",id);if(error)return erreur(error,"Suppression");
+  if(p.logo)sb.storage.from("club").remove([p.logo]);toast("Partenaire retiré");await recharger();gererPartenaires();
 }
 
 // ================= Rendu général =================
@@ -938,6 +1090,7 @@ function render(){
   document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===vue));
   const actif=document.activeElement,garde=vue==="profil"&&actif&&actif.closest("#profil form");
   if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,profil:renderProfil})[vue]();
+  $("#partners").innerHTML=renderPartenaires();
   const fab=$("#fab");fab.hidden=!bureau()||!["agenda","sondages"].includes(vue);fab.textContent=vue==="agenda"?"Évènement":"Sondage";
 }
 $("#t-up").onclick=()=>{tab="up";render()};$("#t-past").onclick=()=>{tab="past";render()};
@@ -955,6 +1108,9 @@ document.addEventListener("click",e=>{
   const nv=c("[data-v]");if(nv&&!c(".sheet")){vue=nv.dataset.v;fermer();render();scrollTo(0,0);return}
   const f=c("[data-f]");if(f){filtre=f.dataset.f;return render()}
   const sa=c("[data-saison]");if(sa){saisonPalm=sa.dataset.saison;return render()}
+  const sp=c("[data-selp]");if(sp){const [eid,pid]=sp.dataset.selp.split(":").map(Number);S.selP[eid]=pid;return fiche(eid)}
+  if(c("[data-partenaires]"))return gererPartenaires();
+  const dp=c("[data-delpart]");if(dp){if(!dp.dataset.ok){dp.dataset.ok=1;dp.textContent="Confirmer";return}return retirerPartenaire(+dp.dataset.delpart)}
   const cp=c("[data-copier]");if(cp){const v=cp.dataset.copier;(navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast("Copié : "+v),()=>toast(v,6000));return}
   const lk=c("[data-lien]");if(lk)return formLien(lk.dataset.lien);
   const no=c("[data-note]");if(no)return formNote(no.dataset.note);
@@ -966,7 +1122,7 @@ document.addEventListener("click",e=>{
   const dm=c("[data-dlmedia]");if(dm){const [eid,id]=dm.dataset.dlmedia.split(":").map(Number),x=S.medias[eid]?.find(y=>y.id===id);if(x)ouvrirFichier("medias",x.chemin,x.chemin.split("/").pop());return}
   const b=c("[data-rep]");if(b){const [id,val]=b.dataset.rep.split(":");return repondre(+id,val==="1")}
   const rs=c("[data-res]");if(rs)return ficheResultats(+rs.dataset.res);
-  const dg=c("[data-dlgpx]");if(dg){const ev=S.evts.find(x=>x.id==dg.dataset.dlgpx);if(ev)ouvrirFichier("club",ev.gpx,ev.gpx_nom||"parcours.gpx");return}
+  const dg=c("[data-dlgpx]");if(dg){const p=S.parcours.find(x=>x.id==dg.dataset.dlgpx);if(p)ouvrirFichier("club",p.gpx,p.gpx_nom||"parcours.gpx");return}
   const pj=c("[data-pj]");if(pj){const s=S.sondages.find(x=>x.id==pj.dataset.pj);if(s)ouvrirFichier("club",s.fichier);return}
   const ds=c("[data-delsondage]");if(ds){if(!ds.dataset.ok){ds.dataset.ok=1;ds.textContent="Confirmer la suppression";return}
     (async()=>{const s=S.sondages.find(x=>x.id==ds.dataset.delsondage);const {error}=await sb.from("sondages").delete().eq("id",s.id);if(error)return erreur(error,"Suppression");if(s.fichier)sb.storage.from("club").remove([s.fichier]);toast("Sondage supprimé");recharger()})();return}
@@ -981,8 +1137,11 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 // ================= Démarrage =================
 (async()=>{
   if(!configOK)return render();
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get("error")||h.get("error_code"))L={etape:"email",erreur:"Ce lien de connexion a expiré ou a déjà servi. Entre ton adresse pour recevoir un nouveau code."};
   sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT"&&S.moi){S.moi=null;L={etape:"email"};render()}});
   const {data}=await sb.auth.getSession();
+  if(location.hash)history.replaceState(null,"",location.pathname+location.search);
   if(data?.session)await entrer();else render();
 })();
 </script>
