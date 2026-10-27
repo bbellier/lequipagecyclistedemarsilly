@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="L'Équipage">
+<script>try{const t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="img/icon-192.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
@@ -29,10 +30,14 @@
   --fond:url("img/fond-clair.webp");
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#0f0f0f; --card:#1b1a19; --ink:#ede7dd; --muted:#9b958b; --line:#2e2c29; --wash:#252321;
   --red:#e4493d; --red-soft:#3b1b18; --ok:#7dbb9c; --ok-soft:#18302a; --warn:#e2b45e; --warn-soft:#352a14;
   --on-ink:#121212; --fond:url("img/fond-sombre.webp"); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f0f0f; --card:#1b1a19; --ink:#ede7dd; --muted:#9b958b; --line:#2e2c29; --wash:#252321;
+  --red:#e4493d; --red-soft:#3b1b18; --ok:#7dbb9c; --ok-soft:#18302a; --warn:#e2b45e; --warn-soft:#352a14;
+  --on-ink:#121212; --fond:url("img/fond-sombre.webp"); color-scheme:dark}
 *{box-sizing:border-box} [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 html,body{margin:0;min-height:100%}
@@ -44,7 +49,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .logo-n{display:block} .logo-b{display:none}
-@media (prefers-color-scheme:dark){.logo-n{display:none} .logo-b{display:block}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo-n{display:none}:root:not([data-theme="light"]) .logo-b{display:block}}
+:root[data-theme="dark"] .logo-n{display:none}:root[data-theme="dark"] .logo-b{display:block}
 .wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px calc(110px + env(safe-area-inset-bottom,0px));display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 /* En-tête */
 .brand{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -53,6 +59,10 @@ a{color:inherit}
 .brand-t{display:grid;line-height:1;min-width:0}
 .brand-t b{font-family:var(--display);font-weight:800;font-size:23px;line-height:.95;letter-spacing:.02em;text-transform:uppercase;text-wrap:balance}
 .brand-t span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.brand-r{display:flex;align-items:center;gap:8px;flex:none}
+.theme{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;padding:0}
+.theme svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.login .theme{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px))}
 .user{display:flex;align-items:center;gap:6px;border:0;background:none;padding:0;flex:none}
 .avatar{width:36px;height:36px;border-radius:50%;background:var(--wash);color:var(--muted);display:grid;place-items:center;flex:none;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
@@ -255,7 +265,8 @@ tr.off td{opacity:.5}
 /* Connexion */
 .login{min-height:100vh;min-height:100dvh;display:grid;align-content:center;position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px}
 .login::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--paper) url("img/montagne.webp") right bottom/cover no-repeat}
-@media (prefers-color-scheme:dark){.login::before{background-image:var(--fond)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .login::before{background-image:var(--fond)}}
+:root[data-theme="dark"] .login::before{background-image:var(--fond)}
 .login-in{max-width:400px;width:100%;margin:0 auto;display:grid;gap:16px;background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:16px;padding:22px 20px}
 .login img{width:min(220px,58vw);height:auto;justify-self:center}
 .login h1{margin:0;font-family:var(--display);font-weight:800;font-size:40px;line-height:.95;text-transform:uppercase;text-align:center;letter-spacing:.02em}
@@ -278,14 +289,14 @@ tr.off td{opacity:.5}
 <div class="chargement" id="chargement">Chargement…</div>
 
 <!-- Connexion -->
-<section class="login" id="login" hidden><div class="login-in" id="login-in"></div></section>
+<section class="login" id="login" hidden><button class="theme" data-theme-btn type="button"></button><div class="login-in" id="login-in"></div></section>
 
 <!-- Application -->
 <div class="wrap" id="app" hidden>
   <header class="brand">
     <div class="brand-l"><img class="logo-n" src="img/logo-noir.png" alt=""><img class="logo-b" src="img/logo-blanc.png" alt="">
       <div class="brand-t"><b>L'Équipage Cycliste</b><span>de Marsilly</span></div></div>
-    <button class="user" id="user" data-v="profil" aria-label="Mon profil"></button>
+    <div class="brand-r"><button class="theme" data-theme-btn type="button"></button><button class="user" id="user" data-v="profil" aria-label="Mon profil"></button></div>
   </header>
   <section id="v-agenda">
     <div class="bar">
@@ -1079,6 +1090,23 @@ async function retirerPartenaire(id){
   if(p.logo)sb.storage.from("club").remove([p.logo]);toast("Partenaire retiré");await recharger();gererPartenaires();
 }
 
+// ================= Thème clair / sombre =================
+const LUNE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>';
+const SOLEIL='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>';
+const sombre=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches};
+function majTheme(){
+  const d=sombre();
+  document.querySelectorAll("[data-theme-btn]").forEach(b=>{b.innerHTML=d?SOLEIL:LUNE;b.setAttribute("aria-label",d?"Passer en fond clair":"Passer en fond sombre");b.title=b.getAttribute("aria-label")});
+  if(document.documentElement.dataset.theme)document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.content=d?"#0f0f0f":"#f2ece3");
+}
+function basculerTheme(){
+  const t=sombre()?"light":"dark";document.documentElement.dataset.theme=t;
+  try{localStorage.setItem("theme",t)}catch(e){}
+  majTheme();
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",majTheme);
+majTheme();
+
 // ================= Rendu général =================
 function render(){
   $("#chargement").hidden=true;
@@ -1105,6 +1133,7 @@ document.addEventListener("change",e=>{
 });
 document.addEventListener("click",e=>{
   const t=e.target,c=s=>t.closest(s);
+  if(c("[data-theme-btn]"))return basculerTheme();
   if(c("[data-close]"))return fermer();
   const nv=c("[data-v]");if(nv&&!c(".sheet")){vue=nv.dataset.v;fermer();render();scrollTo(0,0);return}
   const f=c("[data-f]");if(f){filtre=f.dataset.f;return render()}
