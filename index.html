@@ -328,7 +328,8 @@ const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","Gravel","
 const DISC={velo:"Vélo",course:"Course à pied",triathlon:"Triathlon",autre:"Autre"};
 const FORMATS_TRI=["XS","S","M","L","XL","XXL"];
 const TAILLES=["","XS","S","M","L","XL","XXL","3XL"];
-const FEDS=["FFC","UFOLEP","FFTri","PPS"];
+const FEDS=["FFC","UFOLEP","FFTri"];
+const COLS_DOCS=[...FEDS,"PPS"];   // colonnes du tableau du bureau (le PPS est un document, pas une fédération)
 const CLE_FED={FFC:"licence_ffc",UFOLEP:"licence_ufolep",FFTri:"licence_fftri",PPS:"pps"};
 const DOCS=[["licence_ffc","Licence FFC"],["licence_ufolep","Licence UFOLEP"],["licence_fftri","Licence FFTri"],["pps","PPS (Parcours Prévention Santé)"],["certificat","Certificat médical"],["autre","Autres documents"]];
 const NOM_DOC={licence:"Licence",licence_ffc:"Licence FFC",licence_ufolep:"Licence UFOLEP",licence_fftri:"Licence FFTri",pps:"PPS",certificat:"Certificat médical",autre:"Autre document"};
@@ -967,7 +968,7 @@ function renderProfil(){
       <div class="grid2"><label for="p-pre">Prénom<input id="p-pre" name="prenom" required maxlength="40" value="${esc(m.prenom)}" autocomplete="given-name"></label><label for="p-nom">Nom<input id="p-nom" name="nom" value="${esc(p.nom)}" autocomplete="family-name"></label></div>
       <div class="grid2"><label for="p-tel">Téléphone<input id="p-tel" name="tel" type="tel" value="${esc(p.tel)}" autocomplete="tel"></label><label for="p-urg">Contact d'urgence<input id="p-urg" name="urgence" value="${esc(p.urgence)}" placeholder="Nom et téléphone"></label></div>
       <span class="sect">Fédérations</span>
-      <div class="grid2" style="gap:8px 12px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> ${f==="PPS"?"PPS":"Licence "+f}</label>`).join("")}</div>
+      <div class="grid2" style="gap:8px 12px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> Licence ${f}</label>`).join("")}</div>
       <span class="sect">Tailles de tenue</span>
       <div class="grid2"><label for="p-tm">Maillot<select id="p-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="p-tc">Cuissard<select id="p-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
       <label class="check petit" for="p-rap"><input id="p-rap" type="checkbox" name="rappels"${p.rappels===false?"":" checked"}> Rappels par e-mail (J-10 et J-1) pour les évènements où je viens</label>
@@ -979,8 +980,8 @@ function renderProfil(){
     ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
   </article>
   ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th>${FEDS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td>${FEDS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-    <span class="hint">✓ document déposé · ! à déposer (case cochée dans le profil) · – non concerné</span>
+    <div class="tw"><table><thead><tr><th>Membre</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <span class="hint">✓ document déposé · ! licence cochée dans le profil mais pas encore déposée · – rien</span>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
       <label for="i-e">E-mail<input id="i-e" name="email" type="email" required placeholder="prenom@exemple.fr"></label>
@@ -1034,7 +1035,7 @@ function voirMembre(id){
   const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[],note=S.notesM[id]?.note||"";
   ouvrirPanel(`<div class="ph"><h3>${esc(m.prenom)} ${esc(p.nom||"")}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${esc(m.email)}<br>Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.</span></div>
-    <dl class="facts">${FEDS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
+    <dl class="facts">${COLS_DOCS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
     ${docs.map(d=>fichierHTML(d.nom,(NOM_DOC[d.type]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
     <label for="m-note">Note du bureau (invisible pour ${esc(m.prenom)})<textarea id="m-note" rows="4" placeholder="Cotisation réglée, matériel prêté…">${esc(note)}</textarea></label>
     <button class="btn sec" id="m-note-ok">Enregistrer la note</button>
