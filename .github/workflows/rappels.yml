@@ -57,11 +57,19 @@ jobs:
           mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
           jours_sem = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
           def fr(d): d = date.fromisoformat(d); return f"{jours_sem[d.weekday()]} {d.day} {mois[d.month-1]} {d.year}"
+          def hr(h):
+              if not h: return ""
+              a, b = h.split(":")[:2]; return f"{int(a)} h" + (f" {b}" if b != "00" else "")
+          def lib_parcours(p):
+              dist = (f"format {'XXL (Ironman)' if p.get('format') == 'XXL' else p['format']}" if p.get("discipline") == "triathlon" and p.get("format")
+                      else (f"{round(float(p.get('km') or p.get('gpx_km')), 1):g} km".replace(".", ",") if (p.get("km") or p.get("gpx_km")) else ""))
+              return " · ".join(x for x in [p.get("nom"), dist, f"départ {hr(p['heure_depart'])}" if p.get("heure_depart") else ""] if x)
 
           a_envoyer = []
           for type_, jour in cibles.items():
               evts = api(f"evenements?select=*&date_debut=eq.{jour.isoformat()}")
               for e in evts:
+                  e["_parcours"] = api(f"parcours?select=*&evenement_id=eq.{e['id']}&order=ordre")
                   parts = api(f"participations?select=membre_id&evenement_id=eq.{e['id']}&reponse=eq.true")
                   for p in parts:
                       m = membres.get(p["membre_id"])
@@ -72,7 +80,9 @@ jobs:
           def message(type_, e, m):
               quand = "dans 10 jours" if type_ == "J-10" else "demain"
               lignes = [f"Salut {m['prenom']},", "", f"Petit rappel : {e['evenement']}, c'est {quand}, le {fr(e['date_debut'])}."]
+              if e.get("heure_depart"): lignes.append(f"Départ : {hr(e['heure_depart'])}")
               if e.get("lieu"): lignes.append(f"Lieu : {e['lieu']}")
+              for p in e.get("_parcours") or []: lignes.append(f"Parcours : {lib_parcours(p)}")
               if e.get("tarif"): lignes.append(f"Tarif : {e['tarif']}")
               if type_ == "J-10" and e.get("lien") and (not e.get("inscription_fermeture") or e["inscription_fermeture"] >= auj.isoformat()):
                   fin = f" avant le {fr(e['inscription_fermeture'])}" if e.get("inscription_fermeture") else ""
