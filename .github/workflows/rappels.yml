@@ -1,0 +1,105 @@
+# À placer dans le dépôt : .github/workflows/rappels.yml
+# Chaque matin : envoie un rappel par e-mail aux membres qui ont répondu « Je viens »,
+# 10 jours (J-10) et 1 jour (J-1) avant l'évènement. Chaque rappel n'est envoyé qu'une fois.
+# Cette tâche garde aussi la base Supabase éveillée (le fichier supabase-reveil.yml devient inutile).
+#
+# Secrets à créer dans GitHub > Settings > Secrets and variables > Actions :
+#   SUPABASE_URL         https://xxxx.supabase.co
+#   SUPABASE_SECRET_KEY  clé secrète Supabase (Project Settings > API Keys > Secret keys, sb_secret_...)
+#   GMAIL_USER           adresse Gmail qui envoie (ex. lequipagecycliste@gmail.com)
+#   GMAIL_APP_PASSWORD   mot de passe d'application de cette adresse (16 lettres, sans espaces)
+#   APP_URL              adresse de l'app (ex. https://bbellier.github.io/equipage/)
+name: Rappels e-mail
+on:
+  schedule:
+    - cron: "7 6 * * *"      # tous les jours vers 7 h - 8 h (heure de Paris)
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Mode test : affiche les e-mails sans les envoyer (oui/non)"
+        default: "non"
+jobs:
+  rappels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer les rappels J-10 et J-1
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_URL: ${{ secrets.APP_URL }}
+          TEST: ${{ github.event.inputs.test }}
+        run: |
+          python3 - <<'PY'
+          import os, json, smtplib, urllib.request, urllib.parse, html
+          from datetime import date, datetime, timedelta
+          from email.message import EmailMessage
+          from zoneinfo import ZoneInfo
+
+          URL = os.environ["SUPABASE_URL"].rstrip("/"); KEY = os.environ["SUPABASE_KEY"]
+          APP = os.environ.get("APP_URL") or ""; TEST = (os.environ.get("TEST") or "non").lower() == "oui"
+          CLUB = "L'Équipage Cycliste de Marsilly"
+          H = {"apikey": KEY, "Content-Type": "application/json"}
+          if not KEY.startswith("sb_"): H["Authorization"] = "Bearer " + KEY   # anciennes clés service_role (JWT)
+
+          def api(chemin, methode="GET", corps=None, entetes=None):
+              req = urllib.request.Request(f"{URL}/rest/v1/{chemin}", method=methode, headers={**H, **(entetes or {})},
+                                           data=json.dumps(corps).encode() if corps is not None else None)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  t = r.read().decode(); return json.loads(t) if t else None
+
+          auj = datetime.now(ZoneInfo("Europe/Paris")).date()
+          cibles = {"J-10": auj + timedelta(days=10), "J-1": auj + timedelta(days=1)}
+          deja = {(r["evenement_id"], r["membre_id"], r["type"]) for r in api("rappels_envoyes?select=evenement_id,membre_id,type")}
+          membres = {m["id"]: m for m in api("membres?select=id,prenom,email,actif")}
+          sans_rappel = {p["membre_id"] for p in api("profils?select=membre_id,rappels&rappels=eq.false")}
+          mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
+          jours_sem = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
+          def fr(d): d = date.fromisoformat(d); return f"{jours_sem[d.weekday()]} {d.day} {mois[d.month-1]} {d.year}"
+
+          a_envoyer = []
+          for type_, jour in cibles.items():
+              evts = api(f"evenements?select=*&date_debut=eq.{jour.isoformat()}")
+              for e in evts:
+                  parts = api(f"participations?select=membre_id&evenement_id=eq.{e['id']}&reponse=eq.true")
+                  for p in parts:
+                      m = membres.get(p["membre_id"])
+                      if not m or not m["actif"] or m["id"] in sans_rappel or (e["id"], m["id"], type_) in deja: continue
+                      a_envoyer.append((type_, e, m))
+          print(f"{auj} : {len(a_envoyer)} rappel(s) à envoyer")
+
+          def message(type_, e, m):
+              quand = "dans 10 jours" if type_ == "J-10" else "demain"
+              lignes = [f"Salut {m['prenom']},", "", f"Petit rappel : {e['evenement']}, c'est {quand}, le {fr(e['date_debut'])}."]
+              if e.get("lieu"): lignes.append(f"Lieu : {e['lieu']}")
+              if e.get("tarif"): lignes.append(f"Tarif : {e['tarif']}")
+              if type_ == "J-10" and e.get("lien") and (not e.get("inscription_fermeture") or e["inscription_fermeture"] >= auj.isoformat()):
+                  fin = f" avant le {fr(e['inscription_fermeture'])}" if e.get("inscription_fermeture") else ""
+                  lignes += ["", f"Pense à t'inscrire auprès de l'organisateur{fin} : {e['lien']}"]
+              if e.get("commentaires"): lignes += ["", e["commentaires"]]
+              if APP: lignes += ["", f"La fiche dans l'app : {APP}"]
+              lignes += ["", "À bientôt sur la route,", CLUB, "", "Pour ne plus recevoir ces rappels : app > Profil > décocher les rappels par e-mail."]
+              texte = "\n".join(lignes)
+              msg = EmailMessage()
+              msg["Subject"] = f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}"
+              msg["From"] = f"{CLUB} <{os.environ.get('GMAIL_USER','')}>"; msg["To"] = m["email"]
+              msg.set_content(texte)
+              corps = "".join(f"<p>{html.escape(l)}</p>" if l else "" for l in lignes)
+              msg.add_alternative(f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#161514'><h2 style='font-family:Arial Narrow,Arial;text-transform:uppercase'>{html.escape(e['evenement'])} · {'J-10' if type_=='J-10' else 'demain'}</h2>{corps}</div>", subtype="html")
+              return msg
+
+          if not a_envoyer: raise SystemExit(0)
+          if TEST:
+              for t, e, m in a_envoyer: print("---", t, m["email"]); print(message(t, e, m).get_body(("plain",)).get_content())
+              raise SystemExit(0)
+          with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+              s.login(os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"].replace(" ", ""))
+              for t, e, m in a_envoyer:
+                  try:
+                      s.send_message(message(t, e, m))
+                      api("rappels_envoyes", "POST", {"evenement_id": e["id"], "membre_id": m["id"], "type": t}, {"Prefer": "resolution=ignore-duplicates"})
+                      print("envoyé :", t, e["evenement"], "→", m["prenom"])
+                  except Exception as err:
+                      print("échec :", m["email"], err)
+          PY
