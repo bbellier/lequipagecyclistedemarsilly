@@ -266,6 +266,8 @@ tr.off td{opacity:.5}
 .guide .bur h4{color:var(--red)}
 .btn-guide{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:19px;flex:none;padding:0}
 .reseaux{display:flex;flex-wrap:wrap;gap:8px}
+.apercu-m{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--red);color:#fff;border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:14px}
+.apercu-m button{border:0;background:#fff;color:#161514;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13.5px}
 /* Parcours */
 .pbox{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;background:var(--paper)}
 .pbox .row b{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
@@ -318,6 +320,7 @@ tr.off td{opacity:.5}
 
 <!-- Application -->
 <div class="wrap" id="app" hidden>
+  <div class="apercu-m" id="apercu-m" hidden><span>Aperçu membre</span><button data-vue-membre type="button">Quitter l'aperçu</button></div>
   <header class="brand">
     <div class="brand-l"><img class="logo-n" src="img/logo-noir.png" alt=""><img class="logo-b" src="img/logo-blanc.png" alt="">
       <div class="brand-t"><b>L'Équipage Cycliste</b><span>de Marsilly</span></div></div>
@@ -374,7 +377,9 @@ const SIL=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r=
 // ================= Outils =================
 const $=s=>document.querySelector(s);
 const me=()=>S.moi?.id;
-const bureau=()=>S.moi?.role==="bureau";
+const bureauReel=()=>S.moi?.role==="bureau";
+let vueMembre=false;   // aperçu membre : le bureau voit l'app comme un membre (affichage seulement)
+const bureau=()=>bureauReel()&&!vueMembre;
 const peutModifier=e=>bureau()||(e?.cree_par&&e.cree_par===me());
 const prenom=id=>S.membres.find(m=>m.id==id)?.prenom||S.complets.find(m=>m.id==id)?.prenom||"Ancien membre";
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -546,7 +551,7 @@ async function entrer(){
     await charger();L={etape:"email"};render();
   }catch(e){S.moi=null;render()}
 }
-async function deconnecter(){await sb.auth.signOut();S.moi=null;L={etape:"email"};fermer();render()}
+async function deconnecter(){vueMembre=false;await sb.auth.signOut();S.moi=null;L={etape:"email"};fermer();render()}
 
 // ================= GPX =================
 function lireGPX(txt){
@@ -1054,6 +1059,7 @@ function renderProfil(){
     </form>
   </article>
   <button class="btn sec" data-guide-app>Guide de l'app</button>
+  ${bureauReel()&&!vueMembre?`<button class="btn sec" data-vue-membre>Voir l'app comme un membre</button>`:""}
   <article class="card"><h2>Mes documents</h2><span class="hint">Visibles uniquement par toi et le bureau.</span>
     ${DOCS.map(([c,t])=>bloc(c,t)).join("")}
     ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
@@ -1167,9 +1173,8 @@ function guideApp(){
 
 // ================= Partenaires =================
 function renderPartenaires(){
-  if(!S.partenaires.length&&!bureau()&&!S.liens.some(l=>reseau(l.url)))return "";
+  if(!S.partenaires.length&&!bureau())return "";
   return `<footer class="partners"><div class="sect">Nos partenaires</div>
-    ${S.liens.some(l=>reseau(l.url))?`<div class="reseaux">${S.liens.filter(l=>reseau(l.url)).map(l=>`<a class="pill" style="text-decoration:none" href="${esc(lienSur(l.url))}" target="_blank" rel="noopener">${reseau(l.url)} ↗</a>`).join("")}</div>`:""}
     ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}" loading="lazy">`:esc(p.nom);
       return p.url?`<a class="plogo" href="${esc(lienSur(p.url))}" target="_blank" rel="noopener" title="${esc(p.nom)}">${c}</a>`:`<span class="plogo" title="${esc(p.nom)}">${c}</span>`}).join("")}</div>`:'<span class="hint">Aucun partenaire pour l\'instant.</span>'}
     ${bureau()?`<button class="btn sec small" data-partenaires style="justify-self:start">Gérer les partenaires</button>`:""}</footer>`;
@@ -1227,6 +1232,7 @@ function render(){
   const actif=document.activeElement,garde=vue==="profil"&&actif&&actif.closest("#profil form");
   if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,profil:renderProfil})[vue]();
   $("#partners").innerHTML=renderPartenaires();
+  $("#apercu-m").hidden=!vueMembre;
   if(!render.guide){render.guide=1;let vu=null;try{vu=localStorage.getItem("guideVu")}catch(e){}if(!vu&&$("#sheet").hidden)setTimeout(guideApp,400)}
   const fab=$("#fab");fab.hidden=!(vue==="agenda"||(vue==="sondages"&&bureau()));fab.textContent=vue==="agenda"?"Évènement":"Sondage";
 }
@@ -1247,6 +1253,7 @@ document.addEventListener("click",e=>{
   const f=c("[data-f]");if(f){filtre=f.dataset.f;return render()}
   const an=c("[data-annee]");if(an){anneeRes=an.dataset.annee;return render()}
   if(c("[data-guide-app]"))return guideApp();
+  if(c("[data-vue-membre]")&&bureauReel()){vueMembre=!vueMembre;fermer();render();scrollTo(0,0);return toast(vueMembre?"Aperçu membre activé":"Retour au mode bureau")}
   if(c("[data-ajout-course]"))return formEvt({},{resultat:true});
   const ar=c("[data-archiver]");if(ar)return archiverSondage(+ar.dataset.archiver);
   const sp=c("[data-selp]");if(sp){const [eid,pid]=sp.dataset.selp.split(":").map(Number);S.selP[eid]=pid;return fiche(eid)}
