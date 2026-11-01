@@ -41,6 +41,13 @@
   --red:#e4493d; --red-soft:#3b1b18; --ok:#7dbb9c; --ok-soft:#18302a; --warn:#e2b45e; --warn-soft:#352a14;
   --on-ink:#121212; --fond:url("img/fond-sombre.webp"); color-scheme:dark}
 *{box-sizing:border-box} [hidden]{display:none!important}
+/* Barres de défilement aux couleurs de l'app (fines, discrètes, claires ou sombres selon le thème) */
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 55%,transparent) transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 45%,transparent);border-radius:999px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:padding-box}
+::-webkit-scrollbar-corner{background:transparent}
 html{-webkit-text-size-adjust:100%}
 html,body{margin:0;min-height:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-top:env(safe-area-inset-top,0px)}
@@ -370,7 +377,7 @@ tr.off td{opacity:.5}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-01c";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-01d";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
