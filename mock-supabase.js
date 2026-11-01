@@ -9,7 +9,7 @@
       .map(([p,e,r],i)=>({id:i+1,user_id:i<3?"u"+(i+1):null,email:e,prenom:p,role:r,actif:true})),
     evenements:[
       {id:1,saison:"2026-2027",date_debut:J(6),date_fin:J(6),type:"Sortie club",evenement:"Sortie du dimanche",lieu:"Marsilly, place du marché",tarif:"Gratuit",heure_depart:"08:30:00",affiche:"affiches/a.webp",realise:false,commentaires:"Allure 27 km/h"},
-      {id:2,saison:"2026-2027",date_debut:J(20),date_fin:J(20),type:"Gravel",evenement:"Gravel dans le marais",lieu:"Marais poitevin",tarif:"15 €",lien:"https://example.com",inscription_fermeture:J(12),realise:false},
+      {id:2,saison:"2026-2027",date_debut:J(20),date_fin:J(20),type:"Gravel",evenement:"Gravel dans le marais",lieu:"Coulon, Deux-Sèvres",lieu_lat:46.3225,lieu_lon:-0.5878,tarif:"15 €",lien:"https://example.com",inscription_fermeture:J(12),realise:false},
       {id:3,saison:"2026-2027",date_debut:J(0),date_fin:J(0),type:"Course à pied",evenement:"Footing du mardi",lieu:"Port du Plomb",realise:false},
       {id:4,saison:"2026-2027",date_debut:J(-30),date_fin:J(-30),type:"Triathlon",evenement:"Triathlon de La Rochelle",lieu:"La Rochelle",realise:true},
       {id:5,saison:"2025-2026",date_debut:J(-200),date_fin:J(-200),type:"Trail",evenement:"Trail des Templiers",lieu:"Millau",realise:true}],

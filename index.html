@@ -15,6 +15,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="img/icon-192.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -266,6 +268,17 @@ tr.off td{opacity:.5}
 .guide .bur h4{color:var(--red)}
 .btn-guide{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:19px;flex:none;padding:0}
 .reseaux{display:flex;flex-wrap:wrap;gap:8px}
+/* Cartes et lieux */
+.carte{height:250px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--wash);z-index:0}
+.carte .leaflet-control-layers{font-family:var(--body);font-size:14px;color:#161514}
+.croix{color:var(--red);font:700 30px/24px Arial,sans-serif;text-align:center;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.lieu-box{position:relative}
+.sug{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 20px rgb(0 0 0 / .18);margin-top:4px;overflow:hidden}
+.sug button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 12px;font-size:15px;color:var(--ink)}
+.sug button:last-child{border-bottom:0}
+.sug button small{display:block;color:var(--muted);font-size:12.5px}
+.sug button:hover,.sug button:focus{background:var(--wash)}
+.lieu-ok{font-size:12.5px;color:var(--ok);font-weight:600}
 .apercu-m{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--red);color:#fff;border-radius:10px;padding:8px 8px 8px 14px;font-weight:600;font-size:14px}
 .apercu-m button{border:0;background:#fff;color:#161514;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13.5px}
 /* Parcours */
@@ -427,7 +440,7 @@ function erreur(e,ctx){
 async function ok(p,ctx){const r=await p;if(r.error){erreur(r.error,ctx);throw r.error}return r.data}
 function occupe(btn,on){if(!btn)return;btn.disabled=on;if(on){btn.dataset.txt=btn.textContent;btn.textContent="Patiente…"}else if(btn.dataset.txt)btn.textContent=btn.dataset.txt}
 function ouvrirPanel(html,ctx={}){const p=$("#panel");p.dataset.ctx=JSON.stringify(ctx);p.innerHTML=html;$("#sheet").hidden=false;p.scrollTop=0}
-function fermer(){$("#sheet").hidden=true;$("#panel").dataset.ctx="{}"}
+function fermer(){if(laCarte){laCarte.remove();laCarte=null}$("#sheet").hidden=true;$("#panel").dataset.ctx="{}"}
 function rafraichirPanel(){const p=$("#panel"),c=JSON.parse(p.dataset.ctx||"{}");if($("#sheet").hidden||!c.k)return;const s=p.scrollTop;({fiche,ficheResultats,gererParticipants})[c.k](c.id);p.scrollTop=s}
 const fichierHTML=(nom,info,act="")=>`<div class="file"><div class="ic">${esc(ext(nom))}</div><div class="nm"><b>${esc(nom)}</b><span>${esc(info||"")}</span></div>${act}</div>`;
 
@@ -562,7 +575,7 @@ function lireGPX(txt){
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],r=Math.PI/180,x=(b.lon-a.lon)*r*Math.cos((a.lat+b.lat)/2*r),y=(b.lat-a.lat)*r;d+=6371*Math.hypot(x,y);cum.push(d);if(b.ele>a.ele)dp+=b.ele-a.ele}
   return {pts,cum,km:d,dplus:dp,altmax:Math.max(...pts.map(p=>p.ele))};
 }
-function traceSVG(g){
+function traceSVG(g,sansTrace){
   const W=320,H=200,P=12,lat0=g.pts[0].lat*Math.PI/180;
   const step=Math.max(1,Math.floor(g.pts.length/800)),pts=g.pts.filter((_,i)=>i%step===0),cum=g.cum.filter((_,i)=>i%step===0);
   const xs=pts.map(p=>p.lon*Math.cos(lat0)),ys=pts.map(p=>-p.lat);
@@ -571,11 +584,69 @@ function traceSVG(g){
   const path=xs.map((x,i)=>`${i?"L":"M"}${X(x)},${Y(ys[i])}`).join("");
   const PW=320,PH=80,e=pts.map(p=>p.ele),emin=Math.min(...e),emax=Math.max(...e),ky=(PH-18)/((emax-emin)||1);
   const prof=pts.map((p,i)=>`${(cum[i]/(g.km||1)*PW).toFixed(1)},${(PH-4-(p.ele-emin)*ky).toFixed(1)}`).join(" L");
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tracé du parcours"><path d="${path}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
-    <text x="${X(xs[0])}" y="${Y(ys[0])}" text-anchor="middle" dominant-baseline="central" font-size="20" font-weight="700" fill="var(--red)">×</text></svg>
+  return `${sansTrace?"":`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tracé du parcours"><path d="${path}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+    <text x="${X(xs[0])}" y="${Y(ys[0])}" text-anchor="middle" dominant-baseline="central" font-size="20" font-weight="700" fill="var(--red)">×</text></svg>`}
   <svg viewBox="0 0 ${PW} ${PH}" role="img" aria-label="Profil altimétrique"><path d="M0,${PH} L${prof} L${PW},${PH}Z" fill="color-mix(in srgb,var(--ink) 14%,transparent)"/><path d="M${prof}" fill="none" stroke="var(--ink)" stroke-width="1.6"/><text x="4" y="11" font-size="10" font-family="var(--mono)" fill="var(--muted)">${Math.round(emax)} m</text></svg>
   <div class="stats"><div><b>${g.km.toFixed(1).replace(".",",")}</b><span>km</span></div><div><b>${Math.round(g.dplus)}</b><span>m D+</span></div><div><b>${Math.round(g.altmax)}</b><span>alt. max</span></div></div>`;
 }
+// ================= Cartes =================
+const WMTS=(couche,format)=>`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${couche}&STYLE=normal&TILEMATRIXSET=PM&FORMAT=${format}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`;
+const FONDS={
+  "Plan IGN":[WMTS("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2","image/png"),{maxNativeZoom:19,maxZoom:19,attribution:"Plan IGN © IGN-Géoplateforme"}],
+  "Photos aériennes":[WMTS("ORTHOIMAGERY.ORTHOPHOTOS","image/jpeg"),{maxNativeZoom:19,maxZoom:19,attribution:"Photos © IGN-Géoplateforme"}],
+  "OpenStreetMap":["https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© contributeurs OpenStreetMap"}],
+  "Relief":["https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxNativeZoom:17,maxZoom:18,attribution:"© OpenStreetMap, SRTM · style © OpenTopoMap (CC-BY-SA)"}]
+};
+const cartesOK=()=>!!window.L;
+let laCarte=null;
+function initCarte(el,{trace,point}){
+  if(laCarte){laCarte.remove();laCarte=null}
+  const Lf=window.L;if(!Lf||!el)return;
+  let choix="Plan IGN";try{choix=localStorage.getItem("fond")||choix}catch(e){}
+  const couches={};for(const [n,[u,o]] of Object.entries(FONDS))couches[n]=Lf.tileLayer(u,o);
+  laCarte=Lf.map(el,{scrollWheelZoom:false,tap:true});
+  (couches[choix]||couches["Plan IGN"]).addTo(laCarte);
+  Lf.control.layers(couches,null,{position:"topright"}).addTo(laCarte);
+  laCarte.on("baselayerchange",ev=>{try{localStorage.setItem("fond",ev.name)}catch(e){}});
+  const rouge=getComputedStyle(document.documentElement).getPropertyValue("--red").trim()||"#c4362c";
+  const croix=Lf.divIcon({className:"croix",html:"×",iconSize:[24,24],iconAnchor:[12,12]});
+  if(trace&&trace.length>1){
+    const pas=Math.max(1,Math.floor(trace.length/1500)),ll=trace.filter((_,i)=>i%pas===0).map(p=>[p.lat,p.lon]);
+    const pl=Lf.polyline(ll,{color:rouge,weight:4,opacity:.9}).addTo(laCarte);
+    Lf.marker(ll[0],{icon:croix,title:"Départ"}).addTo(laCarte);
+    laCarte.fitBounds(pl.getBounds(),{padding:[18,18]});
+  }else if(point){Lf.marker(point,{icon:croix}).addTo(laCarte);laCarte.setView(point,13)}
+  setTimeout(()=>laCarte&&laCarte.invalidateSize(),80);
+}
+const itineraire=e=>e.lieu_lat!=null?`https://www.google.com/maps/dir/?api=1&destination=${e.lieu_lat},${e.lieu_lon}`:e.lieu?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.lieu)}`:"";
+// Complétion des lieux : Géoplateforme (France, gratuit, sans clé) puis Photon (monde entier)
+async function chercherLieux(q){
+  const r=[],aj=x=>{if(!r.some(y=>y.label===x.label))r.push(x)};
+  try{const j=await (await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)).json();
+    for(const f of j.features||[]){const p=f.properties||{},c=f.geometry?.coordinates;if(!c)continue;
+      aj({label:p.label||p.name,detail:p.type==="municipality"?(p.context||""):[p.postcode,p.city].filter(Boolean).join(" "),lat:c[1],lon:c[0]})}}catch(e){}
+  if(r.length<3){try{const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`)).json();
+    for(const f of j.features||[]){const p=f.properties||{},c=f.geometry?.coordinates;if(!c)continue;
+      const rue=p.street?(p.housenumber?p.housenumber+" ":"")+p.street:"";
+      aj({label:[p.name,rue].filter(Boolean).join(", ")||p.city,detail:[p.postcode,p.city!==p.name?p.city:"",p.country].filter(Boolean).join(" · "),lat:c[1],lon:c[0]})}}catch(e){}}
+  return r.slice(0,6);
+}
+function brancherLieu(){
+  const inp=$("#f-lieu"),box=$("#f-lieu-sug"),lat=$("#f-lat"),lon=$("#f-lon"),ok=$("#f-lieu-ok");if(!inp)return;
+  let t,der="",liste=[];
+  const fermerSug=()=>{box.hidden=true;box.innerHTML=""};
+  inp.addEventListener("input",()=>{lat.value=lon.value="";ok.hidden=true;clearTimeout(t);const q=inp.value.trim();
+    if(q.length<3)return fermerSug();
+    t=setTimeout(async()=>{der=q;const l=await chercherLieux(q);if(der!==q||inp.value.trim()!==q)return;liste=l;
+      if(!l.length)return fermerSug();
+      box.innerHTML=l.map((x,i)=>`<button type="button" data-sug="${i}">${esc(x.label)}${x.detail?`<small>${esc(x.detail)}</small>`:""}</button>`).join("");box.hidden=false},300)});
+  box.addEventListener("mousedown",e=>e.preventDefault());
+  box.addEventListener("click",e=>{const b=e.target.closest("[data-sug]");if(!b)return;const x=liste[+b.dataset.sug];
+    inp.value=x.label;lat.value=x.lat;lon.value=x.lon;ok.hidden=false;fermerSug()});
+  inp.addEventListener("blur",()=>setTimeout(fermerSug,150));
+  inp.addEventListener("keydown",e=>{if(e.key==="Escape")fermerSug()});
+}
+
 async function chargerGPX(p){
   if(S.gpx[p.id]!==undefined)return;
   S.gpx[p.id]=null;
@@ -638,7 +709,7 @@ function fiche(id){
     <dl class="facts">
       <dt>Date</dt><dd>${plage(e)}${jours(e.date_debut)>0?` · J-${jours(e.date_debut)}`:""}</dd>
       ${e.heure_depart?`<dt>Départ</dt><dd>${heure(e.heure_depart)}</dd>`:""}
-      ${e.lieu?`<dt>Lieu</dt><dd>${esc(e.lieu)}</dd>`:""}
+      ${e.lieu?`<dt>Lieu</dt><dd>${esc(e.lieu)} · <a href="${esc(itineraire(e))}" target="_blank" rel="noopener">Itinéraire ↗</a></dd>`:""}
       ${e.type?`<dt>Type</dt><dd>${esc(e.type)}</dd>`:""}
       ${e.tarif?`<dt>Tarif</dt><dd>${esc(e.tarif)}</dd>`:""}
       ${e.inscription_ouverture||e.inscription_fermeture?`<dt>Inscr.</dt><dd>${e.inscription_ouverture?"du "+fmt(e.inscription_ouverture,{day:"numeric",month:"short"})+" ":""}${e.inscription_fermeture?"au "+fmt(e.inscription_fermeture,{day:"numeric",month:"short",year:"numeric"}):""}</dd>`:""}
@@ -650,13 +721,16 @@ function fiche(id){
     ${p?`<div class="gpx"><div class="row"><b>${ps.length>1?ps.length+" parcours":"Parcours"}</b>${p.gpx?`<button class="btn sec small" data-dlgpx="${p.id}">Télécharger le GPX</button>`:""}</div>
       ${ps.length>1?`<div class="chips">${ps.map(x=>`<button data-selp="${e.id}:${x.id}" aria-pressed="${x.id===p.id}">${esc(labelP(x))}</button>`).join("")}</div>`:""}
       <dl class="facts">${p.nom?`<dt>Nom</dt><dd>${esc(p.nom)}</dd>`:""}<dt>Type</dt><dd>${DISC[p.discipline]||""}${distP(p)?" · "+distP(p):""}</dd>${p.heure_depart?`<dt>Départ</dt><dd>${heure(p.heure_depart)}</dd>`:""}</dl>
-      ${p.gpx?(g?traceSVG(g):g===false?'<span class="hint">Tracé illisible, le fichier reste téléchargeable.</span>':'<span class="hint">Chargement du parcours…</span>'):""}</div>`:""}
+      ${p.gpx&&g&&cartesOK()?'<div class="carte" id="carte"></div>':""}
+      ${p.gpx?(g?traceSVG(g,cartesOK()):g===false?'<span class="hint">Tracé illisible, le fichier reste téléchargeable.</span>':'<span class="hint">Chargement du parcours…</span>'):""}</div>`:""}
+    ${!(p?.gpx&&g)&&e.lieu_lat!=null&&cartesOK()?'<div class="carte" id="carte"></div>':""}
     ${passe?"":boutons(e)}
     <div class="who"><div><span class="lbl">Viennent (${q.oui.length})</span>${tags(q.oui,"y")}</div>
       ${passe?"":`<div><span class="lbl">Ne viennent pas (${q.non.length})</span>${tags(q.non,"n")}</div><div><span class="lbl">Sans réponse (${q.sans.length})</span>${tags(q.sans,"")}</div>`}</div>
     ${!passe&&q.r===true?`<span class="hint">Tu recevras un rappel par e-mail 10 jours et 1 jour avant${S.profils[me()]?.rappels===false?" (rappels désactivés dans ton profil)":""}.</span>`:""}
     ${e.cree_par&&S.membres.find(m=>m.id===e.cree_par)?.role!=="bureau"?`<span class="par">Ajouté par ${esc(prenom(e.cree_par))}</span>`:""}
     ${bureau()||peutModifier(e)?`<div class="row">${bureau()?`<button class="btn sec" data-gerer="${e.id}">Gérer les participants</button>`:"<span></span>"}<button class="btn sec" data-edit="${e.id}">Modifier</button></div>`:""}`,{k:"fiche",id:e.id});
+  const el=$("#carte");if(el)initCarte(el,{trace:p?.gpx&&g?g.pts:null,point:e.lieu_lat!=null?[e.lieu_lat,e.lieu_lon]:null});
 }
 function repondre(eid,rep){
   const m=me(),cur=S.part[eid]?.[m],retirer=cur===rep;
@@ -704,7 +778,10 @@ function formEvt(e={},opts0={}){
     <label for="f-evt">Évènement<input id="f-evt" name="evenement" required maxlength="120" value="${esc(e.evenement)}" placeholder="Sortie du dimanche"></label>
     <div class="grid2"><label for="f-type">Type<select id="f-type" name="type">${opts.map(t=>`<option${t===e.type?" selected":""}>${t}</option>`).join("")}</select></label>
       <label for="f-saison">Saison<input id="f-saison" name="saison" value="${esc(e.saison||saisonDe(J(0)))}"></label></div>
-    <label for="f-lieu">Lieu<input id="f-lieu" name="lieu" value="${esc(e.lieu)}"></label>
+    <div class="lieu-box"><label for="f-lieu">Lieu<input id="f-lieu" name="lieu" value="${esc(e.lieu)}" autocomplete="off" placeholder="Ville, adresse, lieu-dit…"></label>
+      <div class="sug" id="f-lieu-sug" hidden></div>
+      <input type="hidden" id="f-lat" name="lieu_lat" value="${e.lieu_lat??""}"><input type="hidden" id="f-lon" name="lieu_lon" value="${e.lieu_lon??""}">
+      <span class="lieu-ok" id="f-lieu-ok"${e.lieu_lat!=null?"":" hidden"}>✓ Position enregistrée (carte et itinéraire)</span></div>
     <div class="grid2"><label for="f-dd">Date début<input id="f-dd" type="date" name="date_debut" required value="${e.date_debut||(opts0.resultat?J(0):"")}"></label>
       <label for="f-df">Date fin<input id="f-df" type="date" name="date_fin" value="${e.date_fin||""}"></label></div>
     <label for="f-h">Heure de départ ou de rendez-vous<input id="f-h" type="time" name="heure_depart" value="${(e.heure_depart||"").slice(0,5)}"></label>
@@ -721,6 +798,7 @@ function formEvt(e={},opts0={}){
     <div class="row">${e.id?`<button type="button" class="btn del" id="f-del">Supprimer</button>`:"<span></span>"}
       <span style="display:flex;gap:8px"><button type="button" class="btn sec" ${e.id?`data-open="${e.id}"`:"data-close"}>Annuler</button><button class="btn pri" id="f-ok">Enregistrer</button></span></div>
   </form>`);
+  brancherLieu();
   const zone=$("#bp"),redessiner=()=>{zone.innerHTML=editeurParcours()};
   zone.addEventListener("input",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined||t.type==="file")return;BP[i][t.dataset.pk]=t.value});
   zone.addEventListener("change",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined)return;
@@ -738,7 +816,7 @@ function formEvt(e={},opts0={}){
     try{
       const d=Object.fromEntries(new FormData(ev.target));
       const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.date_debut,date_fin:d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut,heure_depart:nul(d.heure_depart),
-        inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),commentaires:nul(d.commentaires),realise:!!d.realise};
+        inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),commentaires:nul(d.commentaires),realise:!!d.realise,lieu_lat:d.lieu_lat?+d.lieu_lat:null,lieu_lon:d.lieu_lon?+d.lieu_lon:null};
       if(!e.id)row.cree_par=me();
       const pre=bureau()?"":`membres/${me()}/`;
       const aff=$("#f-aff").files[0],anciens=[];
