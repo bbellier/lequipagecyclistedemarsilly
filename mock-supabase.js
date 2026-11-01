@@ -12,6 +12,7 @@
       {id:2,saison:"2026-2027",date_debut:J(20),date_fin:J(20),type:"Gravel",evenement:"Gravel dans le marais",lieu:"Coulon, Deux-Sèvres",lieu_lat:46.3225,lieu_lon:-0.5878,tarif:"15 €",lien:"https://example.com",inscription_fermeture:J(12),realise:false},
       {id:3,saison:"2026-2027",date_debut:J(0),date_fin:J(0),type:"Course à pied",evenement:"Footing du mardi",lieu:"Port du Plomb",realise:false},
       {id:4,saison:"2026-2027",date_debut:J(-30),date_fin:J(-30),type:"Triathlon",evenement:"Triathlon de La Rochelle",lieu:"La Rochelle",realise:true},
+      {id:6,saison:"2026-2027",date_debut:null,date_fin:null,type:"Aventure",evenement:"Raid vélo de l'été",lieu:"Pyrénées",realise:false},
       {id:5,saison:"2025-2026",date_debut:J(-200),date_fin:J(-200),type:"Trail",evenement:"Trail des Templiers",lieu:"Millau",realise:true}],
     parcours:[{id:1,evenement_id:1,nom:"Grand parcours",discipline:"velo",km:87.5,gpx:"gpx/boucle.gpx",gpx_nom:"boucle.gpx",gpx_km:87.5,gpx_dplus:132,heure_depart:"08:30:00",ordre:0},{id:2,evenement_id:1,nom:"Petit parcours",discipline:"velo",km:55,heure_depart:"09:00:00",ordre:1},
       {id:3,evenement_id:4,discipline:"triathlon",format:"S",heure_depart:"09:00:00",ordre:0},{id:4,evenement_id:4,discipline:"triathlon",format:"L",heure_depart:"07:30:00",ordre:1},{id:5,evenement_id:5,nom:"Grand Trail",discipline:"course",km:80,ordre:0}],

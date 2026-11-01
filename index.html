@@ -275,6 +275,7 @@ tr.off td{opacity:.5}
 .guide ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px}
 .guide .bur{border:1px solid var(--red);border-radius:10px;padding:12px}
 .guide .bur h4{color:var(--red)}
+.btn-guide{box-shadow:0 0 0 2px var(--red) inset;color:var(--red)}
 .btn-guide{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:19px;flex:none;padding:0}
 .reseaux{display:flex;flex-wrap:wrap;gap:8px}
 /* Cartes et lieux */
@@ -377,16 +378,16 @@ tr.off td{opacity:.5}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-01d";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-01e";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
 const sb = configOK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}) : null;
 
 // ================= État =================
-const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},parcours:[],partenaires:[],selP:{},urls:{},gpx:{},charge:0};
-let vue="agenda",tab="up",filtre="Tous",anneeRes=String(new Date().getFullYear()),apresEvt=null,L={etape:"email"};
-const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","Gravel","VTT","Triathlon","Course à pied","Trail"];
+const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},parcours:[],aDefinir:[],partenaires:[],selP:{},urls:{},gpx:{},charge:0};
+let vue="agenda",tab="up",filtre="Tous",anneeRes=String(new Date().getFullYear()),porteeRes="club",membreRes=null,apresEvt=null,L={etape:"email"};
+const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","CLM","Gravel","VTT","Triathlon","Course à pied","Trail"];
 const DISC={velo:"Vélo",course:"Course à pied",triathlon:"Triathlon",autre:"Autre"};
 const FORMATS_TRI=["XS","S","M","L","XL","XXL"];
 const TAILLES=["","XS","S","M","L","XL","XXL","3XL"];
@@ -400,6 +401,7 @@ const SIL=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r=
 // ================= Outils =================
 const $=s=>document.querySelector(s);
 const me=()=>S.moi?.id;
+const evt=id=>S.evts.find(x=>x.id==id)||S.aDefinir.find(x=>x.id==id);
 const bureauReel=()=>S.moi?.role==="bureau";
 let vueMembre=false;   // aperçu membre : le bureau voit l'app comme un membre (affichage seulement)
 const bureau=()=>bureauReel()&&!vueMembre;
@@ -430,7 +432,7 @@ const distP=p=>p.discipline==="triathlon"?(p.format?"Format "+fmtTri(p.format):"
 const labelP=p=>[p.nom,distP(p)].filter(Boolean).join(" · ")||"Parcours";
 // Distance, discipline et statut ultra d'un résultat (course > 40 km, vélo > 150 km, triathlon L / XL / XXL)
 function infosRes(eid,x){
-  const e=S.evts.find(v=>v.id==eid)||{},p=x?.parcours_id&&S.parcours.find(q=>q.id===x.parcours_id);
+  const e=evt(eid)||{},p=x?.parcours_id&&S.parcours.find(q=>q.id===x.parcours_id);
   const disc=p?.discipline||x?.discipline||disciplineDe(e.type),km=+(p?(p.km||p.gpx_km):x?.km)||0,format=(p?p.format:x?.format)||"";
   const fu=format.toUpperCase().replace("FORMAT","").replace(/\(.*\)/,"").trim();
   const ultra=!!x&&!x.abandon&&((disc==="course"&&km>40)||(disc==="velo"&&km>150)||(disc==="triathlon"&&(["L","XL","XXL"].includes(fu)||/IRON ?MAN|70\.3/.test(fu))));
@@ -499,7 +501,7 @@ async function charger(){
     B?ok(sb.from("notes_bureau").select("*").order("maj_le",{ascending:false}),"Notes"):Promise.resolve([]),
     B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([])
   ]);
-  S.membres=ann||[];S.evts=ev||[];S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
+  S.membres=ann||[];S.evts=(ev||[]).filter(e=>e.date_debut);S.aDefinir=(ev||[]).filter(e=>!e.date_debut);S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
   S.notesM={};(nm||[]).forEach(n=>S.notesM[n.membre_id]=n);
   S.part={};(pa||[]).forEach(p=>(S.part[p.evenement_id]??={})[p.membre_id]=p.reponse);
   S.res={};(re||[]).forEach(r=>(S.res[r.evenement_id]??={})[r.membre_id]=r);
@@ -678,16 +680,17 @@ function inscription(e){
   return `<div class="insc open">Inscriptions ouvertes</div>`;
 }
 const qui=e=>{const p=S.part[e.id]||{};return {oui:S.membres.filter(m=>p[m.id]===true),non:S.membres.filter(m=>p[m.id]===false),sans:S.membres.filter(m=>p[m.id]===undefined),r:p[me()]}};
-const plage=e=>e.date_fin&&e.date_fin!==e.date_debut?`du ${fmt(e.date_debut,{day:"numeric",month:"short"})} au ${fmt(e.date_fin,{day:"numeric",month:"short",year:"numeric"})}`:fmt(e.date_debut,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const plage=e=>!e.date_debut?"Date à définir":e.date_fin&&e.date_fin!==e.date_debut?`du ${fmt(e.date_debut,{day:"numeric",month:"short"})} au ${fmt(e.date_fin,{day:"numeric",month:"short",year:"numeric"})}`:fmt(e.date_debut,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 const boutons=e=>{const q=qui(e);return `<div class="answer"><button class="y" data-rep="${e.id}:1" aria-pressed="${q.r===true}">✓ Je viens <span class="count">${q.oui.length}</span></button><button class="n" data-rep="${e.id}:0" aria-pressed="${q.r===false}">✕ Je ne viens pas <span class="count">${q.non.length}</span></button></div>`};
-const bib=e=>{const n=jours(e.date_debut),passe=jours(e.date_fin)<0;return `<div class="bib${!passe&&n<=14?" soon":""}"><div class="d">${dt(e.date_debut).getDate()}</div><div class="m">${fmt(e.date_debut,{month:"short"}).replace(".","")}</div><div class="j">${n===0?"AUJ.":n<0?(passe?"FAIT":"EN COURS"):"J-"+n}</div></div>`};
+const bib=e=>{if(!e.date_debut)return `<div class="bib"><div class="d">?</div><div class="m">date</div><div class="j">À DÉF.</div></div>`;const n=jours(e.date_debut),passe=jours(e.date_fin)<0;return `<div class="bib${!passe&&n<=14?" soon":""}"><div class="d">${dt(e.date_debut).getDate()}</div><div class="m">${fmt(e.date_debut,{month:"short"}).replace(".","")}</div><div class="j">${n===0?"AUJ.":n<0?(passe?"FAIT":"EN COURS"):"J-"+n}</div></div>`};
 const tags=(l,c)=>l.map(m=>`<span class="tag ${c}${m.id===me()?" me":""}">${esc(m.prenom)}</span>`).join("")||`<span class="hint">personne</span>`;
 function carte(e){
   const passe=jours(e.date_fin)<0,q=qui(e);
   const ps=parcoursDe(e.id);let pt="";
   if(ps.length===1)pt=[distP(ps[0]),ps[0].gpx_dplus?ps[0].gpx_dplus+" m D+":""].filter(Boolean).join(" · ");
   else if(ps.length>1){const k=ps.map(p=>+(p.km||p.gpx_km)).filter(Boolean);pt=`${ps.length} parcours`+(k.length>1&&Math.min(...k)!==Math.max(...k)?` · ${fmtKm(Math.min(...k))} à ${fmtKm(Math.max(...k))} km`:"")}
-  const extras=[e.heure_depart&&"Départ "+heure(e.heure_depart),pt,e.tarif,e.lien&&"Inscription en ligne"].filter(Boolean);
+  const hs=[...new Set(ps.map(p=>p.heure_depart).filter(Boolean))].sort(),hd=hs.length?(hs.length>1?`Départs ${heure(hs[0])} – ${heure(hs[hs.length-1])}`:"Départ "+heure(hs[0])):e.heure_depart?"Départ "+heure(e.heure_depart):"";
+  const extras=[hd,pt,e.tarif,e.lien&&"Inscription en ligne"].filter(Boolean);
   return `<article class="card tap" data-open="${e.id}">
     <div class="top">${bib(e)}
       <div class="info"><h2>${esc(e.evenement)}</h2>
@@ -704,15 +707,17 @@ function renderAgenda(){
   const up=tab==="up";
   let l=S.evts.filter(e=>up?jours(e.date_fin)>=0:jours(e.date_fin)<0).filter(e=>filtre==="Tous"||e.type===filtre);
   l.sort((a,b)=>up?a.date_debut.localeCompare(b.date_debut):b.date_debut.localeCompare(a.date_debut));
-  const types=["Tous",...new Set(S.evts.map(e=>e.type).filter(Boolean))];
+  const types=["Tous",...new Set([...S.evts,...S.aDefinir].map(e=>e.type).filter(Boolean))];
   $("#chips").innerHTML=types.length>2?types.map(t=>`<button data-f="${esc(t)}" aria-pressed="${t===filtre}">${esc(t)}</button>`).join(""):"";
   let html="",mois="";
   for(const e of l){const m=fmt(e.date_debut,{month:"long",year:"numeric"});if(m!==mois){html+=`<div class="sect">${m}</div>`;mois=m}html+=carte(e)}
+  const ad=up?S.aDefinir.filter(e=>filtre==="Tous"||e.type===filtre):[];
+  if(ad.length)html+=`<div class="sect">Date à définir</div>`+ad.map(carte).join("");
   $("#list").innerHTML=html||`<div class="empty"><b>${up?"Rien à l'horizon":"Pas encore d'historique"}</b>${up?(bureau()?"Ajoute le premier évènement avec le bouton « Évènement ».":"Le bureau n'a pas encore programmé d'évènement."):"Les évènements terminés apparaîtront ici."}</div>`;
   $("#t-up").setAttribute("aria-selected",up);$("#t-past").setAttribute("aria-selected",!up);
 }
 function fiche(id){
-  const e=S.evts.find(x=>x.id==id);if(!e)return fermer();
+  const e=evt(id);if(!e)return fermer();
   const q=qui(e),passe=jours(e.date_fin)<0,aRes=jours(e.date_debut)<=0,aff=e.affiche&&S.urls["club/"+e.affiche];
   const ps=parcoursDe(e.id),p=ps.find(x=>x.id==S.selP[e.id])||ps[0];
   if(p?.gpx)chargerGPX(p);
@@ -720,8 +725,8 @@ function fiche(id){
   ouvrirPanel(`<div class="ph"><h3>${esc(e.evenement)}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     ${aff?`<img class="poster" src="${esc(aff)}" alt="Affiche de ${esc(e.evenement)}">`:""}
     <dl class="facts">
-      <dt>Date</dt><dd>${plage(e)}${jours(e.date_debut)>0?` · J-${jours(e.date_debut)}`:""}</dd>
-      ${e.heure_depart?`<dt>Départ</dt><dd>${heure(e.heure_depart)}</dd>`:""}
+      <dt>Date</dt><dd>${plage(e)}${e.date_debut&&jours(e.date_debut)>0?` · J-${jours(e.date_debut)}`:""}</dd>
+      ${e.heure_depart&&!ps.some(x=>x.heure_depart)?`<dt>Départ</dt><dd>${heure(e.heure_depart)}</dd>`:""}
       ${e.lieu?`<dt>Lieu</dt><dd>${esc(e.lieu)} · <a href="${esc(itineraire(e))}" target="_blank" rel="noopener">Itinéraire ↗</a></dd>`:""}
       ${e.type?`<dt>Type</dt><dd>${esc(e.type)}</dd>`:""}
       ${e.tarif?`<dt>Tarif</dt><dd>${esc(e.tarif)}</dd>`:""}
@@ -753,7 +758,7 @@ function repondre(eid,rep){
     retirer?"Réponse retirée":rep?"C'est noté, tu viens !":"C'est noté, tu ne viens pas");
 }
 function gererParticipants(id){
-  const e=S.evts.find(x=>x.id==id);if(!e)return fermer();const p=S.part[id]||{};
+  const e=evt(id);if(!e)return fermer();const p=S.part[id]||{};
   ouvrirPanel(`<div class="ph"><h3>Participants</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${esc(e.evenement)} · ${plage(e)}</span>
     <div>${S.membres.map(m=>{const v=p[m.id];return `<div class="pm"><b class="cell-m">${avatar(m.id,"s")}${esc(m.prenom)}</b><div class="tri" role="group" aria-label="Participation de ${esc(m.prenom)}">
@@ -795,16 +800,16 @@ function formEvt(e={},opts0={}){
       <div class="sug" id="f-lieu-sug" hidden></div>
       <input type="hidden" id="f-lat" name="lieu_lat" value="${e.lieu_lat??""}"><input type="hidden" id="f-lon" name="lieu_lon" value="${e.lieu_lon??""}">
       <span class="lieu-ok" id="f-lieu-ok"${e.lieu_lat!=null?"":" hidden"}>✓ Position enregistrée (carte et itinéraire)</span></div>
-    <div class="grid2"><label for="f-dd">Date début<input id="f-dd" type="date" name="date_debut" required value="${e.date_debut||(opts0.resultat?J(0):"")}"></label>
+    ${opts0.resultat?"":`<label class="check" for="f-inc"><input id="f-inc" type="checkbox" name="inconnue"${e.id&&!e.date_debut?" checked":""}> Date encore inconnue</label>`}
+    <div class="grid2" id="f-dates"${e.id&&!e.date_debut?" hidden":""}><label for="f-dd">Date début<input id="f-dd" type="date" name="date_debut"${e.id&&!e.date_debut?"":" required"} value="${e.date_debut||(opts0.resultat?J(0):"")}"></label>
       <label for="f-df">Date fin<input id="f-df" type="date" name="date_fin" value="${e.date_fin||""}"></label></div>
-    <label for="f-h">Heure de départ ou de rendez-vous<input id="f-h" type="time" name="heure_depart" value="${(e.heure_depart||"").slice(0,5)}"></label>
     <div class="grid2"><label for="f-io">Inscription (ouverture)<input id="f-io" type="date" name="inscription_ouverture" value="${e.inscription_ouverture||""}"></label>
       <label for="f-if">Inscription (fermeture)<input id="f-if" type="date" name="inscription_fermeture" value="${e.inscription_fermeture||""}"></label></div>
     <div class="grid2"><label for="f-tarif">Tarif<input id="f-tarif" name="tarif" value="${esc(e.tarif)}" placeholder="25 €"></label>
       <label for="f-lien">Lien d'inscription<input id="f-lien" type="url" name="lien" value="${esc(e.lien)}" placeholder="https://…"></label></div>
     <label for="f-aff">Affiche (image)${e.affiche?' <span class="hint">(déjà ajoutée)</span>':""}<input id="f-aff" type="file" accept="image/*"></label>
     <div class="sect">Parcours, distances et horaires</div>
-    <span class="hint">Un parcours par distance ou format, chacun avec son heure de départ et son GPX. Facultatif pour une simple sortie.</span>
+    <span class="hint">Un parcours par distance ou format, chacun avec son heure de départ et son GPX. Pour une simple sortie, un seul parcours suffit pour indiquer l'heure.</span>
     <div id="bp" style="display:grid;gap:10px">${editeurParcours()}</div>
     <label for="f-com">Commentaires<textarea id="f-com" name="commentaires" rows="2">${esc(e.commentaires)}</textarea></label>
     <label class="check" for="f-real"><input id="f-real" type="checkbox" name="realise"${e.realise?" checked":""}> Réalisé</label>
@@ -812,6 +817,7 @@ function formEvt(e={},opts0={}){
       <span style="display:flex;gap:8px"><button type="button" class="btn sec" ${e.id?`data-open="${e.id}"`:"data-close"}>Annuler</button><button class="btn pri" id="f-ok">Enregistrer</button></span></div>
   </form>`);
   brancherLieu();
+  const inc=$("#f-inc");if(inc)inc.onchange=()=>{$("#f-dates").hidden=inc.checked;$("#f-dd").required=!inc.checked};
   const zone=$("#bp"),redessiner=()=>{zone.innerHTML=editeurParcours()};
   zone.addEventListener("input",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined||t.type==="file")return;BP[i][t.dataset.pk]=t.value});
   zone.addEventListener("change",ev=>{const t=ev.target,i=t.dataset.pi;if(i===undefined)return;
@@ -828,7 +834,7 @@ function formEvt(e={},opts0={}){
   $("#f").onsubmit=async ev=>{ev.preventDefault();const b=$("#f-ok");occupe(b,true);
     try{
       const d=Object.fromEntries(new FormData(ev.target));
-      const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.date_debut,date_fin:d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut,heure_depart:nul(d.heure_depart),
+      const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.inconnue?null:d.date_debut,date_fin:d.inconnue?null:(d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut),heure_depart:null,
         inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),commentaires:nul(d.commentaires),realise:!!d.realise,lieu_lat:d.lieu_lat?+d.lieu_lat:null,lieu_lon:d.lieu_lon?+d.lieu_lon:null};
       if(!e.id)row.cree_par=me();
       const pre=bureau()?"":`membres/${me()}/`;
@@ -858,11 +864,13 @@ function formEvt(e={},opts0={}){
 // ================= Résultats =================
 const enSecondes=t=>{if(!t)return Infinity;const p=t.split(":").map(Number);return p.some(isNaN)?Infinity:p.reduce((a,b)=>a*60+b,0)};
 // Palmarès : nombre de top 10 / 5 / 3 / victoires et membres les plus prolifiques
-function palmares(saison){
+const resOK=mid=>porteeRes==="club"||+mid===+(membreRes||me());
+const quiRes=()=>porteeRes==="club"?"du club":(+(membreRes||me())===me()?"perso":"de "+prenom(membreRes));
+function palmares(){
   const evs=evsSaison();
   const tot={t10:0,t5:0,t3:0,t1:0},parM={};
   for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;
-    for(const [mid,x] of Object.entries(r)){const p=x.abandon?null:rangDe(x),m=parM[mid]??={id:+mid,t10:0,t5:0,t3:0,t1:0,n:0};m.n++;
+    for(const [mid,x] of Object.entries(r)){if(!resOK(mid))continue;const p=x.abandon?null:rangDe(x),m=parM[mid]??={id:+mid,t10:0,t5:0,t3:0,t1:0,n:0};m.n++;
       if(!p)continue;if(p<=10){tot.t10++;m.t10++}if(p<=5){tot.t5++;m.t5++}if(p<=3){tot.t3++;m.t3++}if(p===1){tot.t1++;m.t1++}}}
   const top=Object.values(parM).filter(m=>m.t10>0&&S.membres.some(x=>x.id===m.id)).sort((a,b)=>b.t10-a.t10||b.t3-a.t3||b.t1-a.t1||b.n-a.n).slice(0,3);
   return {tot,top};
@@ -870,61 +878,73 @@ function palmares(saison){
 const anneeDe=e=>e.date_debut.slice(0,4);
 const evsSaison=()=>new Set(S.evts.filter(e=>anneeRes==="Toutes"||anneeDe(e)===anneeRes).map(e=>e.id));
 function renderSaisons(){
-  const annees=["Toutes",...[...new Set(S.evts.filter(e=>jours(e.date_debut)<=0).map(anneeDe))].sort().reverse()];
-  if(!annees.includes(anneeRes))anneeRes=annees[1]||"Toutes";
-  return annees.length>1?`<div class="chips">${annees.map(a=>`<button data-annee="${a}" aria-pressed="${a===anneeRes}">${a==="Toutes"?"Toutes les années":a}</button>`).join("")}</div>`:"";
+  const cette=String(new Date().getFullYear());
+  const annees=["Toutes",...[...new Set([cette,...S.evts.filter(e=>jours(e.date_debut)<=0).map(anneeDe)])].sort().reverse()];
+  if(!annees.includes(anneeRes))anneeRes=cette;
+  const choixM=porteeRes==="indiv"?`<label for="res-m" style="flex:1;min-width:150px">Membre<select id="res-m">${S.membres.map(m=>`<option value="${m.id}"${m.id==(membreRes||me())?" selected":""}>${esc(m.prenom)}${m.id===me()?" (moi)":""}</option>`).join("")}</select></label>`:"";
+  return `<div class="bar">
+    <div class="seg" role="tablist"><button data-portee="club" aria-selected="${porteeRes==="club"}">Club</button><button data-portee="indiv" aria-selected="${porteeRes==="indiv"}">Individuel</button></div>
+    ${choixM}
+    <div class="chips">${annees.map(a=>`<button data-annee="${a}" aria-pressed="${a===anneeRes}">${a==="Toutes"?"Tous temps":a===cette?a+" (en cours)":a}</button>`).join("")}</div></div>`;
 }
-// Bilan : évènements, participations, finishers, km, ultras, podiums ; plus les plus assidus et mon bilan
+// Bilan : club (évènements, participations…) ou individuel (un membre)
 function renderBilan(){
-  const evs=evsSaison(),passes=S.evts.filter(e=>evs.has(e.id)&&jours(e.date_debut)<=0);
-  let part=0,fin=0,km=0,ultras=0,pod=0;const parM={},moi={evts:0,km:0,fin:0};
+  const evs=evsSaison(),passes=S.evts.filter(e=>evs.has(e.id)&&jours(e.date_debut)<=0),indiv=porteeRes==="indiv",cible=+(membreRes||me());
+  let nev=0,part=0,fin=0,km=0,ultras=0,pod=0,t10=0;const parM={},moi={evts:0,km:0,fin:0};
   for(const e of passes){
     const r=S.res[e.id]||{},p=S.part[e.id]||{};
     const venus=new Set([...Object.entries(p).filter(([,v])=>v===true).map(([m])=>+m),...Object.keys(r).map(Number)]);
-    part+=venus.size;venus.forEach(m=>parM[m]=(parM[m]||0)+1);if(venus.has(me()))moi.evts++;
-    for(const [mid,x] of Object.entries(r)){if(x.abandon)continue;const i=infosRes(e.id,x);fin++;if(i.ultra)ultras++;
-      const p2=rangDe(x);if(p2&&p2<=3)pod++;if(i.disc!=="triathlon"&&i.km){km+=i.km;if(+mid===me()){moi.km+=i.km}}if(+mid===me())moi.fin++}
+    if(indiv){if(venus.has(cible))nev++}else{nev++;part+=venus.size;venus.forEach(m=>parM[m]=(parM[m]||0)+1)}
+    if(venus.has(me()))moi.evts++;
+    for(const [mid,x] of Object.entries(r)){if(x.abandon)continue;const i=infosRes(e.id,x),rg=rangDe(x);
+      if(+mid===me()){moi.fin++;if(i.disc!=="triathlon"&&i.km)moi.km+=i.km}
+      if(!resOK(mid))continue;
+      fin++;if(i.ultra)ultras++;if(rg&&rg<=3)pod++;if(rg&&rg<=10)t10++;if(i.disc!=="triathlon"&&i.km)km+=i.km}
   }
-  const ass=Object.entries(parM).filter(([m])=>S.membres.some(x=>x.id==m)).sort((a,b)=>b[1]-a[1]||prenom(a[0]).localeCompare(prenom(b[0]))).slice(0,5),maxA=Math.max(1,...ass.map(a=>a[1]));
   const t=(v,l,c="")=>`<div class="tile ${c}"><b>${v}</b><span>${l}</span></div>`;
-  return `<article class="card"><div class="row"><h2>Bilan ${anneeRes==="Toutes"?"depuis la création":anneeRes}</h2>${anneeRes!=="Toutes"?`<span class="annee-t">${anneeRes}</span>`:""}</div>
-    <div class="tiles">${t(passes.length,"évènements")+t(part,"participations")+t(fin,"finishers")+t(fmtKm(Math.round(km)),"km parcourus")+t(ultras,"ultras","acc")+t(pod,"podiums","acc")}</div>
+  const periode=anneeRes==="Toutes"?"tous temps":anneeRes;
+  if(indiv)return `<article class="card"><div class="row"><h2>Bilan ${esc(prenom(cible))}</h2><span class="annee-t">${anneeRes==="Toutes"?"∞":anneeRes}</span></div>
+    <div class="tiles">${t(nev,"évènements")+t(fin,"finishers")+t(fmtKm(Math.round(km)),"km parcourus")+t(t10,"top 10")+t(pod,"podiums","acc")+t(ultras,"ultras","acc")}</div>
+    <span class="hint">Période : ${periode}. Km des courses terminées en vélo et course à pied.</span></article>`;
+  const ass=Object.entries(parM).filter(([m])=>S.membres.some(x=>x.id==m)).sort((a,b)=>b[1]-a[1]||prenom(a[0]).localeCompare(prenom(b[0]))).slice(0,5),maxA=Math.max(1,...ass.map(a=>a[1]));
+  return `<article class="card"><div class="row"><h2>Bilan du club</h2><span class="annee-t">${anneeRes==="Toutes"?"∞":anneeRes}</span></div>
+    <div class="tiles">${t(nev,"évènements")+t(part,"participations")+t(fin,"finishers")+t(fmtKm(Math.round(km)),"km parcourus")+t(ultras,"ultras","acc")+t(pod,"podiums","acc")}</div>
     <div class="moi-bilan"><b>Ton bilan :</b> ${moi.evts} évènement${moi.evts>1?"s":""}, ${moi.fin} résultat${moi.fin>1?"s":""}${moi.km?`, ${fmtKm(Math.round(moi.km))} km`:""}.</div>
     ${ass.length?`<div class="sect">Les plus assidus</div><div class="assidus">${ass.map(([m,n])=>`<div>${avatar(+m,"s")}<b>${esc(prenom(m))}</b><span class="n">${n}</span><span></span><span class="bar-a" style="width:${n/maxA*100}%"></span></div>`).join("")}</div>`:""}
-    <span class="hint">Km cumulés des finishers en vélo et course à pied (parcours ou distance renseignés).</span>
+    <span class="hint">Période : ${periode}. Km cumulés des finishers en vélo et course à pied.</span>
   </article>`;
 }
 function renderPalmares(){
   const {tot,top}=palmares(),cols=[["Top 10",tot.t10],["Top 5",tot.t5],["Top 3",tot.t3],["Victoires",tot.t1]],max=Math.max(1,tot.t10);
   const desc=m=>`${m.t10} top 10${m.t3?` · ${m.t3} podium${m.t3>1?"s":""}`:""}${m.t1?` · ${m.t1} victoire${m.t1>1?"s":""}`:""}`;
   const ord=[top[1],top[0],top[2]],cls=["p2","p1","p3"],num=[2,1,3];
-  return `<article class="card"><h2>Palmarès du club</h2>
+  return `<article class="card"><h2>Palmarès ${quiRes()}</h2>
     <div class="palm" role="img" aria-label="Top 10 : ${tot.t10}, top 5 : ${tot.t5}, top 3 : ${tot.t3}, victoires : ${tot.t1}">${cols.map(([l,v])=>`<div class="col"><span class="v">${v}</span><div class="tr"><div class="b" style="height:${v/max*100}%"></div></div></div>`).join("")}</div>
     <div class="palm-l">${cols.map(([l])=>`<span>${l}</span>`).join("")}</div>
-    <div class="sect">Les plus prolifiques</div>
+    ${porteeRes==="club"?`<div class="sect">Les plus prolifiques</div>
     ${top.length?`<div class="podium">${ord.map((m,i)=>m?`<div class="p ${cls[i]}">${avatar(m.id)}<b>${esc(prenom(m.id))}</b><span>${desc(m)}</span><div class="step">${num[i]}</div></div>`:"<div></div>").join("")}</div>`
-      :`<span class="hint">Pas encore de top 10. Indique ta place dans tes résultats pour alimenter le palmarès.</span>`}
+      :`<span class="hint">Pas encore de top 10 sur cette période. Indique ta place dans tes résultats pour alimenter le palmarès.</span>`}`:""}
   </article>`;
 }
 function renderUltras(){
   const evs=evsSaison(),liste=[],parM={};
-  for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;const e=S.evts.find(v=>v.id==eid);
-    for(const [mid,x] of Object.entries(r)){const i=infosRes(+eid,x);if(!i.ultra)continue;liste.push({mid:+mid,e,lib:i.lib});parM[mid]=(parM[mid]||0)+1}}
+  for(const [eid,r] of Object.entries(S.res)){if(!evs.has(+eid))continue;const e=evt(eid);
+    for(const [mid,x] of Object.entries(r)){if(!resOK(mid))continue;const i=infosRes(+eid,x);if(!i.ultra)continue;liste.push({mid:+mid,e,lib:i.lib});parM[mid]=(parM[mid]||0)+1}}
   liste.sort((a,b)=>b.e.date_debut.localeCompare(a.e.date_debut));
   const membres=Object.entries(parM).filter(([m])=>S.membres.some(x=>x.id==m)).sort((a,b)=>b[1]-a[1]||prenom(a[0]).localeCompare(prenom(b[0])));
-  return `<article class="card"><div class="row"><h2>Finishers d'ultra</h2><span class="big">${liste.length}</span></div>
+  return `<article class="card"><div class="row"><h2>Ultras ${quiRes()}</h2><span class="big">${liste.length}</span></div>
     <span class="hint">Course à pied de plus de 40 km, vélo de plus de 150 km, triathlon format L, XL ou XXL (Ironman).</span>
-    ${membres.length?`<div class="ugrid">${membres.map(([m,n])=>`<div class="u">${avatar(+m).replace("</span>",`<i>×${n}</i></span>`)}<b>${esc(prenom(m))}</b></div>`).join("")}</div>
-      <div class="sect">Derniers ultras</div>
-      <div class="uliste">${liste.slice(0,8).map(u=>`<div>${avatar(u.mid,"s")}<b>${esc(prenom(u.mid))} · ${esc(u.e.evenement)}</b><span></span><span>${fmt(u.e.date_debut,{day:"numeric",month:"short",year:"numeric"})}${u.lib?" · "+esc(u.lib):""}</span></div>`).join("")}</div>`
-      :`<span class="hint">Pas encore d'ultra enregistré. Choisis ton parcours (ou ta distance) dans tes résultats.</span>`}
+    ${liste.length?`${porteeRes==="club"?`<div class="ugrid">${membres.map(([m,n])=>`<div class="u">${avatar(+m).replace("</span>",`<i>×${n}</i></span>`)}<b>${esc(prenom(m))}</b></div>`).join("")}</div>`:""}
+      <div class="sect">${porteeRes==="club"?"Derniers ultras":"Ultras terminés"}</div>
+      <div class="uliste">${liste.slice(0,porteeRes==="club"?8:50).map(u=>`<div>${avatar(u.mid,"s")}<b>${esc(prenom(u.mid))} · ${esc(u.e.evenement)}</b><span></span><span>${fmt(u.e.date_debut,{day:"numeric",month:"short",year:"numeric"})}${u.lib?" · "+esc(u.lib):""}</span></div>`).join("")}</div>`
+      :`<span class="hint">Pas d'ultra sur cette période. Choisis ton parcours (ou ta distance) dans tes résultats.</span>`}
   </article>`;
 }
 function renderResultats(){
-  const evsA=evsSaison(),l=S.evts.filter(e=>jours(e.date_debut)<=0&&evsA.has(e.id)).sort((a,b)=>b.date_debut.localeCompare(a.date_debut));
+  const evsA=evsSaison(),cib=+(membreRes||me()),l=S.evts.filter(e=>jours(e.date_debut)<=0&&evsA.has(e.id)&&(porteeRes==="club"||S.part[e.id]?.[cib]===true||S.res[e.id]?.[cib])).sort((a,b)=>b.date_debut.localeCompare(a.date_debut));
   $("#results").innerHTML=renderSaisons()+renderBilan()+renderPalmares()+renderUltras()
     +`<div class="ajout"><span>Une course qui n'est pas dans la liste ?</span><button class="btn pri small" data-ajout-course>+ Ajouter une course</button></div>`
-    +(l.length?`<div class="sect">Évènements${anneeRes!=="Toutes"?" "+anneeRes:""}</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
+    +(l.length?`<div class="sect">Évènements${porteeRes==="indiv"?" de "+esc(prenom(cib)):""}${anneeRes!=="Toutes"?" · "+anneeRes:""}</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
     return `<article class="card tap" data-res="${e.id}">
       <div class="top">${bib(e)}<div class="info"><h2>${esc(e.evenement)}</h2>
         <div class="meta">${e.type?`<span class="type">${esc(e.type)}</span>`:""}${e.lieu?`<span>${esc(e.lieu)}</span>`:""}</div>
@@ -934,7 +954,7 @@ function renderResultats(){
     </article>`}).join("")||`<div class="empty"><b>Pas encore de résultats</b>Les évènements apparaissent ici dès leur jour J.</div>`);
 }
 function ficheResultats(id){
-  const e=S.evts.find(x=>x.id==id);if(!e)return fermer();
+  const e=evt(id);if(!e)return fermer();
   const r=S.res[id]||{},m=S.medias[id]||[],q=qui(e),moi=me();
   const ids=[...new Set([...q.oui.map(x=>x.id),...Object.keys(r).map(Number)])].sort((a,b)=>enSecondes(r[a]?.temps)-enSecondes(r[b]?.temps)||(rangDe(r[a])||1e9)-(rangDe(r[b])||1e9)||prenom(a).localeCompare(prenom(b)));
   const peut=mid=>mid===moi||bureau();let rang=0;
@@ -958,7 +978,7 @@ function ficheResultats(id){
 }
 function formResultat(eid,mid){
   if(mid!==me()&&!bureau())return toast("Tu ne peux modifier que ton propre résultat");
-  const e=S.evts.find(v=>v.id==eid)||{},x=S.res[eid]?.[mid]||{},ps=parcoursDe(eid);
+  const e=evt(eid)||{},x=S.res[eid]?.[mid]||{},ps=parcoursDe(eid);
   const parSel=x.membre_id?(x.parcours_id??""):(ps[0]?.id??""),disc0=x.discipline||disciplineDe(e.type);
   const formatX=FORMATS_TRI.includes(x.format)?x.format:"";
   ouvrirPanel(`<form id="fr"><div class="ph"><h3>Résultat de ${esc(prenom(mid))}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
@@ -1035,7 +1055,7 @@ function carteSondage(s){
         <span class="lab"><span class="box">${mes.includes(i)?"✓":""}</span>${esc(o)}</span>${voir?`<span class="n">${tot[i]}</span>`:""}</button>`).join("")}</div>
       <span class="hint">${clos?"Sondage terminé.":mes.length?"Ta réponse est enregistrée, tu peux la modifier jusqu'à la clôture.":"Réponds pour voir les résultats."}</span>
       ${bureau()?`<details><summary class="more">Détail des réponses (bureau)</summary><div class="who" style="margin-top:8px">${s.options.map((o,i)=>`<div><span class="lbl">${esc(o)}</span>${S.membres.filter(m=>(S.votes[s.id]?.[m.id]||[]).includes(i)).map(m=>`<span class="tag y">${esc(m.prenom)}</span>`).join("")||'<span class="hint">personne</span>'}</div>`).join("")}
-        <div class="row" style="justify-content:flex-start"><button class="btn sec small" data-archiver="${s.id}">${s.archive?"Désarchiver":"Archiver"}</button><button class="btn del small" data-delsondage="${s.id}">Supprimer le sondage</button></div></div></details>`:""}
+        <div class="row" style="justify-content:flex-start"><button class="btn sec small" data-modsondage="${s.id}">Modifier</button><button class="btn sec small" data-archiver="${s.id}">${s.archive?"Désarchiver":"Archiver"}</button><button class="btn del small" data-delsondage="${s.id}">Supprimer le sondage</button></div></div></details>`:""}
     </article>`;
 }
 function renderSondages(){
@@ -1056,21 +1076,30 @@ function voter(sid,i){
       if(ch.length)S.votes[sid][m]=ch;else delete S.votes[sid][m]},
     ()=>ch.length?sb.from("votes").upsert({sondage_id:sid,membre_id:m,choix:ch,maj_le:new Date().toISOString()}):sb.from("votes").delete().eq("sondage_id",sid).eq("membre_id",m));
 }
-function formSondage(){
-  ouvrirPanel(`<form id="fs"><div class="ph"><h3>Nouveau sondage</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
-    <label for="s-q">Question<input id="s-q" name="question" required placeholder="Quelle couleur pour le maillot ?"></label>
-    <label for="s-o">Réponses possibles (une par ligne)<textarea id="s-o" name="options" rows="5" required placeholder="Noir&#10;Blanc&#10;Rouge"></textarea></label>
-    <div class="grid2"><label for="s-l">Date limite<input id="s-l" type="date" name="limite" required value="${J(14)}"></label>
-      <label for="s-f">Fichier joint<input id="s-f" type="file"></label></div>
-    <label class="check" for="s-m"><input id="s-m" type="checkbox" name="multiple"> Plusieurs choix possibles</label>
-    <div class="row"><span></span><span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="s-ok">Publier</button></span></div></form>`);
+function formSondage(s0={}){
+  const ed=!!s0.id,nbv=ed?+(S.stats[s0.id]?.votants||0):0;
+  ouvrirPanel(`<form id="fs"><div class="ph"><h3>${ed?"Modifier le sondage":"Nouveau sondage"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <label for="s-q">Question<input id="s-q" name="question" required value="${esc(s0.question)}" placeholder="Quelle couleur pour le maillot ?"></label>
+    <label for="s-o">Réponses possibles (une par ligne)<textarea id="s-o" name="options" rows="5" required placeholder="Noir&#10;Blanc&#10;Rouge">${esc((s0.options||[]).join("\n"))}</textarea></label>
+    ${ed&&nbv?`<span class="hint">${nbv} membre${nbv>1?"s ont":" a"} déjà répondu : corriger le texte d'une réponse ou en ajouter à la fin conserve les votes ; en retirer ou les réordonner remet les votes à zéro.</span>`:""}
+    <div class="grid2"><label for="s-l">Date limite<input id="s-l" type="date" name="limite" required value="${s0.limite||J(14)}"></label>
+      <label for="s-f">${s0.fichier?"Remplacer le fichier joint":"Fichier joint"}<input id="s-f" type="file"></label></div>
+    ${s0.fichier?`<label class="check" for="s-fx"><input id="s-fx" type="checkbox" name="retirer"> Retirer le fichier actuel (${esc(s0.fichier_nom||"pièce jointe")})</label>`:""}
+    <label class="check" for="s-m"><input id="s-m" type="checkbox" name="multiple"${s0.multiple?" checked":""}> Plusieurs choix possibles</label>
+    <div class="row"><span></span><span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="s-ok">${ed?"Enregistrer":"Publier"}</button></span></div></form>`);
   $("#fs").onsubmit=async ev=>{ev.preventDefault();const b=$("#s-ok"),d=Object.fromEntries(new FormData(ev.target)),f=$("#s-f").files[0];
-    const opts=d.options.split("\n").map(s=>s.trim()).filter(Boolean);if(opts.length<2)return toast("Ajoute au moins deux réponses");
+    const opts=d.options.split("\n").map(x=>x.trim()).filter(Boolean);if(opts.length<2)return toast("Ajoute au moins deux réponses");
+    if(f&&f.size>20e6)return toast("Fichier trop lourd (20 Mo maximum)");
+    const anc=s0.options||[],raz=ed&&nbv&&(opts.length<anc.length);
+    if(raz&&!b.dataset.ok){b.dataset.ok=1;b.textContent="Confirmer : votes remis à zéro";return toast("Des réponses ont été retirées : les votes seront effacés",3500)}
     occupe(b,true);
-    try{const row={question:d.question.trim(),options:opts,multiple:!!d.multiple,limite:d.limite};
-      if(f){if(f.size>20e6){occupe(b,false);return toast("Fichier trop lourd (20 Mo maximum)")}
-        const ch=`sondages/${Date.now()}-${nomPropre(f.name)}`;await ok(sb.storage.from("club").upload(ch,f,{contentType:f.type||undefined}),"Fichier");row.fichier=ch;row.fichier_nom=f.name}
-      await ok(sb.from("sondages").insert(row),"Sondage");fermer();toast("Sondage publié");recharger();
+    try{const row={question:d.question.trim(),options:opts,multiple:!!d.multiple,limite:d.limite},vieux=[];
+      if(f){const ch=`sondages/${Date.now()}-${nomPropre(f.name)}`;await ok(sb.storage.from("club").upload(ch,f,{contentType:f.type||undefined}),"Fichier");row.fichier=ch;row.fichier_nom=f.name;if(s0.fichier)vieux.push(s0.fichier)}
+      else if(d.retirer){row.fichier=null;row.fichier_nom=null;vieux.push(s0.fichier)}
+      if(ed){await ok(sb.from("sondages").update(row).eq("id",s0.id),"Sondage");if(raz)await ok(sb.from("votes").delete().eq("sondage_id",s0.id),"Votes")}
+      else await ok(sb.from("sondages").insert(row),"Sondage");
+      if(vieux.length)sb.storage.from("club").remove(vieux);
+      fermer();toast(ed?"Sondage modifié":"Sondage publié");recharger();
     }catch(e){occupe(b,false)}};
 }
 
@@ -1130,7 +1159,6 @@ function renderProfil(){
     ${l.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer ${esc(d.nom)}">✕</button>`)).join("")}
     ${!l.length||cle==="autre"?`<label class="file empty-f" for="d-${cle}"><div class="ic">+</div><div class="nm"><b>Ajouter un fichier</b><span>PDF ou photo, 10 Mo max</span></div><input id="d-${cle}" type="file" accept=".pdf,image/*" data-doc="${cle}" hidden></label>`:""}</div>`};
   const anciens=mesDocs.filter(d=>d.type==="licence");
-  const installe=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
   $("#profil").innerHTML=`
   ${renderLiens()}
   <article class="card">
@@ -1149,8 +1177,6 @@ function renderProfil(){
       <button class="btn pri" id="p-ok">Enregistrer mon profil</button>
     </form>
   </article>
-  <button class="btn sec" data-guide-app>Guide de l'app</button>
-  ${bureauReel()&&!vueMembre?`<button class="btn sec" data-vue-membre>Voir l'app comme un membre</button>`:""}
   <article class="card"><h2>Mes documents</h2><span class="hint">Visibles uniquement par toi et le bureau.</span>
     ${DOCS.map(([c,t])=>bloc(c,t)).join("")}
     ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
@@ -1164,7 +1190,7 @@ function renderProfil(){
       <button class="btn pri" id="i-ok">Ajouter au club</button></form>
     <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
-  ${installe?"":`<article class="card"><h2>Installer l'app</h2><span class="hint"><b>iPhone</b> : dans Safari, bouton Partager puis « Sur l'écran d'accueil ».<br><b>Android</b> : dans Chrome, menu ⋮ puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</span></article>`}
+  ${bureauReel()&&!vueMembre?`<button class="btn sec" data-vue-membre>Voir l'app comme un membre</button>`:""}
   <button class="btn sec" id="logout">Se déconnecter</button>
   <span class="hint" style="text-align:center">Version ${VERSION}</span>`;
   $("#fp").onsubmit=async ev=>{ev.preventDefault();const b=$("#p-ok");occupe(b,true);const fd=new FormData(ev.target),d=Object.fromEntries(fd);
@@ -1230,13 +1256,17 @@ function guideApp(){
   const B=bureau();
   ouvrirPanel(`<div class="ph"><h3>Guide de l'app</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
   <div class="guide">
+    ${matchMedia("(display-mode: standalone)").matches||navigator.standalone?"":`<section class="bur"><h4><i>!</i>Installer l'app sur ton téléphone</h4><ul>
+      <li><b>iPhone</b> : ouvre l'app dans <b>Safari</b> › bouton Partager (carré avec une flèche) › « Sur l'écran d'accueil ».</li>
+      <li><b>Android</b> : dans <b>Chrome</b> › menu ⋮ › « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
+      <li>L'app s'ouvre ensuite comme les autres, en plein écran, avec le logo du club.</li></ul></section>`}
     <section><h4><i>1</i>Agenda</h4><ul>
       <li>Réponds <b>Je viens</b> ou <b>Je ne viens pas</b> ; touche à nouveau le bouton pour retirer ta réponse.</li>
       <li>Touche une carte pour ouvrir la fiche : horaires, parcours et GPX, tarif, lien d'inscription, qui vient.</li>
-      <li>Le bouton <b>+ Évènement</b> te permet d'ajouter une sortie ou une course ; tu peux ensuite la modifier ou la supprimer.</li>
+      <li>Le bouton <b>+ Évènement</b> te permet d'ajouter une sortie ou une course, même si la date n'est pas encore connue ; tu peux ensuite la modifier ou la supprimer.</li>
       <li>Tu reçois un rappel par e-mail 10 jours et 1 jour avant les évènements où tu viens.</li></ul></section>
     <section><h4><i>2</i>Résultats</h4><ul>
-      <li>Le bilan de l'année, le palmarès (top 10, podiums, victoires) et les finishers d'ultra ; choisis l'année en haut.</li>
+      <li>Bilan, palmarès (top 10, podiums, victoires) et ultras : choisis en haut <b>Club</b> ou <b>Individuel</b>, et la période (tous temps ou une année).</li>
       <li>Ouvre un évènement pour ajouter <b>ton temps, ta place et ton parcours</b>, ou cocher abandon.</li>
       <li><b>+ Ajouter une course</b> : pour une course passée absente de la liste, puis ton résultat.</li>
       <li>Ajoute tes photos et vidéos dans la fiche résultats de l'évènement.</li></ul></section>
@@ -1248,14 +1278,13 @@ function guideApp(){
       <li>Dépose ta licence (FFC, UFOLEP, FFTri), ton PPS ou ton certificat médical : seuls toi et le bureau les voient.</li>
       <li>Les liens du club (Strava, Instagram, e-mail) sont en haut de la page.</li></ul></section>
     <section><h4><i>5</i>Astuces</h4><ul>
-      <li>Installe l'app sur ton écran d'accueil : <b>iPhone</b> Safari › Partager › « Sur l'écran d'accueil » ; <b>Android</b> Chrome › ⋮ › « Installer l'application ».</li>
       <li>La lune en haut à droite passe l'app en fond sombre.</li>
       <li>Pour te reconnecter : ton e-mail, puis le code à 6 chiffres reçu (regarde les spams).</li></ul></section>
     ${B?`<section class="bur"><h4><i>B</i>Bureau</h4><ul>
       <li>Crée et modifie tous les évènements, avec plusieurs parcours (distance ou format, heure, GPX).</li>
       <li><b>Gérer les participants</b> dans la fiche : inscris ou retire n'importe quel membre.</li>
       <li>Saisis le résultat d'un autre membre depuis la fiche résultats.</li>
-      <li>Sondages : bouton <b>+ Sondage</b> ; dans « Détail des réponses », archive ou supprime.</li>
+      <li>Sondages : bouton <b>+ Sondage</b> ; dans « Détail des réponses », modifie (question, réponses, fichier joint), archive ou supprime.</li>
       <li>Profil : liens du club, notes du bureau, tableau des membres (licences, documents, note privée), ajout de membres.</li>
       <li>En bas de page : <b>Gérer les partenaires</b> (logos).</li></ul></section>`:""}
   </div>
@@ -1330,10 +1359,10 @@ function render(){
 }
 $("#t-up").onclick=()=>{tab="up";render()};$("#t-past").onclick=()=>{tab="past";render()};
 $("#fab").onclick=()=>vue==="agenda"?formEvt():formSondage();
-$("#sheet").onclick=e=>{if(e.target.id==="sheet")fermer()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)fermer();if(e.key==="Enter"&&e.target.dataset?.note)formNote(e.target.dataset.note)});
 document.addEventListener("change",e=>{
   const t=e.target;
+  if(t.id==="res-m"){membreRes=+t.value;return render()}
   if(t.dataset?.doc&&t.files?.[0]){envoyerDoc(t.dataset.doc,t.files[0]);t.value=""}
   if(t.dataset?.upmedia&&t.files?.length){envoyerMedias(+t.dataset.upmedia,[...t.files]);t.value=""}
 });
@@ -1344,6 +1373,8 @@ document.addEventListener("click",e=>{
   const nv=c("[data-v]");if(nv&&!c(".sheet")){vue=nv.dataset.v;fermer();render();scrollTo(0,0);return}
   const f=c("[data-f]");if(f){filtre=f.dataset.f;return render()}
   const an=c("[data-annee]");if(an){anneeRes=an.dataset.annee;return render()}
+  const po=c("[data-portee]");if(po){porteeRes=po.dataset.portee;return render()}
+  const ms=c("[data-modsondage]");if(ms)return formSondage(S.sondages.find(x=>x.id==ms.dataset.modsondage));
   if(c("[data-guide-app]"))return guideApp();
   if(c("[data-vue-membre]")&&bureauReel()){vueMembre=!vueMembre;fermer();render();scrollTo(0,0);return toast(vueMembre?"Aperçu membre activé":"Retour au mode bureau")}
   if(c("[data-ajout-course]"))return formEvt({},{resultat:true});
@@ -1354,7 +1385,7 @@ document.addEventListener("click",e=>{
   const cp=c("[data-copier]");if(cp){const v=cp.dataset.copier;(navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast("Copié : "+v),()=>toast(v,6000));return}
   const lk=c("[data-lien]");if(lk)return formLien(lk.dataset.lien);
   const no=c("[data-note]");if(no)return formNote(no.dataset.note);
-  const ed=c("[data-edit]");if(ed)return formEvt(S.evts.find(x=>x.id==ed.dataset.edit));
+  const ed=c("[data-edit]");if(ed)return formEvt(evt(ed.dataset.edit));
   const ge=c("[data-gerer]");if(ge)return gererParticipants(+ge.dataset.gerer);
   const st=c("[data-set]");if(st){const [eid,mid,v]=st.dataset.set.split(":");return fixerParticipation(+eid,+mid,v)}
   const er=c("[data-editres]");if(er){const [eid,mid]=er.dataset.editres.split(":").map(Number);return formResultat(eid,mid)}
