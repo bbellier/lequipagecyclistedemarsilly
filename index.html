@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr">
-<head> 
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>L'Équipage Cycliste de Marsilly</title>
@@ -361,13 +361,14 @@ tr.off td{opacity:.5}
 <div class="sheet" id="sheet" hidden><div class="panel" id="panel"></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script>/* Aperçu avec données fictives : ajouter ?demo à l'adresse */document.write('<script src="'+(/[?&]demo\b/.test(location.search)?"demo/mock-supabase.js":"supabase.js")+'"><\/script>')</script>
+<script>/* Aperçu avec données fictives : ajouter ?demo à l'adresse */document.write('<script src="'+(/[?&]demo\b/.test(location.search)?"mock-supabase.js":"supabase.js")+'"><\/script>')</script>
 <script>
 // =====================================================================
 // CONFIGURATION : les deux valeurs de Supabase > Project Settings > API
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
+const VERSION = "2026-11-01b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -621,14 +622,15 @@ function initCarte(el,{trace,point}){
 const itineraire=e=>e.lieu_lat!=null?`https://www.google.com/maps/dir/?api=1&destination=${e.lieu_lat},${e.lieu_lon}`:e.lieu?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.lieu)}`:"";
 // Complétion des lieux : Géoplateforme (France, gratuit, sans clé) puis Photon (monde entier)
 async function chercherLieux(q){
-  const r=[],aj=x=>{if(!r.some(y=>y.label===x.label))r.push(x)};
+  const r=[],aj=x=>{if(!r.some(y=>y.label===x.label))r.push(x)};let ko=0;chercherLieux.erreur=false;
   try{const j=await (await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`)).json();
     for(const f of j.features||[]){const p=f.properties||{},c=f.geometry?.coordinates;if(!c)continue;
-      aj({label:p.label||p.name,detail:p.type==="municipality"?(p.context||""):[p.postcode,p.city].filter(Boolean).join(" "),lat:c[1],lon:c[0]})}}catch(e){}
+      aj({label:p.label||p.name,detail:p.type==="municipality"?(p.context||""):[p.postcode,p.city].filter(Boolean).join(" "),lat:c[1],lon:c[0]})}}catch(e){ko++;console.warn("Géocodage IGN",e)}
   if(r.length<3){try{const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lang=fr`)).json();
     for(const f of j.features||[]){const p=f.properties||{},c=f.geometry?.coordinates;if(!c)continue;
       const rue=p.street?(p.housenumber?p.housenumber+" ":"")+p.street:"";
-      aj({label:[p.name,rue].filter(Boolean).join(", ")||p.city,detail:[p.postcode,p.city!==p.name?p.city:"",p.country].filter(Boolean).join(" · "),lat:c[1],lon:c[0]})}}catch(e){}}
+      aj({label:[p.name,rue].filter(Boolean).join(", ")||p.city,detail:[p.postcode,p.city!==p.name?p.city:"",p.country].filter(Boolean).join(" · "),lat:c[1],lon:c[0]})}}catch(e){ko++;console.warn("Géocodage Photon",e)}}
+  chercherLieux.erreur=!r.length&&ko>0;
   return r.slice(0,6);
 }
 function brancherLieu(){
@@ -637,8 +639,9 @@ function brancherLieu(){
   const fermerSug=()=>{box.hidden=true;box.innerHTML=""};
   inp.addEventListener("input",()=>{lat.value=lon.value="";ok.hidden=true;clearTimeout(t);const q=inp.value.trim();
     if(q.length<3)return fermerSug();
+    box.innerHTML='<button type="button" disabled>Recherche…</button>';box.hidden=false;
     t=setTimeout(async()=>{der=q;const l=await chercherLieux(q);if(der!==q||inp.value.trim()!==q)return;liste=l;
-      if(!l.length)return fermerSug();
+      if(!l.length){box.innerHTML=`<button type="button" disabled>${chercherLieux.erreur?"Service de lieux injoignable : vérifie ta connexion":"Aucun lieu trouvé, tu peux le taper librement"}</button>`;return}
       box.innerHTML=l.map((x,i)=>`<button type="button" data-sug="${i}">${esc(x.label)}${x.detail?`<small>${esc(x.detail)}</small>`:""}</button>`).join("");box.hidden=false},300)});
   box.addEventListener("mousedown",e=>e.preventDefault());
   box.addEventListener("click",e=>{const b=e.target.closest("[data-sug]");if(!b)return;const x=liste[+b.dataset.sug];
@@ -1152,7 +1155,8 @@ function renderProfil(){
     <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
   ${installe?"":`<article class="card"><h2>Installer l'app</h2><span class="hint"><b>iPhone</b> : dans Safari, bouton Partager puis « Sur l'écran d'accueil ».<br><b>Android</b> : dans Chrome, menu ⋮ puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</span></article>`}
-  <button class="btn sec" id="logout">Se déconnecter</button>`;
+  <button class="btn sec" id="logout">Se déconnecter</button>
+  <span class="hint" style="text-align:center">Version ${VERSION}</span>`;
   $("#fp").onsubmit=async ev=>{ev.preventDefault();const b=$("#p-ok");occupe(b,true);const fd=new FormData(ev.target),d=Object.fromEntries(fd);
     const pre=d.prenom.trim();
     if(pre&&pre!==m.prenom){const r=await sb.rpc("maj_mon_prenom",{p_prenom:pre});if(r.error){occupe(b,false);return erreur(r.error,"Prénom")}S.moi.prenom=pre}
