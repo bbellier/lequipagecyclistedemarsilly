@@ -258,6 +258,21 @@ tr.off td{opacity:.5}
 .tile b{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
 .tile span{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);overflow-wrap:anywhere}
 .tile.acc b{color:var(--red)}
+.nav.n5 div{grid-template-columns:repeat(5,1fr)}.nav.n5 button{font-size:11px;letter-spacing:.02em}
+.art{gap:8px}.art.off{opacity:.65}.art-img{width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.prix{font-family:var(--display);font-weight:800;font-size:22px;white-space:nowrap}
+.desc{margin:0;white-space:pre-line;font-size:15px}
+.ajout{display:flex;gap:8px;align-items:center}.ajout select{width:auto;flex:1;min-width:0}
+.mes{display:flex;flex-wrap:wrap;gap:6px}.mes .tag{display:inline-flex;align-items:center;gap:6px}
+.x-mini{border:0;background:none;color:inherit;font-size:12px;padding:0 2px;cursor:pointer;opacity:.8}
+.lien-btn{border:0;background:none;padding:0;color:var(--red);text-decoration:underline;font:inherit;cursor:pointer}
+.lignes{list-style:none;margin:0;padding:0;display:grid;gap:4px}.lignes li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding:4px 0}
+.lignes .tot{border-bottom:0;font-weight:700}
+.paiement{display:grid;gap:8px;border:2px solid var(--ink);border-radius:10px;padding:12px}.paiement h3{margin:0}.paiement p{margin:0}
+.rib{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}.rib code{white-space:pre-wrap;font-size:13px;overflow-wrap:anywhere}
+.pour{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}
+td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .moi-bilan{border-left:3px solid var(--red);padding-left:10px;font-size:14.5px}
 .assidus{display:grid;gap:6px}
 .assidus div{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:15px}
@@ -278,6 +293,31 @@ tr.off td{opacity:.5}
 .btn-guide{box-shadow:0 0 0 2px var(--red) inset;color:var(--red)}
 .btn-guide{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:19px;flex:none;padding:0}
 .reseaux{display:flex;flex-wrap:wrap;gap:8px}
+/* Logos partenaires selon leur format */
+.plogo{height:72px!important}
+.plogo.large{grid-column:span 2;padding:10px 14px}
+.plogo.carre{padding:5px}
+.plogo.haut{padding:4px}
+/* Pièce jointe de sondage mise en évidence */
+.pj{display:flex;align-items:center;gap:12px;border:2px solid var(--red);background:var(--red-soft);border-radius:12px;padding:12px;color:var(--ink);text-align:left;width:100%}
+.pj .ic{width:42px;height:50px;border-radius:5px;background:var(--red);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:11px;flex:none}
+.pj .nm{min-width:0;flex:1;display:grid;gap:1px}
+.pj .nm small{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);font-weight:600}
+.pj .nm b{font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pj .go{font-weight:700;font-size:14px;background:var(--red);color:#fff;border-radius:8px;padding:8px 11px;flex:none}
+/* Défilement des photos */
+.viewer{position:relative}
+.nav-m{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;border:0;background:rgb(0 0 0 / .55);color:#fff;font-size:24px;line-height:1;display:grid;place-items:center;padding:0}
+.nav-m.g{left:8px} .nav-m.d{right:8px}
+.compteur{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgb(0 0 0 / .55);color:#fff;border-radius:999px;padding:2px 10px;font-family:var(--mono);font-size:12px}
+/* Droit à l'image et statut */
+.droit{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px;background:var(--paper)}
+.droit p{margin:0;font-size:14.5px}
+.choix2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.statut{display:flex;flex-wrap:wrap;gap:5px}
+.statut span{font-family:var(--mono);font-size:11px;font-weight:600;border-radius:4px;padding:2px 7px;background:var(--ink);color:var(--on-ink)}
+.statut span.adh{background:var(--wash);color:var(--ink)}
+.bilan-bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
 /* Cartes et lieux */
 .carte{height:250px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--wash);z-index:0}
 .carte .leaflet-control-layers{font-family:var(--body);font-size:14px;color:#161514}
@@ -309,7 +349,7 @@ tr.off td{opacity:.5}
 .uliste span{color:var(--muted)}
 /* Partenaires */
 .partners{display:grid;gap:10px;padding-top:6px}
-.plogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.plogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));grid-auto-flow:dense;gap:8px}
 .plogo{background:#fff;border:1px solid var(--line);border-radius:8px;height:62px;display:grid;place-items:center;padding:8px;text-decoration:none;color:#161514;font-weight:600;font-size:13px;text-align:center;overflow:hidden}
 .plogo img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 /* Connexion */
@@ -358,6 +398,7 @@ tr.off td{opacity:.5}
   </section>
   <section id="v-resultats" hidden><div class="list" id="results"></div></section>
   <section id="v-sondages" hidden><div class="list" id="polls"></div></section>
+  <section id="v-boutique" hidden><div class="list" id="boutique"></div></section>
   <section id="v-profil" hidden><div class="list" id="profil"></div></section>
   <div id="partners"></div>
 </div>
@@ -366,6 +407,7 @@ tr.off td{opacity:.5}
   <button data-v="agenda" aria-selected="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
   <button data-v="resultats" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>Résultats</button>
   <button data-v="sondages" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Sondages</button>
+  <button data-v="boutique" aria-selected="false" hidden><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Boutique</button>
   <button data-v="profil" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profil</button>
 </div></nav>
 <div class="sheet" id="sheet" hidden><div class="panel" id="panel"></div></div>
@@ -378,7 +420,7 @@ tr.off td{opacity:.5}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-01e";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-16c";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -453,7 +495,7 @@ async function ok(p,ctx){const r=await p;if(r.error){erreur(r.error,ctx);throw r
 function occupe(btn,on){if(!btn)return;btn.disabled=on;if(on){btn.dataset.txt=btn.textContent;btn.textContent="Patiente…"}else if(btn.dataset.txt)btn.textContent=btn.dataset.txt}
 function ouvrirPanel(html,ctx={}){const p=$("#panel");p.dataset.ctx=JSON.stringify(ctx);p.innerHTML=html;$("#sheet").hidden=false;p.scrollTop=0}
 function fermer(){if(laCarte){laCarte.remove();laCarte=null}$("#sheet").hidden=true;$("#panel").dataset.ctx="{}"}
-function rafraichirPanel(){const p=$("#panel"),c=JSON.parse(p.dataset.ctx||"{}");if($("#sheet").hidden||!c.k)return;const s=p.scrollTop;({fiche,ficheResultats,gererParticipants})[c.k](c.id);p.scrollTop=s}
+function rafraichirPanel(){const p=$("#panel"),c=JSON.parse(p.dataset.ctx||"{}");if($("#sheet").hidden||!c.k||!({fiche,ficheResultats,gererParticipants})[c.k])return;const s=p.scrollTop;({fiche,ficheResultats,gererParticipants})[c.k](c.id);p.scrollTop=s}
 const fichierHTML=(nom,info,act="")=>`<div class="file"><div class="ic">${esc(ext(nom))}</div><div class="nm"><b>${esc(nom)}</b><span>${esc(info||"")}</span></div>${act}</div>`;
 
 // Ouvre un fichier privé (lien temporaire de 10 min)
@@ -483,7 +525,9 @@ async function compresser(f,max=2000,carre=false){
 async function charger(){
   const B=bureau();
   if(Date.now()-S.charge>6*3600e3)S.urls={};
-  const [ann,ev,pa,re,md,so,st,vo,pr,dc,li,pc,pt,mb,nb,nm]=await Promise.all([
+  const doux=q=>q.then(r=>r.error?null:r.data,()=>null);
+  const [moiM,ann,ev,pa,re,md,so,st,vo,pr,dc,li,pc,pt,mb,nb,nm,bq,ar,co,cs]=await Promise.all([
+    ok(sb.from("membres").select("*").eq("id",me()).single(),"Profil"),
     ok(sb.rpc("annuaire"),"Membres"),
     ok(sb.from("evenements").select("*").order("date_debut"),"Évènements"),
     ok(sb.from("participations").select("evenement_id,membre_id,reponse"),"Participations"),
@@ -499,9 +543,11 @@ async function charger(){
     ok(sb.from("partenaires").select("*").order("ordre"),"Partenaires"),
     B?ok(sb.from("membres").select("*").order("prenom"),"Membres"):Promise.resolve([]),
     B?ok(sb.from("notes_bureau").select("*").order("maj_le",{ascending:false}),"Notes"):Promise.resolve([]),
-    B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([])
+    B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([]),
+    doux(sb.from("boutique").select("*")),doux(sb.from("articles").select("*").order("ordre")),doux(sb.from("commandes").select("*").order("cree_le")),doux(sb.from("commandes_suivi").select("*"))
   ]);
-  S.membres=ann||[];S.evts=(ev||[]).filter(e=>e.date_debut);S.aDefinir=(ev||[]).filter(e=>!e.date_debut);S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
+  S.boutique=bq?.[0]||null;S.articles=ar||[];S.commandes=co||[];S.suivi={};(cs||[]).forEach(x=>S.suivi[x.membre_id]=x);
+  if(moiM)S.moi={...S.moi,...moiM};S.membres=ann||[];S.evts=(ev||[]).filter(e=>e.date_debut);S.aDefinir=(ev||[]).filter(e=>!e.date_debut);S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
   S.notesM={};(nm||[]).forEach(n=>S.notesM[n.membre_id]=n);
   S.part={};(pa||[]).forEach(p=>(S.part[p.evenement_id]??={})[p.membre_id]=p.reponse);
   S.res={};(re||[]).forEach(r=>(S.res[r.evenement_id]??={})[r.membre_id]=r);
@@ -516,7 +562,7 @@ async function charger(){
 }
 // Liens temporaires pour afficher affiches, photos, vidéos et photos de profil
 async function signer(){
-  const lots=[["club",[...S.evts.map(e=>e.affiche),...S.partenaires.map(p=>p.logo)].filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)],["avatars",[...S.membres.map(m=>m.photo),S.profils[me()]?.photo].filter(Boolean)]];
+  const lots=[["club",[...S.evts.map(e=>e.affiche),...S.partenaires.map(p=>p.logo),...(S.articles||[]).map(a=>a.photo)].filter(Boolean)],["medias",Object.values(S.medias).flat().map(m=>m.chemin)],["avatars",[...S.membres.map(m=>m.photo),S.profils[me()]?.photo].filter(Boolean)]];
   for(const [b,l] of lots){
     const manque=[...new Set(l)].filter(p=>!S.urls[b+"/"+p]);if(!manque.length)continue;
     const {data,error}=await sb.storage.from(b).createSignedUrls(manque,86400);
@@ -807,6 +853,7 @@ function formEvt(e={},opts0={}){
       <label for="f-if">Inscription (fermeture)<input id="f-if" type="date" name="inscription_fermeture" value="${e.inscription_fermeture||""}"></label></div>
     <div class="grid2"><label for="f-tarif">Tarif<input id="f-tarif" name="tarif" value="${esc(e.tarif)}" placeholder="25 €"></label>
       <label for="f-lien">Lien d'inscription<input id="f-lien" type="url" name="lien" value="${esc(e.lien)}" placeholder="https://…"></label></div>
+    <label for="f-lr">Lien vers les résultats officiels (une fois publiés)<input id="f-lr" type="url" name="lien_resultats" value="${esc(e.lien_resultats)}" placeholder="https://…"></label>
     <label for="f-aff">Affiche (image)${e.affiche?' <span class="hint">(déjà ajoutée)</span>':""}<input id="f-aff" type="file" accept="image/*"></label>
     <div class="sect">Parcours, distances et horaires</div>
     <span class="hint">Un parcours par distance ou format, chacun avec son heure de départ et son GPX. Pour une simple sortie, un seul parcours suffit pour indiquer l'heure.</span>
@@ -835,7 +882,7 @@ function formEvt(e={},opts0={}){
     try{
       const d=Object.fromEntries(new FormData(ev.target));
       const row={evenement:d.evenement.trim(),type:nul(d.type),saison:nul(d.saison),lieu:nul(d.lieu),date_debut:d.inconnue?null:d.date_debut,date_fin:d.inconnue?null:(d.date_fin&&d.date_fin>=d.date_debut?d.date_fin:d.date_debut),heure_depart:null,
-        inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),commentaires:nul(d.commentaires),realise:!!d.realise,lieu_lat:d.lieu_lat?+d.lieu_lat:null,lieu_lon:d.lieu_lon?+d.lieu_lon:null};
+        inscription_ouverture:nul(d.inscription_ouverture),inscription_fermeture:nul(d.inscription_fermeture),tarif:nul(d.tarif),lien:nul(d.lien),lien_resultats:nul(d.lien_resultats),commentaires:nul(d.commentaires),realise:!!d.realise,lieu_lat:d.lieu_lat?+d.lieu_lat:null,lieu_lon:d.lieu_lon?+d.lieu_lon:null};
       if(!e.id)row.cree_par=me();
       const pre=bureau()?"":`membres/${me()}/`;
       const aff=$("#f-aff").files[0],anciens=[];
@@ -942,13 +989,16 @@ function renderUltras(){
 }
 function renderResultats(){
   const evsA=evsSaison(),cib=+(membreRes||me()),l=S.evts.filter(e=>jours(e.date_debut)<=0&&evsA.has(e.id)&&(porteeRes==="club"||S.part[e.id]?.[cib]===true||S.res[e.id]?.[cib])).sort((a,b)=>b.date_debut.localeCompare(a.date_debut));
-  $("#results").innerHTML=renderSaisons()+renderBilan()+renderPalmares()+renderUltras()
+  let masque=false;try{masque=localStorage.getItem("bilanMasque")==="1"}catch(e){}
+  $("#results").innerHTML=renderSaisons()
+    +`<div class="bilan-bar"><span class="sect">Bilan, palmarès et ultras</span><button class="btn sec small" data-toggle-bilan>${masque?"Afficher":"Masquer"}</button></div>`
+    +(masque?"":renderBilan()+renderPalmares()+renderUltras())
     +`<div class="ajout"><span>Une course qui n'est pas dans la liste ?</span><button class="btn pri small" data-ajout-course>+ Ajouter une course</button></div>`
     +(l.length?`<div class="sect">Évènements${porteeRes==="indiv"?" de "+esc(prenom(cib)):""}${anneeRes!=="Toutes"?" · "+anneeRes:""}</div>`:"")+(l.map(e=>{const r=S.res[e.id]||{},m=S.medias[e.id]||[],q=qui(e),nr=Object.keys(r).length;
     return `<article class="card tap" data-res="${e.id}">
       <div class="top">${bib(e)}<div class="info"><h2>${esc(e.evenement)}</h2>
         <div class="meta">${e.type?`<span class="type">${esc(e.type)}</span>`:""}${e.lieu?`<span>${esc(e.lieu)}</span>`:""}</div>
-        <div class="extras"><span class="pill">${q.oui.length} participant${q.oui.length>1?"s":""}</span><span class="pill">${nr} résultat${nr>1?"s":""}</span><span class="pill">${m.length} média${m.length>1?"s":""}</span></div></div></div>
+        <div class="extras"><span class="pill">${q.oui.length} participant${q.oui.length>1?"s":""}</span><span class="pill">${nr} résultat${nr>1?"s":""}</span><span class="pill">${m.length} média${m.length>1?"s":""}</span>${e.lien_resultats?'<span class="pill">Résultats officiels</span>':""}</div></div></div>
       ${m.length?`<div class="thumbs">${m.slice(-3).map(x=>{const u=S.urls["medias/"+x.chemin];return u?(x.type==="video"?`<video src="${esc(u)}#t=0.1" muted playsinline preload="metadata"></video>`:`<img src="${esc(u)}" alt="${esc(x.legende||"Photo")}" loading="lazy">`):""}).join("")}</div>`:""}
       <span class="more">${jours(e.date_debut)===0?"C'est aujourd'hui · ajoute ton résultat ›":"Voir les résultats ›"}</span>
     </article>`}).join("")||`<div class="empty"><b>Pas encore de résultats</b>Les évènements apparaissent ici dès leur jour J.</div>`);
@@ -960,6 +1010,8 @@ function ficheResultats(id){
   const peut=mid=>mid===moi||bureau();let rang=0;
   ouvrirPanel(`<div class="ph"><h3>${esc(e.evenement)}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${plage(e)}${e.lieu?" · "+esc(e.lieu):""}</span>
+    ${lienSur(e.lien_resultats)?`<a class="cta" href="${esc(lienSur(e.lien_resultats))}" target="_blank" rel="noopener">Résultats officiels de l'organisateur ↗</a>`:""}
+    ${peutModifier(e)?`<form id="flr" class="row" style="align-items:end"><label for="lr-u" style="flex:1">${e.lien_resultats?"Modifier le lien":"Lien vers les résultats officiels"}<input id="lr-u" type="url" inputmode="url" value="${esc(e.lien_resultats)}" placeholder="https://…"></label><button class="btn sec" id="lr-ok">Enregistrer</button></form>`:""}
     <div class="sect">Résultats du club</div>
     <div>${ids.map(mid=>{const x=r[mid],rg=!x?.abandon&&(x?.temps||rangDe(x))?++rang:"";return `<div class="res">
       <div class="rank">${rg||"–"}</div>
@@ -975,6 +1027,9 @@ function ficheResultats(id){
       <label class="add-media" for="m-add">+ Ajouter des photos ou vidéos<input id="m-add" type="file" accept="image/*,video/*" multiple data-upmedia="${id}" hidden></label></div>
     <span class="hint">Photos réduites automatiquement. Vidéos : 50 Mo maximum.</span>`,{k:"ficheResultats",id});
   const add=$("#r-add");if(add)add.onclick=()=>{const v=+$("#r-qui").value;if(v)formResultat(id,v)};
+  const flr=$("#flr");if(flr)flr.onsubmit=async ev=>{ev.preventDefault();let u=$("#lr-u").value.trim();if(u&&!/^https?:\/\//i.test(u))u="https://"+u;
+    const b=$("#lr-ok");occupe(b,true);const {error}=await sb.from("evenements").update({lien_resultats:nul(u)}).eq("id",id);occupe(b,false);
+    if(error)return erreur(error,"Lien");toast(u?"Lien des résultats enregistré":"Lien retiré");await recharger();ficheResultats(id)};
 }
 function formResultat(eid,mid){
   if(mid!==me()&&!bureau())return toast("Tu ne peux modifier que ton propre résultat");
@@ -1028,14 +1083,22 @@ async function envoyerMedias(eid,files){
   if(n)toast(n>1?`${n} fichiers ajoutés`:"Fichier ajouté");
   await recharger();
 }
+function defilerMedia(sens){
+  const c=JSON.parse($("#panel").dataset.ctx||"{}");if(!c.media)return;const [eid,id]=c.media,l=S.medias[eid]||[];if(l.length<2)return;
+  const i=l.findIndex(y=>y.id==id);voirMedia(eid,l[(i+sens+l.length)%l.length].id);
+}
 function voirMedia(eid,id){
-  const x=(S.medias[eid]||[]).find(y=>y.id==id);if(!x)return;const u=S.urls["medias/"+x.chemin]||"";
+  const l=S.medias[eid]||[],x=l.find(y=>y.id==id);if(!x)return;const u=S.urls["medias/"+x.chemin]||"",i=l.indexOf(x);
   ouvrirPanel(`<div class="ph"><h3>${esc(x.legende||(x.type==="video"?"Vidéo":"Photo"))}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
-    <div class="viewer">${x.type==="video"?`<video src="${esc(u)}" controls playsinline></video>`:`<img src="${esc(u)}" alt="${esc(x.legende||"")}">`}</div>
-    <span class="hint">Ajouté par ${esc(prenom(x.auteur_id))}</span>
+    <div class="viewer" id="viewer">${x.type==="video"?`<video src="${esc(u)}" controls playsinline></video>`:`<img src="${esc(u)}" alt="${esc(x.legende||"")}">`}
+      ${l.length>1?`<button class="nav-m g" data-defiler="-1" aria-label="Photo précédente">‹</button><button class="nav-m d" data-defiler="1" aria-label="Photo suivante">›</button><span class="compteur">${i+1} / ${l.length}</span>`:""}</div>
+    <span class="hint">Ajouté par ${esc(prenom(x.auteur_id))}${l.length>1?" · glisse ou utilise les flèches pour passer d'une photo à l'autre":""}</span>
     ${x.auteur_id===me()?`<label for="m-leg">Légende<input id="m-leg" value="${esc(x.legende)}" maxlength="140"></label>`:""}
     <div class="row">${x.auteur_id===me()||bureau()?`<button class="btn del" id="m-del">Supprimer</button>`:"<span></span>"}
-      <span style="display:flex;gap:8px"><button class="btn sec" data-dlmedia="${eid}:${x.id}">Télécharger</button><button class="btn sec" data-res="${eid}">Retour</button></span></div>`);
+      <span style="display:flex;gap:8px"><button class="btn sec" data-dlmedia="${eid}:${x.id}">Télécharger</button><button class="btn sec" data-res="${eid}">Retour</button></span></div>`,{media:[eid,x.id]});
+  const v=$("#viewer");let x0=null;
+  v.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
+  v.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>45)defilerMedia(dx<0?1:-1)});
   const leg=$("#m-leg");if(leg)leg.onchange=async()=>{const {error}=await sb.from("medias").update({legende:nul(leg.value.trim())}).eq("id",x.id);if(error)return erreur(error,"Légende");toast("Légende enregistrée");recharger()};
   const del=$("#m-del");if(del)del.onclick=async()=>{if(!del.dataset.ok){del.dataset.ok=1;del.textContent="Confirmer la suppression";return}
     occupe(del,true);const {error}=await sb.from("medias").delete().eq("id",x.id);if(error){occupe(del,false);return erreur(error,"Suppression")}
@@ -1049,7 +1112,7 @@ function carteSondage(s){
     return `<article class="card">
       <div class="info"><h2>${esc(s.question)}</h2>${s.archive?'<span class="pill" style="justify-self:start">Archivé</span>':""}
         <span class="hint">${s.multiple?"Plusieurs choix possibles":"Un seul choix"} · ${nv} réponse${nv>1?"s":""} · ${clos?"clos le "+fmt(s.limite,{day:"numeric",month:"long"}):"jusqu'au "+fmt(s.limite,{day:"numeric",month:"long"})}</span></div>
-      ${s.fichier?fichierHTML(s.fichier_nom||"Pièce jointe","Document joint",`<button class="btn sec small" data-pj="${s.id}">Ouvrir</button>`):""}
+      ${s.fichier?`<button class="pj" data-pj="${s.id}"><span class="ic">${esc(ext(s.fichier_nom||"PDF"))}</span><span class="nm"><small>Document à consulter</small><b>${esc(s.fichier_nom||"Pièce jointe")}</b></span><span class="go">Ouvrir</span></button>`:""}
       <div class="opts">${s.options.map((o,i)=>`<button class="opt${s.multiple?"":" radio"}" data-vote="${s.id}:${i}" aria-pressed="${mes.includes(i)}"${clos?" disabled":""}>
         <span class="fill" style="width:${voir?tot[i]/max*100:0}%"></span>
         <span class="lab"><span class="box">${mes.includes(i)?"✓":""}</span>${esc(o)}</span>${voir?`<span class="n">${tot[i]}</span>`:""}</button>`).join("")}</div>
@@ -1101,6 +1164,150 @@ function formSondage(s0={}){
       if(vieux.length)sb.storage.from("club").remove(vieux);
       fermer();toast(ed?"Sondage modifié":"Sondage publié");recharger();
     }catch(e){occupe(b,false)}};
+}
+
+// ================= Boutique =================
+const boutiqueVue=()=>bureau()||!!S.boutique?.visible;
+const ouverteB=()=>{const b=S.boutique||{};return !!(b.visible&&b.ouverte&&(!b.limite||jours(b.limite)>=0))};
+const eur=n=>(+n||0).toLocaleString("fr-FR",{minimumFractionDigits:(+n||0)%1?2:0,maximumFractionDigits:2})+" €";
+const article=id=>(S.articles||[]).find(a=>a.id===id);
+const prixL=c=>(+article(c.article_id)?.prix||0)*c.quantite;
+const totalDe=l=>l.reduce((t,c)=>t+prixL(c),0);
+const resteDu=id=>{const su=S.suivi[id]||{},t=totalDe(lignesDe(id));return Math.max(0,Math.round((t-(su.paye?(su.paye_montant==null?t:+su.paye_montant):0))*100)/100)};
+const lignesDe=id=>(S.commandes||[]).filter(c=>c.membre_id===id);
+const libLigne=c=>`${c.quantite} × ${article(c.article_id)?.nom||"article retiré"}${c.taille?" ("+c.taille+")":""}`;
+const rangTaille=t=>{const i=TAILLES.indexOf(t);return i<0?99:i};
+const nomComplet=id=>{const n=S.profils[id]?.nom;return prenom(id)+(n?" "+n:"")};
+const tailleProfil=a=>{const p=S.profils[me()]||{};return a.taille==="maillot"?p.taille_maillot||"":a.taille==="cuissard"?p.taille_cuissard||"":""};
+function carteArticle(a,ouv){
+  const mes=lignesDe(me()).filter(c=>c.article_id===a.id),img=a.photo&&S.urls["club/"+a.photo];
+  const opts=a.taille==="aucune"?[]:(a.tailles||[]),def=tailleProfil(a),liste=def&&!opts.includes(def)?[def,...opts]:opts;
+  return `<article class="card art${a.actif?"":" off"}">
+    ${img?`<img class="art-img" src="${esc(img)}" alt="${esc(a.nom)}" loading="lazy">`:""}
+    <div class="row"><h2>${esc(a.nom)}</h2>${a.prix!=null?`<span class="prix">${eur(a.prix)}</span>`:""}</div>
+    ${a.actif?"":'<span class="pill" style="justify-self:start">Masqué aux membres</span>'}
+    ${a.description?`<p class="desc">${esc(a.description)}</p>`:""}
+    ${mes.length?`<div class="mes">${mes.map(c=>`<span class="tag y">${esc(libLigne(c))}${ouv?`<button class="x-mini" data-delligne="${c.id}" aria-label="Retirer ${esc(libLigne(c))}">✕</button>`:""}</span>`).join("")}</div>`:""}
+    ${ouv&&a.actif?`<div class="ajout" data-art="${a.id}">
+      ${opts.length?`<select data-at="taille" aria-label="Taille">${def?"":'<option value="">Taille…</option>'}${liste.map(t=>`<option${t===def?" selected":""}>${esc(t)}</option>`).join("")}</select>`:""}
+      <select data-at="q" aria-label="Quantité">${[1,2,3,4,5].map(n=>`<option value="${n}">${n}</option>`).join("")}</select>
+      <button class="btn pri small" data-ajart="${a.id}">Ajouter</button></div>
+      ${a.taille==="maillot"||a.taille==="cuissard"?`<span class="hint">${def?`Taille ${a.taille} de ton profil : <b>${esc(def)}</b>`:`Taille ${a.taille} pas encore renseignée`} · <button class="lien-btn" data-v="profil">mes tailles</button></span>`:""}`:""}
+    ${bureau()?`<button class="btn sec small" data-article="${a.id}" style="justify-self:start">✎ Modifier l'article</button>`:""}
+  </article>`;
+}
+function carteMaCommande(ouv){
+  const l=lignesDe(me()),b=S.boutique||{},su=S.suivi[me()]||{},tot=totalDe(l),p=S.profils[me()]||{},du=resteDu(me());
+  const ref=`TENUE ${(p.nom||"").toUpperCase()} ${S.moi.prenom||""}`.replace(/\s+/g," ").trim();
+  const iban=(b.rib||"").replace(/\s/g,"").match(/[A-Z]{2}\d{2}[A-Z0-9]{11,30}/)?.[0];
+  return `<article class="card"><div class="row"><h2>Ma commande</h2>${l.length?`<span class="pill">${su.remis?"Remise ✓":su.paye&&du>0?"Reste "+eur(du):su.paye?"Payée ✓":"À payer"}</span>`:""}</div>
+    ${l.length?`<ul class="lignes">${l.map(c=>`<li><span>${esc(libLigne(c))}</span><b>${eur(prixL(c))}</b></li>`).join("")}<li class="tot"><span>Total</span><b>${eur(tot)}</b></li></ul>`
+      :`<span class="hint">${ouv?"Rien pour l'instant : choisis tes articles ci-dessous.":"Tu n'as rien commandé."}</span>`}
+    ${l.length&&du>0&&b.rib?`<div class="paiement"><h3>Paiement par virement</h3>
+      <div class="rib"><code>${esc(b.rib)}</code>${iban?`<button class="btn sec small" data-copier="${esc(iban)}">Copier l'IBAN</button>`:""}</div>
+      <p>Montant${su.paye?" restant":""} : <b>${eur(du)}</b> · référence : <b>${esc(ref)}</b> <button class="btn sec small" data-copier="${esc(ref)}">Copier</button></p>
+      <span class="hint">Le RIB du club n'est donné que dans l'app : ignore tout autre RIB reçu par mail ou message.</span></div>`:""}
+  </article>`;
+}
+function recapCommande(){
+  const ag={};(S.commandes||[]).forEach(c=>{const k=c.article_id+"|"+c.taille;(ag[k]??={a:article(c.article_id),t:c.taille,q:0}).q+=c.quantite});
+  const lignes=Object.values(ag).sort((x,y)=>(x.a?.ordre??0)-(y.a?.ordre??0)||String(x.a?.nom).localeCompare(String(y.a?.nom))||rangTaille(x.t)-rangTaille(y.t));
+  const ids=[...new Set((S.commandes||[]).map(c=>c.membre_id))].sort((a,b)=>nomComplet(a).localeCompare(nomComplet(b)));
+  return {lignes,ids};
+}
+function carteBilanCommande(){
+  const {lignes,ids}=recapCommande(),tot=totalDe(S.commandes||[]),pieces=(S.commandes||[]).reduce((t,c)=>t+c.quantite,0);
+  const paye=ids.reduce((t,i)=>t+totalDe(lignesDe(i))-resteDu(i),0),remis=ids.filter(i=>S.suivi[i]?.remis).length;
+  const t=(v,l,c="")=>`<div class="tile ${c}"><b>${v}</b><span>${l}</span></div>`;
+  return `<article class="card"><div class="row"><h2>Bilan de la commande</h2><span class="role">bureau</span></div>
+    <div class="tiles t4">${t(ids.length,"membres")+t(pieces,"pièces")+t(eur(tot),"à encaisser")+t(eur(paye),"déjà payé",paye<tot?"acc":"")}</div>
+    ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table><thead><tr><th>Article</th><th>Taille</th><th>Qté</th></tr></thead><tbody>${lignes.map(x=>`<tr><td>${esc(x.a?.nom||"article retiré")}</td><td>${esc(x.t||"–")}</td><td><b>${x.q}</b></td></tr>`).join("")}</tbody></table></div>
+    <button class="btn pri" data-recap>Copier le récap pour le fournisseur</button>`:'<span class="hint">Aucune commande pour l\'instant.</span>'}
+    ${formPourMembre()}
+    ${lignes.length?`
+    <span class="sect">Par membre · ${remis}/${ids.length} remis</span><div class="tw"><table><thead><tr><th>Membre</th><th>Commande</th><th>Total</th><th>Payé</th><th>Remis</th></tr></thead><tbody>${ids.map(i=>{const su=S.suivi[i]||{};
+      return `<tr><td>${esc(nomComplet(i))}</td><td>${lignesDe(i).map(c=>`${esc(libLigne(c))} <button class="x-mini" data-delligne="${c.id}" aria-label="Retirer ${esc(libLigne(c))}">✕</button>`).join("<br>")}</td><td>${eur(totalDe(lignesDe(i)))}${su.paye&&resteDu(i)>0?`<br><span class="status warn">+${eur(resteDu(i))} à payer</span>`:""}</td><td class="chk"><input type="checkbox" data-suivi="${i}:paye"${su.paye?" checked":""} aria-label="Payé"></td><td class="chk"><input type="checkbox" data-suivi="${i}:remis"${su.remis?" checked":""} aria-label="Remis"></td></tr>`}).join("")}</tbody></table></div>`
+      :""}
+  </article>`;
+}
+const taillesPour=(aid,mid)=>{const a=article(aid);if(!a||a.taille==="aucune")return {opts:[],def:""};const p=S.profils[mid]||{},def=a.taille==="maillot"?p.taille_maillot||"":a.taille==="cuissard"?p.taille_cuissard||"":"";return {opts:def&&!(a.tailles||[]).includes(def)?[def,...a.tailles]:(a.tailles||[]),def}};
+function optionsTaille(aid,mid){const {opts,def}=taillesPour(aid,mid);return opts.length?(def?"":'<option value="">Taille…</option>')+opts.map(t=>`<option${t===def?" selected":""}>${esc(t)}</option>`).join(""):'<option value="">sans taille</option>'}
+function formPourMembre(){
+  const ms=S.complets.filter(x=>x.actif).sort((a,b)=>nomComplet(a.id).localeCompare(nomComplet(b.id))),arts=(S.articles||[]);if(!arts.length)return "";
+  const m0=pourMembre.m&&ms.some(x=>x.id===pourMembre.m)?pourMembre.m:ms[0]?.id,a0=pourMembre.a&&article(pourMembre.a)?pourMembre.a:arts[0].id;
+  return `<div class="pour" id="pour"><span class="sect">Commander pour un membre</span>
+    <span class="hint">Pour un membre sans e-mail ou qui commande de vive voix. Marche aussi quand les commandes sont fermées.</span>
+    <div class="grid2"><label for="cb-m">Membre<select id="cb-m">${ms.map(x=>`<option value="${x.id}"${x.id===m0?" selected":""}>${esc(nomComplet(x.id))}${x.user_id?"":x.email?" · jamais connecté":" · sans e-mail"}</option>`).join("")}</select></label>
+      <label for="cb-a">Article<select id="cb-a">${arts.map(a=>`<option value="${a.id}"${a.id===a0?" selected":""}>${esc(a.nom)}</option>`).join("")}</select></label></div>
+    <div class="ajout"><select id="cb-t" aria-label="Taille">${optionsTaille(a0,m0)}</select><select id="cb-q" aria-label="Quantité">${[1,2,3,4,5].map(n=>`<option value="${n}">${n}</option>`).join("")}</select><button class="btn pri small" data-pourmembre>Ajouter</button></div></div>`;
+}
+const pourMembre={};
+function ajouterPourMembre(){
+  const mid=+$("#cb-m").value,aid=+$("#cb-a").value,t=$("#cb-t").value,q=+$("#cb-q").value||1,a=article(aid);
+  if(a&&a.taille!=="aucune"&&(a.tailles||[]).length&&!t)return toast("Choisis une taille");
+  pourMembre.m=mid;pourMembre.a=aid;
+  const ex=lignesDe(mid).find(c=>c.article_id===aid&&c.taille===t),row={membre_id:mid,article_id:aid,taille:t,quantite:Math.min(20,(ex?.quantite||0)+q)};
+  agir(()=>{if(ex)ex.quantite=row.quantite;else S.commandes.push({...row,id:-Date.now()})},()=>sb.from("commandes").upsert(row,{onConflict:"membre_id,article_id,taille"}),`Ajouté pour ${prenom(mid)}`);
+}
+function texteRecap(){
+  const {lignes,ids}=recapCommande(),b=S.boutique||{};
+  return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
+}
+function renderBoutique(){
+  const b=S.boutique,ouv=ouverteB(),B=bureau();
+  if(!b){$("#boutique").innerHTML=`<div class="empty"><b>Boutique pas encore installée</b>${B?"Lance la mise à jour v8 dans Supabase (SQL Editor) pour l'activer.":"Reviens bientôt."}</div>`;return}
+  const arts=(S.articles||[]).filter(a=>B||a.actif);
+  $("#boutique").innerHTML=`<article class="card"><div class="row"><h2>${esc(b.titre||"Boutique du club")}</h2>${B?'<button class="btn sec small" data-reglages>Réglages</button>':""}</div>
+      <div class="extras"><span class="pill">${ouv?(b.limite?`Commandes ouvertes jusqu'au ${fmt(b.limite,{day:"numeric",month:"long"})}`:"Commandes ouvertes"):"Commandes fermées"}</span>${B&&!b.visible?'<span class="pill">Onglet caché aux membres</span>':""}</div>
+      ${b.infos?`<p class="desc">${esc(b.infos)}</p>`:""}</article>
+    ${carteMaCommande(ouv)}
+    ${arts.map(a=>carteArticle(a,ouv)).join("")||`<div class="empty"><b>Aucun article</b>${B?"Ajoute le premier avec le bouton « Article ».":"Le bureau n'a pas encore mis d'articles en ligne."}</div>`}
+    ${B?carteBilanCommande():""}`;
+}
+function ajouterAuPanier(aid){
+  const box=document.querySelector(`.ajout[data-art="${aid}"]`),a=article(aid);if(!box||!a)return;
+  const t=box.querySelector('[data-at="taille"]')?.value??"",q=+box.querySelector('[data-at="q"]').value||1;
+  if(a.taille!=="aucune"&&(a.tailles||[]).length&&!t)return toast("Choisis une taille");
+  const ex=lignesDe(me()).find(c=>c.article_id===aid&&c.taille===t),row={membre_id:me(),article_id:aid,taille:t,quantite:Math.min(20,(ex?.quantite||0)+q)};
+  agir(()=>{if(ex)ex.quantite=row.quantite;else S.commandes.push({...row,id:-Date.now()})},()=>sb.from("commandes").upsert(row,{onConflict:"membre_id,article_id,taille"}),"Ajouté à ta commande");
+}
+function retirerLigne(id){agir(()=>{S.commandes=S.commandes.filter(c=>c.id!==id)},()=>sb.from("commandes").delete().eq("id",id),"Retiré de ta commande")}
+function suivreCommande(mid,champ,val){const row={membre_id:mid,paye:false,remis:false,...S.suivi[mid],[champ]:val};if(champ==="paye")row.paye_montant=val?totalDe(lignesDe(mid)):null;agir(()=>{S.suivi[mid]=row},()=>sb.from("commandes_suivi").upsert(row))}
+function reglagesBoutique(){
+  const b=S.boutique||{};
+  ouvrirPanel(`<form id="fbq"><div class="ph"><h3>Réglages de la boutique</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <label class="check" for="bq-v"><input id="bq-v" type="checkbox" name="visible"${b.visible?" checked":""}> Onglet Boutique visible par les membres</label>
+    <label class="check" for="bq-o"><input id="bq-o" type="checkbox" name="ouverte"${b.ouverte?" checked":""}> Commandes ouvertes</label>
+    <div class="grid2"><label for="bq-t">Titre<input id="bq-t" name="titre" value="${esc(b.titre)}" placeholder="Commande tenues 2027"></label><label for="bq-l">Date limite<input id="bq-l" type="date" name="limite" value="${b.limite||""}"></label></div>
+    <label for="bq-i">Infos pour les membres<textarea id="bq-i" name="infos" rows="3" placeholder="Fournisseur, délai de livraison, remise prévue à l'AG…">${esc(b.infos)}</textarea></label>
+    <label for="bq-r">RIB du club<textarea id="bq-r" name="rib" rows="3" placeholder="Titulaire : L'Équipage Cycliste de Marsilly&#10;IBAN : FR76 …&#10;BIC : …">${esc(b.rib)}</textarea></label>
+    <span class="hint">Le RIB n'est affiché qu'aux membres connectés qui ont une commande à payer ; il n'est jamais dans le code public du site.</span>
+    <div class="row"><button type="button" class="btn del" id="bq-raz">Vider les commandes</button><span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="bq-ok">Enregistrer</button></span></div></form>`);
+  const raz=$("#bq-raz");raz.onclick=async()=>{if(!raz.dataset.ok){raz.dataset.ok=1;raz.textContent="Confirmer : tout effacer";return toast("Efface toutes les commandes et le suivi payé/remis (nouvelle campagne)",3500)}
+    occupe(raz,true);const a=await sb.from("commandes").delete().gt("id",0),c=await sb.from("commandes_suivi").delete().gt("membre_id",0);
+    if(a.error||c.error)return erreur(a.error||c.error,"Remise à zéro");fermer();toast("Commandes vidées");recharger()};
+  $("#fbq").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target)),btn=$("#bq-ok");occupe(btn,true);
+    const row={visible:!!d.visible,ouverte:!!d.ouverte,titre:nul(d.titre.trim()),limite:nul(d.limite),infos:nul(d.infos.trim()),rib:nul(d.rib.trim())};
+    const {error}=await sb.from("boutique").update(row).eq("id",1);occupe(btn,false);if(error)return erreur(error,"Boutique");fermer();toast("Boutique enregistrée");recharger()};
+}
+function formArticle(a={}){
+  const ed=!!a.id,nb=ed?S.commandes.filter(c=>c.article_id===a.id).length:0;
+  ouvrirPanel(`<form id="fa"><div class="ph"><h3>${ed?"Modifier l'article":"Nouvel article"}</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <label for="a-n">Nom<input id="a-n" name="nom" required maxlength="80" value="${esc(a.nom)}" placeholder="Maillot manches courtes"></label>
+    <div class="grid2"><label for="a-p">Prix (€)<input id="a-p" name="prix" type="number" step="0.01" min="0" value="${a.prix??""}"></label>
+      <label for="a-t">Taille<select id="a-t" name="taille">${[["maillot","Taille maillot du profil"],["cuissard","Taille cuissard du profil"],["libre","Tailles libres"],["aucune","Sans taille"]].map(([v,l])=>`<option value="${v}"${(a.taille||"maillot")===v?" selected":""}>${l}</option>`).join("")}</select></label></div>
+    <label for="a-ts">Tailles proposées (séparées par des virgules)<input id="a-ts" name="tailles" value="${esc((a.tailles||TAILLES.filter(Boolean).slice(0,6)).join(", "))}"></label>
+    <label for="a-d">Description<textarea id="a-d" name="description" rows="3" placeholder="Coupe, tissu, guide des tailles…">${esc(a.description)}</textarea></label>
+    <div class="grid2"><label for="a-f">${a.photo?"Remplacer la photo":"Photo"}<input id="a-f" type="file" accept="image/*"></label><label for="a-o">Ordre d'affichage<input id="a-o" name="ordre" type="number" value="${a.ordre??(S.articles||[]).length+1}"></label></div>
+    <label class="check" for="a-a"><input id="a-a" type="checkbox" name="actif"${a.actif===false?"":" checked"}> Visible par les membres</label>
+    <div class="row">${ed?`<button type="button" class="btn del" id="a-del">Supprimer</button>`:"<span></span>"}<span style="display:flex;gap:8px"><button type="button" class="btn sec" data-close>Annuler</button><button class="btn pri" id="a-ok">Enregistrer</button></span></div></form>`);
+  const del=$("#a-del");if(del)del.onclick=async()=>{if(!del.dataset.ok){del.dataset.ok=1;del.textContent="Confirmer";if(nb)toast(`Supprime aussi ${nb} ligne${nb>1?"s":""} de commande`,3500);return}
+    const {error}=await sb.from("articles").delete().eq("id",a.id);if(error)return erreur(error,"Suppression");if(a.photo)sb.storage.from("club").remove([a.photo]);fermer();toast("Article supprimé");recharger()};
+  $("#fa").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target)),btn=$("#a-ok"),f=$("#a-f").files[0];occupe(btn,true);
+    try{const row={nom:d.nom.trim(),prix:d.prix===""?null:+d.prix,taille:d.taille,tailles:d.tailles.split(/[,;\n]/).map(x=>x.trim()).filter(Boolean),description:nul(d.description.trim()),ordre:parseInt(d.ordre,10)||0,actif:!!d.actif};
+      if(f){const g=await compresser(f,1400),ch=`boutique/${Date.now()}-${nomPropre(g.name)}`;await ok(sb.storage.from("club").upload(ch,g,{contentType:g.type||undefined}),"Photo");row.photo=ch;if(a.photo)sb.storage.from("club").remove([a.photo])}
+      if(ed)await ok(sb.from("articles").update(row).eq("id",a.id),"Article");else await ok(sb.from("articles").insert(row),"Article");
+      fermer();toast("Article enregistré");recharger()}catch(e){occupe(btn,false)}};
 }
 
 // ================= Profil, liens utiles, bureau =================
@@ -1159,13 +1366,14 @@ function renderProfil(){
     ${l.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer ${esc(d.nom)}">✕</button>`)).join("")}
     ${!l.length||cle==="autre"?`<label class="file empty-f" for="d-${cle}"><div class="ic">+</div><div class="nm"><b>Ajouter un fichier</b><span>PDF ou photo, 10 Mo max</span></div><input id="d-${cle}" type="file" accept=".pdf,image/*" data-doc="${cle}" hidden></label>`:""}</div>`};
   const anciens=mesDocs.filter(d=>d.type==="licence");
+  const stat=(S.moi.licences||[]);
   $("#profil").innerHTML=`
-  ${renderLiens()}
   <article class="card">
     <div class="photo-row">${avatar(m.id,"l")}<div style="display:grid;gap:6px;justify-items:start">
       <h2>${esc(m.prenom)} ${esc(p.nom||"")}</h2>
       <div class="row" style="justify-content:flex-start;gap:6px"><label class="btn sec small" for="p-photo" style="cursor:pointer;color:var(--ink);font-size:14px">${p.photo?"Changer la photo":"Ajouter une photo"}<input id="p-photo" type="file" accept="image/*" hidden></label>${p.photo?`<button class="btn sec small" id="p-nophoto">Retirer</button>`:""}</div></div></div>
     <span class="hint">Connecté avec ${esc(m.email)}${m.role==="bureau"?" · membre du bureau":""}</span>
+    <div style="display:grid;gap:6px"><span class="sect">Statut au club</span>${stat.length?`<div class="statut">${stat.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adhérent":"Licencié "+esc(l)}</span>`).join("")}${S.moi.licences_saison?`<span class="adh">Saison ${esc(S.moi.licences_saison)}</span>`:""}</div>`:'<span class="hint">Pas encore renseigné par le bureau.</span>'}</div>
     <form id="fp" style="display:grid;gap:10px">
       <div class="grid2"><label for="p-pre">Prénom<input id="p-pre" name="prenom" required maxlength="40" value="${esc(m.prenom)}" autocomplete="given-name"></label><label for="p-nom">Nom<input id="p-nom" name="nom" value="${esc(p.nom)}" autocomplete="family-name"></label></div>
       <div class="grid2"><label for="p-tel">Téléphone<input id="p-tel" name="tel" type="tel" value="${esc(p.tel)}" autocomplete="tel"></label><label for="p-urg">Contact d'urgence<input id="p-urg" name="urgence" value="${esc(p.urgence)}" placeholder="Nom et téléphone"></label></div>
@@ -1173,7 +1381,13 @@ function renderProfil(){
       <div class="grid2" style="gap:8px 12px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> Licence ${f}</label>`).join("")}</div>
       <span class="sect">Tailles de tenue</span>
       <div class="grid2"><label for="p-tm">Maillot<select id="p-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="p-tc">Cuissard<select id="p-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
+      ${boutiqueVue()?`<span class="hint">Ces tailles pré-remplissent tes choix dans la <button type="button" class="lien-btn" data-v="boutique">boutique</button>.</span>`:""}
       <label class="check petit" for="p-rap"><input id="p-rap" type="checkbox" name="rappels"${p.rappels===false?"":" checked"}> Rappels par e-mail (J-10 et J-1) pour les évènements où je viens</label>
+      <label class="check petit" for="p-bil"><input id="p-bil" type="checkbox" name="bilans"${p.bilans===false?"":" checked"}> Bilan par e-mail (résultats, photos) après chaque évènement du club</label>
+      <span class="sect">Droit à l'image</span>
+      <div class="droit"><p>${esc(TEXTE_DROIT)}</p>
+        <div class="row" style="justify-content:flex-start;gap:16px"><label class="check" for="p-di1"><input id="p-di1" type="radio" name="droit_image" value="1"${p.droit_image===true?" checked":""}> J'accepte</label><label class="check" for="p-di0"><input id="p-di0" type="radio" name="droit_image" value="0"${p.droit_image===false?" checked":""}> Je refuse</label></div>
+        ${p.droit_image_le?`<span class="hint">Choix enregistré le ${quand(p.droit_image_le)}.</span>`:""}</div>
       <button class="btn pri" id="p-ok">Enregistrer mon profil</button>
     </form>
   </article>
@@ -1181,12 +1395,13 @@ function renderProfil(){
     ${DOCS.map(([c,t])=>bloc(c,t)).join("")}
     ${anciens.length?`<div style="display:grid;gap:6px"><span class="sect">Licence (ancien envoi)</span>${anciens.map(d=>fichierHTML(d.nom,taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button><button class="btn del small" data-deldoc="${d.id}" aria-label="Retirer">✕</button>`)).join("")}</div>`:""}
   </article>
+  ${renderLiens()}
   ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":' <span class="hint">· jamais connecté</span>'}</span></span></td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-    <span class="hint">✓ document déposé · ! licence cochée dans le profil mais pas encore déposée · – rien</span>
+    <div class="tw"><table><thead><tr><th>Membre</th><th>Statut</th><th>Image</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":x.email?' <span class="hint">· jamais connecté</span>':' <span class="hint">· sans e-mail</span>'}</span></span></td><td>${(x.licences||[]).length?`<div class="statut">${x.licences.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adh.":esc(l)}</span>`).join("")}</div>`:'<span class="status ko">?</span>'}</td><td>${etatDroit(x.id)}</td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <span class="hint">Statut : renseigné par le bureau dans la fiche du membre. Image : ✓ accepté · ✗ refusé · ? sans réponse. Documents : ✓ déposé · ! licence cochée mais pas déposée · – rien.</span>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
-      <label for="i-e">E-mail<input id="i-e" name="email" type="email" required placeholder="prenom@exemple.fr"></label>
+      <label for="i-e">E-mail <span class="hint">(laisser vide pour un membre sans e-mail)</span><input id="i-e" name="email" type="email" placeholder="prenom@exemple.fr"></label>
       <button class="btn pri" id="i-ok">Ajouter au club</button></form>
     <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
@@ -1196,16 +1411,18 @@ function renderProfil(){
   $("#fp").onsubmit=async ev=>{ev.preventDefault();const b=$("#p-ok");occupe(b,true);const fd=new FormData(ev.target),d=Object.fromEntries(fd);
     const pre=d.prenom.trim();
     if(pre&&pre!==m.prenom){const r=await sb.rpc("maj_mon_prenom",{p_prenom:pre});if(r.error){occupe(b,false);return erreur(r.error,"Prénom")}S.moi.prenom=pre}
-    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom?.trim()),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),rappels:!!d.rappels,maj_le:new Date().toISOString()});
+    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom?.trim()),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),rappels:!!d.rappels,bilans:!!d.bilans,
+      ...(d.droit_image!==undefined&&(d.droit_image==="1")!==p.droit_image?{droit_image:d.droit_image==="1",droit_image_le:new Date().toISOString()}:{}),maj_le:new Date().toISOString()});
     occupe(b,false);b.blur();if(error)return erreur(error,"Profil");toast("Profil enregistré");recharger()};
   $("#logout").onclick=deconnecter;
   $("#p-photo").onchange=e=>{const f=e.target.files[0];if(f)envoyerPhoto(f);e.target.value=""};
   const np=$("#p-nophoto");if(np)np.onclick=async()=>{const anc=p.photo;const {error}=await sb.from("profils").upsert({membre_id:m.id,photo:null});if(error)return erreur(error,"Photo");
     sb.storage.from("avatars").remove([anc]);toast("Photo retirée");recharger()};
-  const inv=$("#finv");if(inv)inv.onsubmit=async ev=>{ev.preventDefault();const b=$("#i-ok"),d=Object.fromEntries(new FormData(ev.target)),email=d.email.trim().toLowerCase();
+  const inv=$("#finv");if(inv)inv.onsubmit=async ev=>{ev.preventDefault();const b=$("#i-ok"),d=Object.fromEntries(new FormData(ev.target)),email=d.email.trim().toLowerCase()||null;
+    if(!email&&d.role==="bureau")return toast("Un membre du bureau doit avoir un e-mail pour se connecter");
     occupe(b,true);const {error}=await sb.from("membres").insert({email,prenom:d.prenom.trim(),role:d.role});occupe(b,false);
     if(error)return /duplicate|23505/.test(error.message)?toast("Cet e-mail est déjà inscrit"):erreur(error,"Ajout");
-    toast(`${d.prenom.trim()} peut maintenant se connecter`,3500);recharger()};
+    toast(email?`${d.prenom.trim()} peut maintenant se connecter`:`${d.prenom.trim()} ajouté sans e-mail : le bureau gère pour lui`,3500);recharger()};
 }
 async function envoyerPhoto(f){
   if(!f.type.startsWith("image/"))return toast("Choisis une image");
@@ -1237,19 +1454,52 @@ async function retirerDoc(id){
 function voirMembre(id){
   const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[],note=S.notesM[id]?.note||"";
   ouvrirPanel(`<div class="ph"><h3>${esc(m.prenom)} ${esc(p.nom||"")}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
-    <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${esc(m.email)}<br>Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.</span></div>
+    <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${m.email?esc(m.email):"Sans e-mail"}<br>${m.user_id?`Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.`:"Compte géré par le bureau tant qu'il ne s'est pas connecté."}</span></div>
+    ${!m.user_id&&bureau()?`<form id="fgere" class="droit"><span class="sect" style="padding:0">Profil géré par le bureau</span>
+      <div class="grid2"><label for="g-n">Nom<input id="g-n" name="nom" value="${esc(p.nom)}"></label><label for="g-e">E-mail <span class="hint">(s'il en a un plus tard)</span><input id="g-e" name="email" type="email" value="${esc(m.email)}"></label></div>
+      <div class="grid2"><label for="g-tm">Taille maillot<select id="g-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="g-tc">Taille cuissard<select id="g-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
+      <button class="btn sec" id="g-ok">Enregistrer</button></form>`:""}
     <dl class="facts">${COLS_DOCS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
     ${docs.map(d=>fichierHTML(d.nom,(NOM_DOC[d.type]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
+    <div class="droit"><span class="sect" style="padding:0">Statut au club</span>
+      <div class="grid2" style="gap:8px 12px">${["FFTri","FFC","UFOLEP","Adhérent"].map(l=>`<label class="check" for="ms-${l}"><input id="ms-${l}" type="checkbox" value="${l}" data-statut${(m.licences||[]).includes(l)?" checked":""}> ${l==="Adhérent"?"Adhérent (sans licence)":"Licencié "+l}</label>`).join("")}</div>
+      <label for="ms-s">Saison<input id="ms-s" value="${esc(m.licences_saison||saisonDe(J(0)))}"></label>
+      <button class="btn sec" id="ms-ok" type="button">Enregistrer le statut</button></div>
+    <dl class="facts"><dt>Image</dt><dd>${p.droit_image===true?"Droit à l'image accepté":p.droit_image===false?"Droit à l'image refusé":"Pas encore répondu"}${p.droit_image_le?" ("+quand(p.droit_image_le)+")":""}</dd></dl>
     <label for="m-note">Note du bureau (invisible pour ${esc(m.prenom)})<textarea id="m-note" rows="4" placeholder="Cotisation réglée, matériel prêté…">${esc(note)}</textarea></label>
     <button class="btn sec" id="m-note-ok">Enregistrer la note</button>
     ${m.id!==me()?`<label for="m-role">Rôle<select id="m-role"><option value="membre"${m.role==="membre"?" selected":""}>Membre</option><option value="bureau"${m.role==="bureau"?" selected":""}>Bureau</option></select></label>
       <button class="btn ${m.actif?"del":"sec"}" id="m-actif">${m.actif?"Retirer du club":"Réintégrer au club"}</button>`:""}`);
+  const fg=$("#fgere");if(fg)fg.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(fg)),b=$("#g-ok"),email=d.email.trim().toLowerCase()||null;occupe(b,true);
+    const r1=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom.trim()),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),maj_le:new Date().toISOString()});
+    const r2=email!==(m.email||null)?await sb.from("membres").update({email}).eq("id",m.id):{};occupe(b,false);
+    if(r1.error||r2.error){const e=r1.error||r2.error;return /duplicate|23505/.test(e.message)?toast("Cet e-mail est déjà utilisé"):erreur(e,"Profil")}
+    toast(email&&!m.email?`${m.prenom} peut maintenant se connecter avec cet e-mail`:"Profil enregistré",3500);await recharger();voirMembre(m.id)};
+  $("#ms-ok").onclick=async e=>{const b=e.target,lic=[...document.querySelectorAll("[data-statut]:checked")].map(x=>x.value);occupe(b,true);
+    const {error}=await sb.from("membres").update({licences:lic,licences_saison:nul($("#ms-s").value.trim())}).eq("id",m.id);occupe(b,false);
+    if(error)return erreur(error,"Statut");toast("Statut enregistré");recharger()};
   $("#m-note-ok").onclick=async e=>{const b=e.target;occupe(b,true);const {error}=await sb.from("notes_membres").upsert({membre_id:m.id,note:nul($("#m-note").value.trim()),maj_le:new Date().toISOString()});
     occupe(b,false);if(error)return erreur(error,"Note");toast("Note enregistrée");recharger()};
   const r=$("#m-role");if(r)r.onchange=async()=>{const {error}=await sb.from("membres").update({role:r.value}).eq("id",m.id);if(error)return erreur(error,"Rôle");toast("Rôle mis à jour");recharger()};
   const a=$("#m-actif");if(a)a.onclick=async()=>{if(m.actif&&!a.dataset.ok){a.dataset.ok=1;a.textContent="Confirmer : retirer "+m.prenom;return}
     const {error}=await sb.from("membres").update({actif:!m.actif}).eq("id",m.id);if(error)return erreur(error,"Mise à jour");toast(m.actif?m.prenom+" a été retiré du club":m.prenom+" est de retour");fermer();recharger()};
 }
+
+// ================= Droit à l'image =================
+const TEXTE_DROIT=`J'autorise ${CLUB} à utiliser les photos et vidéos sur lesquelles j'apparais, prises lors des sorties, courses et évènements du club, pour sa communication (app, site, réseaux sociaux, affiches, presse locale), sans contrepartie. Je peux changer d'avis à tout moment dans mon profil.`;
+function demanderDroitImage(){
+  ouvrirPanel(`<div class="ph"><h3>Droit à l'image</h3></div>
+    <div class="droit"><p>${esc(TEXTE_DROIT)}</p></div>
+    <span class="hint">Ton choix est enregistré avec la date et reste modifiable dans ton profil.</span>
+    <div class="choix2"><button class="btn pri" data-droit="1">J'accepte</button><button class="btn sec" data-droit="0">Je refuse</button></div>`,{bloquant:true});
+}
+async function repondreDroit(v){
+  const {error}=await sb.from("profils").upsert({membre_id:me(),droit_image:v,droit_image_le:new Date().toISOString()});
+  if(error)return erreur(error,"Droit à l'image");
+  (S.profils[me()]??={membre_id:me()}).droit_image=v;fermer();toast(v?"Merci, c'est noté":"C'est noté, ton refus est enregistré");recharger();
+  let vu=null;try{vu=localStorage.getItem("guideVu")}catch(e){}if(!vu)setTimeout(guideApp,300);
+}
+const etatDroit=id=>{const v=S.profils[id]?.droit_image;return v===true?'<span class="status ok" title="Droit à l\'image accepté">✓</span>':v===false?'<span class="status warn" title="Droit à l\'image refusé">✗</span>':'<span class="status ko" title="Pas encore répondu">?</span>'};
 
 // ================= Guide de l'app =================
 function guideApp(){
@@ -1269,15 +1519,20 @@ function guideApp(){
       <li>Bilan, palmarès (top 10, podiums, victoires) et ultras : choisis en haut <b>Club</b> ou <b>Individuel</b>, et la période (tous temps ou une année).</li>
       <li>Ouvre un évènement pour ajouter <b>ton temps, ta place et ton parcours</b>, ou cocher abandon.</li>
       <li><b>+ Ajouter une course</b> : pour une course passée absente de la liste, puis ton résultat.</li>
-      <li>Ajoute tes photos et vidéos dans la fiche résultats de l'évènement.</li></ul></section>
+      <li>Ajoute tes photos et vidéos dans la fiche résultats ; touche une photo puis glisse pour passer à la suivante.</li>
+      <li>Le bouton <b>Masquer</b> replie le bilan ; le lien « Résultats officiels » mène au classement de l'organisateur.</li></ul></section>
     <section><h4><i>3</i>Sondages</h4><ul>
       <li>Touche ta réponse ; les résultats s'affichent une fois que tu as répondu.</li>
       <li>Tu peux changer d'avis jusqu'à la date limite. Les anciens sondages sont en bas, dans les archives.</li></ul></section>
-    <section><h4><i>4</i>Profil</h4><ul>
-      <li>Photo, prénom et nom, téléphone, contact d'urgence, licences, tailles de tenue, rappels e-mail.</li>
+    ${boutiqueVue()?`<section><h4><i>4</i>Boutique</h4><ul>
+      <li>Choisis tes articles : la taille est pré-remplie depuis ton profil, tu peux la changer.</li>
+      <li>Ta commande et son total sont en haut ; paie par virement avec le RIB et la référence affichés (le RIB n'est donné que dans l'app).</li>
+      <li>Tu peux retirer un article tant que les commandes sont ouvertes.</li></ul></section>`:""}
+    <section><h4><i>${boutiqueVue()?5:4}</i>Profil</h4><ul>
+      <li>Photo, prénom et nom, téléphone, contact d'urgence, licences, tailles de tenue, rappels et bilans par e-mail, droit à l'image.</li>
       <li>Dépose ta licence (FFC, UFOLEP, FFTri), ton PPS ou ton certificat médical : seuls toi et le bureau les voient.</li>
-      <li>Les liens du club (Strava, Instagram, e-mail) sont en haut de la page.</li></ul></section>
-    <section><h4><i>5</i>Astuces</h4><ul>
+      <li>Les liens du club (Strava, Instagram, e-mail) sont sous tes documents.</li></ul></section>
+    <section><h4><i>${boutiqueVue()?6:5}</i>Astuces</h4><ul>
       <li>La lune en haut à droite passe l'app en fond sombre.</li>
       <li>Pour te reconnecter : ton e-mail, puis le code à 6 chiffres reçu (regarde les spams).</li></ul></section>
     ${B?`<section class="bur"><h4><i>B</i>Bureau</h4><ul>
@@ -1285,7 +1540,9 @@ function guideApp(){
       <li><b>Gérer les participants</b> dans la fiche : inscris ou retire n'importe quel membre.</li>
       <li>Saisis le résultat d'un autre membre depuis la fiche résultats.</li>
       <li>Sondages : bouton <b>+ Sondage</b> ; dans « Détail des réponses », modifie (question, réponses, fichier joint), archive ou supprime.</li>
-      <li>Profil : liens du club, notes du bureau, tableau des membres (licences, documents, note privée), ajout de membres.</li>
+      <li>Profil : notes du bureau, tableau des membres (statut licencié à renseigner dans la fiche de chacun, droit à l'image, documents, note privée), ajout de membres.</li>
+      <li>Membre sans e-mail : ajoute-le en laissant l'e-mail vide ; sa fiche permet de renseigner son nom et ses tailles, puis tu le commandes ou l'inscris toi-même.</li>
+      <li>Boutique : <b>Commander pour un membre</b> dans le bilan ; bouton <b>+ Article</b> (photo, prix, tailles), <b>Réglages</b> (onglet visible ou caché, ouverture, date limite, RIB), bilan à copier pour le fournisseur, cases payé / remis, et « Vider les commandes » pour une nouvelle campagne.</li>
       <li>En bas de page : <b>Gérer les partenaires</b> (logos).</li></ul></section>`:""}
   </div>
   <button class="btn pri" data-close>C'est parti</button>`);
@@ -1296,9 +1553,14 @@ function guideApp(){
 function renderPartenaires(){
   if(!S.partenaires.length&&!bureau())return "";
   return `<footer class="partners"><div class="sect">Nos partenaires</div>
-    ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}" loading="lazy">`:esc(p.nom);
+    ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}" onload="formeLogo(this)">`:esc(p.nom);
       return p.url?`<a class="plogo" href="${esc(lienSur(p.url))}" target="_blank" rel="noopener" title="${esc(p.nom)}">${c}</a>`:`<span class="plogo" title="${esc(p.nom)}">${c}</span>`}).join("")}</div>`:'<span class="hint">Aucun partenaire pour l\'instant.</span>'}
     ${bureau()?`<button class="btn sec small" data-partenaires style="justify-self:start">Gérer les partenaires</button>`:""}</footer>`;
+}
+// Adapte la case du logo à sa forme : large (bandeau), carrée ou haute
+function formeLogo(img){
+  const r=img.naturalWidth/(img.naturalHeight||1),t=img.closest(".plogo");if(!t)return;
+  t.classList.remove("large","carre","haut");t.classList.add(r>=1.9?"large":r<0.8?"haut":r<=1.3?"carre":"moyen");
 }
 function gererPartenaires(){
   ouvrirPanel(`<div class="ph"><h3>Partenaires</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
@@ -1348,21 +1610,28 @@ function render(){
   if(!co){$("#fab").hidden=true;renderLogin();return}
   const m=S.moi;
   $("#user").innerHTML=avatar(m.id);
-  for(const v of ["agenda","resultats","sondages","profil"])$("#v-"+v).hidden=v!==vue;
+  const bv=boutiqueVue();$("#nav").classList.toggle("n5",bv);$('.nav [data-v="boutique"]').hidden=!bv;if(vue==="boutique"&&!bv)vue="agenda";
+  for(const v of ["agenda","resultats","sondages","boutique","profil"])$("#v-"+v).hidden=v!==vue;
   document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===vue));
-  const actif=document.activeElement,garde=vue==="profil"&&actif&&actif.closest("#profil form");
-  if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,profil:renderProfil})[vue]();
+  const actif=document.activeElement,garde=(vue==="profil"&&actif&&actif.closest("#profil form"))||(vue==="boutique"&&actif&&actif.matches("select,input")&&actif.closest(".ajout,.pour"));
+  if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,boutique:renderBoutique,profil:renderProfil})[vue]();
   $("#partners").innerHTML=renderPartenaires();
   $("#apercu-m").hidden=!vueMembre;
-  if(!render.guide){render.guide=1;let vu=null;try{vu=localStorage.getItem("guideVu")}catch(e){}if(!vu&&$("#sheet").hidden)setTimeout(guideApp,400)}
-  const fab=$("#fab");fab.hidden=!(vue==="agenda"||(vue==="sondages"&&bureau()));fab.textContent=vue==="agenda"?"Évènement":"Sondage";
+  if(!render.guide){render.guide=1;
+    if(S.profils[me()]?.droit_image==null)setTimeout(()=>{if($("#sheet").hidden)demanderDroitImage()},400);
+    else{let vu=null;try{vu=localStorage.getItem("guideVu")}catch(e){}if(!vu&&$("#sheet").hidden)setTimeout(guideApp,400)}}
+  const fab=$("#fab");fab.hidden=!(vue==="agenda"||((vue==="sondages"||(vue==="boutique"&&S.boutique))&&bureau()));fab.textContent={agenda:"Évènement",sondages:"Sondage",boutique:"Article"}[vue]||"";
 }
 $("#t-up").onclick=()=>{tab="up";render()};$("#t-past").onclick=()=>{tab="past";render()};
-$("#fab").onclick=()=>vue==="agenda"?formEvt():formSondage();
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)fermer();if(e.key==="Enter"&&e.target.dataset?.note)formNote(e.target.dataset.note)});
+$("#fab").onclick=()=>vue==="agenda"?formEvt():vue==="boutique"?formArticle():formSondage();
+document.addEventListener("keydown",e=>{const ctx=JSON.parse($("#panel").dataset.ctx||"{}");
+  if(!$("#sheet").hidden&&ctx.media&&/^Arrow(Left|Right)$/.test(e.key)&&!/INPUT|TEXTAREA/.test(e.target.tagName)){defilerMedia(e.key==="ArrowRight"?1:-1);return}
+  if(e.key==="Escape"&&!$("#sheet").hidden&&!ctx.bloquant)fermer();if(e.key==="Enter"&&e.target.dataset?.note)formNote(e.target.dataset.note)});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="res-m"){membreRes=+t.value;return render()}
+  if(t.id==="cb-m"||t.id==="cb-a"){pourMembre.m=+$("#cb-m").value;pourMembre.a=+$("#cb-a").value;$("#cb-t").innerHTML=optionsTaille(pourMembre.a,pourMembre.m);return}
+  if(t.dataset?.suivi){const [mid,ch]=t.dataset.suivi.split(":");return suivreCommande(+mid,ch,t.checked)}
   if(t.dataset?.doc&&t.files?.[0]){envoyerDoc(t.dataset.doc,t.files[0]);t.value=""}
   if(t.dataset?.upmedia&&t.files?.length){envoyerMedias(+t.dataset.upmedia,[...t.files]);t.value=""}
 });
@@ -1376,6 +1645,15 @@ document.addEventListener("click",e=>{
   const po=c("[data-portee]");if(po){porteeRes=po.dataset.portee;return render()}
   const ms=c("[data-modsondage]");if(ms)return formSondage(S.sondages.find(x=>x.id==ms.dataset.modsondage));
   if(c("[data-guide-app]"))return guideApp();
+  const aj=c("[data-ajart]");if(aj)return ajouterAuPanier(+aj.dataset.ajart);
+  const dl=c("[data-delligne]");if(dl)return retirerLigne(+dl.dataset.delligne);
+  const ma=c("[data-article]");if(ma)return formArticle(article(+ma.dataset.article));
+  if(c("[data-reglages]"))return reglagesBoutique();
+  if(c("[data-pourmembre]"))return ajouterPourMembre();
+  if(c("[data-recap]")){const v=texteRecap();(navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast("Récap copié : colle-le dans ton mail au fournisseur",3500),()=>ouvrirPanel(`<div class="ph"><h3>Récap de la commande</h3><button class="x" data-close aria-label="Fermer">✕</button></div><textarea rows="14" readonly>${esc(v)}</textarea>`));return}
+  const dr=c("[data-droit]");if(dr)return repondreDroit(dr.dataset.droit==="1");
+  const df=c("[data-defiler]");if(df)return defilerMedia(+df.dataset.defiler);
+  if(c("[data-toggle-bilan]")){let m=false;try{m=localStorage.getItem("bilanMasque")==="1";localStorage.setItem("bilanMasque",m?"0":"1")}catch(e){}return render()}
   if(c("[data-vue-membre]")&&bureauReel()){vueMembre=!vueMembre;fermer();render();scrollTo(0,0);return toast(vueMembre?"Aperçu membre activé":"Retour au mode bureau")}
   if(c("[data-ajout-course]"))return formEvt({},{resultat:true});
   const ar=c("[data-archiver]");if(ar)return archiverSondage(+ar.dataset.archiver);
