@@ -1,6 +1,7 @@
 # À placer dans le dépôt : .github/workflows/rappels.yml
 # Chaque matin : envoie un rappel par e-mail aux membres qui ont répondu « Je viens »,
-# 10 jours (J-10) et 1 jour (J-1) avant l'évènement. Chaque rappel n'est envoyé qu'une fois.
+# 10 jours (J-10) et 1 jour (J-1) avant l'évènement, puis un BILAN (participants, résultats,
+# photos) à tous les membres 2 jours après la fin de l'évènement. Chaque e-mail n'est envoyé qu'une fois.
 # Cette tâche garde aussi la base Supabase éveillée (le fichier supabase-reveil.yml devient inutile).
 #
 # Secrets à créer dans GitHub > Settings > Secrets and variables > Actions :
@@ -22,7 +23,7 @@ jobs:
   rappels:
     runs-on: ubuntu-latest
     steps:
-      - name: Envoyer les rappels J-10 et J-1
+      - name: Envoyer les rappels J-10, J-1 et les bilans
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
@@ -54,6 +55,8 @@ jobs:
           deja = {(r["evenement_id"], r["membre_id"], r["type"]) for r in api("rappels_envoyes?select=evenement_id,membre_id,type")}
           membres = {m["id"]: m for m in api("membres?select=id,prenom,email,actif")}
           sans_rappel = {p["membre_id"] for p in api("profils?select=membre_id,rappels&rappels=eq.false")}
+          sans_bilan = {p["membre_id"] for p in api("profils?select=membre_id,bilans&bilans=eq.false")}
+          JOURS_BILAN = 2   # le bilan part 2 jours après la fin de l'évènement, pour laisser le temps de saisir les résultats
           mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
           jours_sem = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
           def fr(d): d = date.fromisoformat(d); return f"{jours_sem[d.weekday()]} {d.day} {mois[d.month-1]} {d.year}"
@@ -75,9 +78,49 @@ jobs:
                       m = membres.get(p["membre_id"])
                       if not m or not m["actif"] or m["id"] in sans_rappel or (e["id"], m["id"], type_) in deja: continue
                       a_envoyer.append((type_, e, m))
-          print(f"{auj} : {len(a_envoyer)} rappel(s) à envoyer")
+
+          # Bilans : évènements terminés il y a JOURS_BILAN jours, avec au moins un participant ou un résultat
+          fin_bilan = (auj - timedelta(days=JOURS_BILAN)).isoformat()
+          for e in api(f"evenements?select=*&date_fin=eq.{fin_bilan}"):
+              e["_parcours"] = api(f"parcours?select=*&evenement_id=eq.{e['id']}&order=ordre")
+              e["_venus"] = [p["membre_id"] for p in api(f"participations?select=membre_id&evenement_id=eq.{e['id']}&reponse=eq.true")]
+              e["_res"] = api(f"resultats?select=*&evenement_id=eq.{e['id']}")
+              e["_photos"] = len(api(f"medias?select=id&evenement_id=eq.{e['id']}"))
+              if not e["_venus"] and not e["_res"]: continue
+              for m in membres.values():
+                  if not m["actif"] or m["id"] in sans_bilan or (e["id"], m["id"], "bilan") in deja: continue
+                  a_envoyer.append(("bilan", e, m))
+          a_envoyer = [x for x in a_envoyer if x[2].get("email")]   # membres sans e-mail : rien à envoyer
+          print(f"{auj} : {len(a_envoyer)} e-mail(s) à envoyer")
+
+          def secondes(t):
+              try: return sum(int(x) * 60 ** i for i, x in enumerate(reversed(t.split(":"))))
+              except Exception: return 10 ** 9
+          def bilan(e, m):
+              parc = {p["id"]: p for p in e.get("_parcours") or []}
+              res = sorted(e["_res"], key=lambda r: (bool(r.get("abandon")), secondes(r.get("temps") or ""), r.get("place") or 10 ** 6))
+              venus = set(e["_venus"]) | {r["membre_id"] for r in res}
+              noms = sorted(membres[i]["prenom"] for i in venus if i in membres)
+              lignes = [f"Salut {m['prenom']},", "", f"Bilan de {e['evenement']} ({fr(e['date_debut'])}" + (f", {e['lieu']}" if e.get("lieu") else "") + ") :", "",
+                        f"{len(venus)} membre{'s' if len(venus) > 1 else ''} du club : {', '.join(noms)}."]
+              if res:
+                  lignes += ["", "Résultats :"]
+                  for r in res:
+                      qui = membres.get(r["membre_id"], {}).get("prenom", "?")
+                      p = parc.get(r.get("parcours_id"))
+                      morceaux = [r.get("temps"), (f"{r['place']}{'er' if r['place'] == 1 else 'e'}" + (f" / {r['partants']}" if r.get("partants") else "")) if r.get("place") else None,
+                                  lib_parcours({**p, "heure_depart": None}) if p else (f"{r['km']:g} km" if r.get("km") else r.get("format")), "abandon" if r.get("abandon") else None]
+                      lignes.append(f"  • {qui} : " + " · ".join(str(x) for x in morceaux if x))
+              else:
+                  lignes += ["", "Pas encore de résultats saisis : ajoute le tien dans l'app."]
+              if e.get("lien_resultats"): lignes += ["", f"Résultats officiels : {e['lien_resultats']}"]
+              if e["_photos"]: lignes += ["", f"{e['_photos']} photo{'s' if e['_photos'] > 1 else ''} et vidéo{'s' if e['_photos'] > 1 else ''} à voir dans l'app."]
+              if APP: lignes += ["", f"Tout le détail dans l'app, onglet Résultats : {APP}"]
+              lignes += ["", "Bravo à tous,", CLUB, "", "Pour ne plus recevoir ces bilans : app > Profil > décocher le bilan par e-mail."]
+              return lignes
 
           def message(type_, e, m):
+              if type_ == "bilan": return emballer(f"Bilan · {e['evenement']}", f"{e['evenement']} · le bilan", bilan(e, m), m)
               quand = "dans 10 jours" if type_ == "J-10" else "demain"
               lignes = [f"Salut {m['prenom']},", "", f"Petit rappel : {e['evenement']}, c'est {quand}, le {fr(e['date_debut'])}."]
               if e.get("heure_depart"): lignes.append(f"Départ : {hr(e['heure_depart'])}")
@@ -90,13 +133,15 @@ jobs:
               if e.get("commentaires"): lignes += ["", e["commentaires"]]
               if APP: lignes += ["", f"La fiche dans l'app : {APP}"]
               lignes += ["", "À bientôt sur la route,", CLUB, "", "Pour ne plus recevoir ces rappels : app > Profil > décocher les rappels par e-mail."]
-              texte = "\n".join(lignes)
+              return emballer(f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}", f"{e['evenement']} · {'J-10' if type_=='J-10' else 'demain'}", lignes, m)
+
+          def emballer(sujet, titre, lignes, m):
               msg = EmailMessage()
-              msg["Subject"] = f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}"
+              msg["Subject"] = sujet
               msg["From"] = f"{CLUB} <{os.environ.get('GMAIL_USER','')}>"; msg["To"] = m["email"]
-              msg.set_content(texte)
-              corps = "".join(f"<p>{html.escape(l)}</p>" if l else "" for l in lignes)
-              msg.add_alternative(f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#161514'><h2 style='font-family:Arial Narrow,Arial;text-transform:uppercase'>{html.escape(e['evenement'])} · {'J-10' if type_=='J-10' else 'demain'}</h2>{corps}</div>", subtype="html")
+              msg.set_content("\n".join(lignes))
+              corps = "".join(f"<p style='margin:4px 0'>{html.escape(l)}</p>" if l else "<br>" for l in lignes)
+              msg.add_alternative(f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#161514'><h2 style='font-family:Arial Narrow,Arial;text-transform:uppercase'>{html.escape(titre)}</h2>{corps}</div>", subtype="html")
               return msg
 
           if not a_envoyer: raise SystemExit(0)
