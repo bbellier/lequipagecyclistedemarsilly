@@ -277,6 +277,9 @@ tr.off td{opacity:.5}
 .paiement{display:grid;gap:8px;border:2px solid var(--ink);border-radius:10px;padding:12px}.paiement h3{margin:0}.paiement p{margin:0}
 .rib{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}.rib code{white-space:pre-wrap;font-size:13px;overflow-wrap:anywhere}
 .pour{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.segr{position:relative;display:grid}.segr input{position:absolute;opacity:0;pointer-events:none}.segr span{display:grid;place-items:center;padding:8px 4px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted)}
+.segr input:checked+span{background:var(--ink);color:var(--on-ink)}.segr input:focus-visible+span{outline:2px solid var(--red)}
+.plogo.fantome{background:transparent;border:1px dashed var(--line)}
 .recad{display:grid;gap:10px;border:1px dashed var(--line);border-radius:10px;padding:10px}
 .rc-zone{background:repeating-conic-gradient(#e8e3da 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:8px;overflow:hidden;display:grid;place-items:center}
 .rc-zone canvas{max-width:100%;max-height:240px;display:block}
@@ -326,11 +329,6 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .btn-guide{border:0;background:var(--wash);color:var(--ink);width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:19px;flex:none;padding:0}
 .reseaux{display:flex;flex-wrap:wrap;gap:8px}
 /* Logos partenaires selon leur format */
-.plogo{height:72px!important}
-.plogo.large img{max-height:50px}.plogo.carre img,.plogo.haut img{max-height:62px}
-.plogo.large{grid-column:span 2;padding:10px 14px}
-.plogo.carre{padding:5px}
-.plogo.haut{padding:4px}
 /* Pièce jointe de sondage mise en évidence */
 .pj{display:flex;align-items:center;gap:12px;border:2px solid var(--red);background:var(--red-soft);border-radius:12px;padding:12px;color:var(--ink);text-align:left;width:100%}
 .pj .ic{width:42px;height:50px;border-radius:5px;background:var(--red);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:11px;flex:none}
@@ -388,9 +386,11 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .uliste span{color:var(--muted)}
 /* Partenaires */
 .partners{display:grid;gap:10px;padding-top:6px}
-.plogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));grid-auto-flow:dense;gap:8px}
-.plogo{background:#fff;border:1px solid var(--line);border-radius:8px;height:62px;display:grid;place-items:center;padding:8px;text-decoration:none;color:#161514;font-weight:600;font-size:13px;text-align:center;overflow:hidden}
-.plogo img{max-width:100%;max-height:52px;width:auto;height:auto;object-fit:contain;display:block}
+.plogos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:dense;gap:8px}
+.plogo{position:relative;background:#fff;border:1px solid var(--line);border-radius:10px;aspect-ratio:3/2;display:grid;place-items:center;padding:6px;text-decoration:none;color:#161514;font-weight:600;font-size:13px;text-align:center;overflow:hidden;--e:80%;transition:transform .15s}
+.plogo:hover{transform:translateY(-2px)}.plogo.l2{grid-column:span 2;aspect-ratio:3.1/1}.plogo.l3{grid-column:1/-1;aspect-ratio:4.7/1}
+.plogo.f-noir{background:#161514;border-color:#161514;color:#f4efe6}.plogo.f-transparent{background:transparent;border-color:transparent;color:var(--ink)}
+.plogo img{position:absolute;inset:0;margin:auto;max-width:var(--e);max-height:var(--e);width:auto;height:auto;object-fit:contain;display:block}
 /* Connexion */
 .login{min-height:100vh;min-height:100dvh;display:grid;align-content:center;position:relative;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px}
 .login::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--paper) url("img/montagne.webp") right bottom/cover no-repeat}
@@ -459,7 +459,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-16n";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-16o";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1218,7 +1218,7 @@ function guideTailles(){if(!guidePdf())return toast("Pas encore de guide des tai
 // ================= Boutique =================
 const boutiqueVue=()=>bureau()||!!S.boutique?.visible;
 const ouverteB=()=>{const b=S.boutique||{};return !!(b.visible&&b.ouverte&&(!b.limite||jours(b.limite)>=0))};
-const eur=n=>(+n||0).toLocaleString("fr-FR",{minimumFractionDigits:(+n||0)%1?2:0,maximumFractionDigits:2})+" €";
+const eur=n=>(+n||0).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const photosArticle=a=>(a.photos||[]).length?a.photos:a.photo?[a.photo]:[];
 const urlPhoto=p=>p.startsWith("img/")?p:S.urls["club/"+p];
 const article=id=>(S.articles||[]).find(a=>a.id===id);
@@ -1684,11 +1684,12 @@ function guideApp(){
 function renderPartenaires(){
   if(!S.partenaires.length&&!bureau())return "";
   return `<footer class="partners"><div class="sect">Nos partenaires</div>
-    ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}" onload="formeLogo(this)">`:esc(p.nom);
-      return p.url?`<a class="plogo" href="${esc(lienSur(p.url))}" target="_blank" rel="noopener" title="${esc(p.nom)}">${c}</a>`:`<span class="plogo" title="${esc(p.nom)}">${c}</span>`}).join("")}</div>`:'<span class="hint">Aucun partenaire pour l\'instant.</span>'}
+    ${S.partenaires.length?`<div class="plogos">${S.partenaires.map(p=>{const u=p.logo&&S.urls["club/"+p.logo],c=u?`<img src="${esc(u)}" alt="${esc(p.nom)}">`:esc(p.nom),cl=classeLogo(p),st=`style="--e:${p.echelle||80}%"`;
+      return p.url?`<a class="${cl}" ${st} href="${esc(lienSur(p.url))}" target="_blank" rel="noopener" title="${esc(p.nom)}">${c}</a>`:`<span class="${cl}" ${st} title="${esc(p.nom)}">${c}</span>`}).join("")}</div>`:'<span class="hint">Aucun partenaire pour l\'instant.</span>'}
     ${bureau()?`<button class="btn sec small" data-partenaires style="justify-self:start">Gérer les partenaires</button>`:""}</footer>`;
 }
-// Adapte la case du logo à sa forme : large (bandeau), carrée ou haute
+const classeLogo=p=>`plogo${p.format==="large"?" l2":p.format==="ligne"?" l3":""}${p.fond&&p.fond!=="blanc"?" f-"+p.fond:""}`;
+// (ancien) adapte la case du logo à sa forme ; conservé pour compatibilité
 function formeLogo(img){
   const r=img.naturalWidth/(img.naturalHeight||1),t=img.closest(".plogo");if(!t)return;
   t.classList.remove("large","carre","haut");t.classList.add(r>=1.9?"large":r<0.8?"haut":r<=1.3?"carre":"moyen");
@@ -1705,14 +1706,23 @@ function formPartenaire(id){
       <label for="pa-u">Site web (facultatif)<input id="pa-u" name="url" placeholder="https://…" value="${esc(p.url)}"></label>
       <label for="pa-l">${p.logo?"Remplacer le logo":"Logo"} (PNG, JPG ou SVG, 5 Mo max)<input id="pa-l" type="file" accept="image/*"></label>
       ${htmlRecadrage()}
+      <span class="sect" style="padding:0">Affichage dans le bandeau</span>
+      <div class="seg s3" role="radiogroup" aria-label="Taille de la case">${[["normal","1 case"],["large","2 cases"],["ligne","Ligne entière"]].map(([v,l])=>`<label class="segr"><input type="radio" name="format" value="${v}"${(p.format||"normal")===v?" checked":""}><span>${l}</span></label>`).join("")}</div>
+      <div class="seg s3" role="radiogroup" aria-label="Fond">${[["blanc","Fond blanc"],["noir","Fond noir"],["transparent","Sans fond"]].map(([v,l])=>`<label class="segr"><input type="radio" name="fond" value="${v}"${(p.fond||"blanc")===v?" checked":""}><span>${l}</span></label>`).join("")}</div>
+      <label for="pa-e">Taille du logo dans sa case : <b id="pa-ev">${p.echelle||80} %</b><input id="pa-e" name="echelle" type="range" min="40" max="100" step="5" value="${p.echelle||80}"></label>
+      <span class="hint">Aperçu (3 cases par ligne) :</span>
+      <div class="plogos" id="pa-apz"><span class="${classeLogo(p)}" id="rc-ap" style="--e:${p.echelle||80}%">${u0?`<img src="${esc(u0)}" alt="">`:`<span>${esc(p.nom||"Logo")}</span>`}</span><span class="plogo fantome"></span><span class="plogo fantome"></span></div>
       <label for="pa-o">Ordre d'affichage<input id="pa-o" name="ordre" type="number" value="${p.ordre??S.partenaires.length+1}"></label>
       <div class="row"><button type="button" class="btn sec" data-partenaires>Retour</button><button class="btn pri" id="pa-ok">Enregistrer</button></div></form>`);
   if(u0)ouvrirRecadrage(u0,false);
+  const apercu=()=>{const f=new FormData($("#fpa")),q={format:f.get("format"),fond:f.get("fond")},ap=$("#rc-ap");ap.className=classeLogo(q);ap.style.setProperty("--e",f.get("echelle")+"%");$("#pa-ev").textContent=f.get("echelle")+" %";
+    if(!ap.querySelector("img"))ap.firstElementChild.textContent=f.get("nom")||"Logo"};
+  $("#fpa").addEventListener("input",apercu);$("#fpa").addEventListener("change",apercu);
   $("#pa-l").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>5e6){e.target.value="";return toast("Logo trop lourd (5 Mo maximum)")}ouvrirRecadrage(URL.createObjectURL(f),true)};
   $("#fpa").onsubmit=async ev=>{ev.preventDefault();const b=$("#pa-ok"),d=Object.fromEntries(new FormData(ev.target)),f=$("#pa-l").files[0];
     let u=(d.url||"").trim();if(u&&!/^https?:\/\//i.test(u))u="https://"+u;
     occupe(b,true);
-    try{const row={nom:d.nom.trim(),url:nul(u),ordre:parseInt(d.ordre,10)||0};
+    try{const row={nom:d.nom.trim(),url:nul(u),ordre:parseInt(d.ordre,10)||0,format:d.format||"normal",fond:d.fond||"blanc",echelle:+d.echelle||80};
       const blob=RC&&(f||RC.change)?await recadrageBlob():null,fichier=blob||f;
       if(fichier){const ch=`partenaires/${Date.now()}-${nomPropre((f?.name||p.nom||"logo").replace(/\.\w+$/,""))}.${blob?"png":(f.name.split(".").pop()||"png")}`;
         await ok(sb.storage.from("club").upload(ch,fichier,{contentType:fichier.type||undefined}),"Logo");row.logo=ch;if(p.logo)sb.storage.from("club").remove([p.logo])}
@@ -1736,7 +1746,7 @@ function htmlRecadrage(){
     <div class="rc-zone"><canvas id="rc-c"></canvas></div>
     <div class="grid2">${[["l","Gauche"],["r","Droite"],["t","Haut"],["b","Bas"]].map(([k,n])=>`<label>Rogner ${n.toLowerCase()}<input type="range" min="0" max="45" step="0.5" value="0" data-rc="${k}"></label>`).join("")}</div>
     <div class="row" style="justify-content:flex-start"><button type="button" class="btn sec small" data-rc-auto>Rogner les bords vides</button><button type="button" class="btn sec small" data-rc-raz>Tout garder</button></div>
-    <span class="hint" id="rc-msg">Aperçu tel qu'il apparaîtra en bas de l'app :</span><div class="plogos"><span class="plogo" id="rc-ap"><img alt=""></span></div></div>`;
+    <span class="hint" id="rc-msg"></span></div>`;
 }
 async function ouvrirRecadrage(src,neuf){
   try{const img=await chargerImage(src),auto=neuf?bordsVides(img):null;RC={img,l:0,r:0,t:0,b:0,...(auto||{}),change:!!(neuf&&auto),lisible:!!bordsVides(img)}}
@@ -1753,7 +1763,7 @@ function majRecadrage(){
   document.querySelectorAll("[data-rc]").forEach(i=>i.value=RC[i.dataset.rc]);
   const o=document.createElement("canvas"),q=Math.min(1,400/z.w,200/z.h);o.width=Math.max(1,Math.round(z.w*q));o.height=Math.max(1,Math.round(z.h*q));
   o.getContext("2d").drawImage(RC.img,z.x,z.y,z.w,z.h,0,0,o.width,o.height);
-  try{const im=$("#rc-ap img");im.onload=()=>formeLogo(im);im.src=o.toDataURL("image/png")}catch(e){}
+  try{const ap=$("#rc-ap");if(ap){let im=ap.querySelector("img");if(!im){ap.innerHTML='<img alt="">';im=ap.querySelector("img")}im.src=o.toDataURL("image/png")}}catch(e){}
 }
 function recadrageBlob(){
   const z=zoneRC(),q=Math.min(1,900/z.w,450/z.h),o=document.createElement("canvas");o.width=Math.max(1,Math.round(z.w*q));o.height=Math.max(1,Math.round(z.h*q));
