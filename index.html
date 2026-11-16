@@ -299,6 +299,10 @@ tr.off td{opacity:.5}
 .rib-n{grid-column:1/-1;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .rib-v{grid-column:1/3;font-weight:600;overflow-wrap:anywhere}.rib-v.mono{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
 .rib-l .btn{grid-column:3;grid-row:2}.btn.fait{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.pas{display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:999px;overflow:hidden;vertical-align:middle;margin-right:2px}
+.pas button{border:0;background:none;color:inherit;font:700 15px/1 var(--display);width:26px;height:24px;cursor:pointer;padding:0}.pas button:disabled{opacity:.3}
+.pas b{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
+.lignes .pas{margin-right:6px}.lignes li b{white-space:nowrap}.lg-b{display:block;padding:3px 0;min-width:180px}
 .tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}
 td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .moi-bilan{border-left:3px solid var(--red);padding-left:10px;font-size:14.5px}
@@ -455,7 +459,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-16m";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-16n";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1236,7 +1240,7 @@ function carteArticle(a,ouv){
     <div class="row"><h2>${esc(a.nom)}</h2>${a.prix!=null?`<span class="prix">${eur(a.prix)}</span>`:""}</div>
     ${a.actif?"":'<span class="pill" style="justify-self:start">Masqué aux membres</span>'}
     ${a.description?`<p class="desc">${esc(a.description)}</p>`:""}
-    ${mes.length?`<div class="mes">${mes.map(c=>`<span class="tag y">${esc(libLigne(c))}${ouv?`<button class="x-mini" data-delligne="${c.id}" aria-label="Retirer ${esc(libLigne(c))}">✕</button>`:""}</span>`).join("")}</div>`:""}
+    ${mes.length?`<div class="mes">${mes.map(c=>`<span class="tag y">${ouv?pas(c):`${c.quantite} ×`} ${c.taille?"Taille "+esc(c.taille):"Sans taille"}${ouv?`<button class="x-mini" data-delligne="${c.id}" aria-label="Tout retirer : ${esc(libLigne(c))}">✕</button>`:""}</span>`).join("")}</div>`:""}
     ${ouv&&a.actif?`<div class="ajout" data-art="${a.id}">
       ${opts.length?`<select data-at="taille" aria-label="Taille">${def?"":'<option value="">Taille…</option>'}${liste.map(t=>`<option${t===def?" selected":""}>${esc(t)}</option>`).join("")}</select>`:""}
       <select data-at="q" aria-label="Quantité">${[1,2,3,4,5].map(n=>`<option value="${n}">${n}</option>`).join("")}</select>
@@ -1281,7 +1285,7 @@ function carteMaCommande(ouv){
   const ref=`TENUE ${(p.nom||"").toUpperCase()} ${S.moi.prenom||""}`.replace(/\s+/g," ").trim();
   const iban=(b.rib||"").replace(/\s/g,"").match(/[A-Z]{2}\d{2}[A-Z0-9]{11,30}/)?.[0];
   return `<article class="card"><div class="row"><h2>Ma commande</h2>${l.length?`<span class="pill">${su.remis?"Remise ✓":su.paye&&du>0?"Reste "+eur(du):su.paye?"Payée ✓":"À payer"}</span>`:""}</div>
-    ${l.length?`<ul class="lignes">${l.map(c=>`<li><span>${esc(libLigne(c))}</span><b>${eur(prixL(c))}</b></li>`).join("")}<li class="tot"><span>Total</span><b>${eur(tot)}</b></li></ul>`
+    ${l.length?`<ul class="lignes">${l.map(c=>`<li><span>${ouv?`${pas(c)} ${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?" ("+esc(c.taille)+")":""}`:esc(libLigne(c))}</span><b>${eur(prixL(c))}</b></li>`).join("")}<li class="tot"><span>Total</span><b>${eur(tot)}</b></li></ul>`
       :`<span class="hint">${ouv?"Rien pour l'instant : choisis tes articles ci-dessous.":"Tu n'as rien commandé."}</span>`}
     ${l.length&&du>0&&b.rib?`<div class="paiement"><h3>Paiement par virement</h3>
       ${blocRib(b.rib,du,ref,su.paye)}
@@ -1305,7 +1309,7 @@ function carteBilanCommande(){
     ${formPourMembre()}
     ${lignes.length?`
     <span class="sect">Par membre · ${remis}/${ids.length} remis</span><div class="tw"><table><thead><tr><th>Membre</th><th>Commande</th><th>Total</th><th>Payé</th><th>Remis</th></tr></thead><tbody>${ids.map(i=>{const su=S.suivi[i]||{};
-      return `<tr><td>${esc(nomComplet(i))}</td><td>${lignesDe(i).map(c=>`${esc(libLigne(c))} <button class="x-mini" data-delligne="${c.id}" aria-label="Retirer ${esc(libLigne(c))}">✕</button>`).join("<br>")}</td><td>${eur(totalDe(lignesDe(i)))}${su.paye&&resteDu(i)>0?`<br><span class="status warn">+${eur(resteDu(i))} à payer</span>`:""}</td><td class="chk"><input type="checkbox" data-suivi="${i}:paye"${su.paye?" checked":""} aria-label="Payé"></td><td class="chk"><input type="checkbox" data-suivi="${i}:remis"${su.remis?" checked":""} aria-label="Remis"></td></tr>`}).join("")}</tbody></table></div>`
+      return `<tr><td>${esc(nomComplet(i))}</td><td>${lignesDe(i).map(c=>`<span class="lg-b">${pas(c)} ${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?" ("+esc(c.taille)+")":""} <button class="x-mini" data-delligne="${c.id}" aria-label="Tout retirer : ${esc(libLigne(c))}">✕</button></span>`).join("")}</td><td>${eur(totalDe(lignesDe(i)))}${su.paye&&resteDu(i)>0?`<br><span class="status warn">+${eur(resteDu(i))} à payer</span>`:""}</td><td class="chk"><input type="checkbox" data-suivi="${i}:paye"${su.paye?" checked":""} aria-label="Payé"></td><td class="chk"><input type="checkbox" data-suivi="${i}:remis"${su.remis?" checked":""} aria-label="Remis"></td></tr>`}).join("")}</tbody></table></div>`
       :""}
   </article>`;
 }
@@ -1359,6 +1363,12 @@ function ajouterAuPanier(aid){
   if(a.taille!=="aucune"&&(a.tailles||[]).length&&!t)return toast("Choisis une taille");
   const ex=lignesDe(me()).find(c=>c.article_id===aid&&c.taille===t),row={membre_id:me(),article_id:aid,taille:t,quantite:Math.min(20,(ex?.quantite||0)+q)};
   agir(()=>{if(ex)ex.quantite=row.quantite;else S.commandes.push({...row,id:-Date.now()})},()=>sb.from("commandes").upsert(row,{onConflict:"membre_id,article_id,taille"}),"Ajouté à ta commande");
+}
+const pas=c=>`<span class="pas"><button type="button" data-qte="${c.id}:-1" aria-label="${c.quantite>1?"Une de moins":"Retirer"}">−</button><b>${c.quantite}</b><button type="button" data-qte="${c.id}:1" aria-label="Une de plus"${c.quantite>=20?" disabled":""}>+</button></span>`;
+function changerQuantite(id,d){
+  const l=S.commandes.find(x=>x.id===id);if(!l)return;const q=l.quantite+d;
+  if(q<=0)return retirerLigne(id);if(q>20)return;
+  agir(()=>{l.quantite=q},()=>sb.from("commandes").update({quantite:q}).eq("id",id),d<0?"Une pièce en moins":"Une pièce en plus");
 }
 function retirerLigne(id){agir(()=>{S.commandes=S.commandes.filter(c=>c.id!==id)},()=>sb.from("commandes").delete().eq("id",id),"Retiré de ta commande")}
 function suivreCommande(mid,champ,val){const row={membre_id:mid,paye:false,remis:false,...S.suivi[mid],[champ]:val};if(champ==="paye")row.paye_montant=val?totalDe(lignesDe(mid)):null;agir(()=>{S.suivi[mid]=row},()=>sb.from("commandes_suivi").upsert(row))}
@@ -1819,6 +1829,7 @@ document.addEventListener("click",e=>{
   if(c("[data-guide-app]"))return guideApp();
   const aj=c("[data-ajart]");if(aj)return ajouterAuPanier(+aj.dataset.ajart);
   const dl=c("[data-delligne]");if(dl)return retirerLigne(+dl.dataset.delligne);
+  const dq=c("[data-qte]");if(dq){const [id,d]=dq.dataset.qte.split(":").map(Number);return changerQuantite(id,d)}
   const ma=c("[data-article]");if(ma)return formArticle(article(+ma.dataset.article));
   if(c("[data-reglages]"))return reglagesBoutique();
   if(c("[data-gtailles]"))return guideTailles();
