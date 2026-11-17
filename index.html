@@ -321,6 +321,21 @@ tr.off td{opacity:.5}
 .pas button{border:0;background:none;color:inherit;font:700 15px/1 var(--display);width:26px;height:24px;cursor:pointer;padding:0}.pas button:disabled{opacity:.3}
 .pas b{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
 .lignes .pas{margin-right:6px}.lignes li b{white-space:nowrap}.lg-b{display:block;padding:3px 0;min-width:180px}
+.recap-m{display:grid;gap:8px}
+.rm{border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}.rm[open]{border-color:var(--ink)}
+.rm summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;list-style:none}.rm summary::-webkit-details-marker{display:none}
+.rm summary::after{content:"▾";grid-column:4;color:var(--muted);transition:transform .15s}.rm[open] summary::after{transform:rotate(180deg)}
+.rm-n{display:grid;min-width:0}.rm-n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rm-n small{color:var(--muted);font-size:12.5px}
+.rm-t{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rm-s i{font-style:normal;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;color:var(--muted)}
+.rm-s i.ok{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.rm-s i.warn{background:var(--red);color:#fff;border-color:var(--red)}
+.rm-l{list-style:none;margin:0;padding:0 12px;display:grid;border-top:1px solid var(--line)}
+.rm-l li{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}.rm-l li:last-child{border-bottom:0}
+.rm-a{min-width:0}.rm-a em{font-style:normal;font-weight:700;font-size:12px;margin-left:6px;padding:1px 6px;border-radius:5px;background:var(--paper);border:1px solid var(--line)}
+.rm-p{white-space:nowrap;font-variant-numeric:tabular-nums;min-width:66px;text-align:right}.rm-l .pas{margin:0}
+.rm-b{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:var(--paper)}
+.interr{position:relative;flex:1}.interr input{position:absolute;opacity:0}.interr span{display:block;text-align:center;padding:8px;border-radius:8px;border:1.5px solid var(--line);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;color:var(--muted)}
+.interr span::before{content:"○ "}.interr input:checked+span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.interr input:checked+span::before{content:"✓ "}.interr input:focus-visible+span{outline:2px solid var(--red)}
 .tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}
 td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .moi-bilan{border-left:3px solid var(--red);padding-left:10px;font-size:14.5px}
@@ -474,7 +489,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1327,8 +1342,15 @@ function carteBilanCommande(){
     <button class="btn pri" data-recap>Copier le récap pour le fournisseur</button>`:'<span class="hint">Aucune commande pour l\'instant.</span>'}
     ${formPourMembre()}
     ${lignes.length?`
-    <span class="sect">Par membre · ${remis}/${ids.length} remis</span><div class="tw"><table><thead><tr><th>Membre</th><th>Commande</th><th>Total</th><th>Payé</th><th>Remis</th></tr></thead><tbody>${ids.map(i=>{const su=S.suivi[i]||{};
-      return `<tr><td>${esc(nomComplet(i))}</td><td>${lignesDe(i).map(c=>`<span class="lg-b">${pas(c)} ${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?" ("+esc(c.taille)+")":""} <button class="x-mini" data-delligne="${c.id}" aria-label="Tout retirer : ${esc(libLigne(c))}">✕</button></span>`).join("")}</td><td>${eur(totalDe(lignesDe(i)))}${su.paye&&resteDu(i)>0?`<br><span class="status warn">+${eur(resteDu(i))} à payer</span>`:""}</td><td class="chk"><input type="checkbox" data-suivi="${i}:paye"${su.paye?" checked":""} aria-label="Payé"></td><td class="chk"><input type="checkbox" data-suivi="${i}:remis"${su.remis?" checked":""} aria-label="Remis"></td></tr>`}).join("")}</tbody></table></div>`
+    <span class="sect">Par membre · ${ids.filter(i=>S.suivi[i]?.paye).length}/${ids.length} payés · ${remis}/${ids.length} remis</span>
+    <div class="recap-m">${ids.map(i=>{const su=S.suivi[i]||{},l=lignesDe(i),reste=resteDu(i),nb=l.reduce((t,c)=>t+c.quantite,0);
+      return `<details class="rm"${recapOuverts.has(i)?" open":""} data-rm="${i}"><summary>
+          <span class="rm-n"><b>${esc(nomComplet(i))}</b><small>${nb} pièce${nb>1?"s":""}</small></span>
+          <span class="rm-t">${eur(totalDe(l))}</span>
+          <span class="rm-s">${su.remis?'<i class="ok">Remis</i>':su.paye&&reste>0?`<i class="warn">+${eur(reste)}</i>`:su.paye?'<i class="ok">Payé</i>':'<i>À payer</i>'}</span></summary>
+        <ul class="rm-l">${l.map(c=>`<li><span class="rm-a">${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?`<em>${esc(c.taille)}</em>`:""}</span>${pas(c)}<span class="rm-p">${eur(prixL(c))}</span><button class="x-mini" data-delligne="${c.id}" aria-label="Tout retirer : ${esc(libLigne(c))}">✕</button></li>`).join("")}</ul>
+        <div class="rm-b"><label class="interr"><input type="checkbox" data-suivi="${i}:paye"${su.paye?" checked":""}><span>Payé</span></label><label class="interr"><input type="checkbox" data-suivi="${i}:remis"${su.remis?" checked":""}><span>Remis</span></label></div>
+      </details>`}).join("")}</div>`
       :""}
   </article>`;
 }
@@ -1351,6 +1373,8 @@ function ajouterPourMembre(){
   const ex=lignesDe(mid).find(c=>c.article_id===aid&&c.taille===t),row={membre_id:mid,article_id:aid,taille:t,quantite:Math.min(20,(ex?.quantite||0)+q)};
   agir(()=>{if(ex)ex.quantite=row.quantite;else S.commandes.push({...row,id:-Date.now()})},()=>sb.from("commandes").upsert(row,{onConflict:"membre_id,article_id,taille"}),`Ajouté pour ${prenom(mid)}`);
 }
+const recapOuverts=new Set();
+document.addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.rm)d.open?recapOuverts.add(+d.dataset.rm):recapOuverts.delete(+d.dataset.rm)},true);
 function texteRecap(){
   const {lignes,ids}=recapCommande(),b=S.boutique||{};
   return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
@@ -1385,7 +1409,6 @@ function renderBoutique(){
       ${guidePdf()?`<button class="pj" data-gtailles><span class="ic">PDF</span><span class="nm"><small>Avant de choisir</small><b>Guide des tailles</b></span><span class="go">Ouvrir</span></button>`:bureau()?'<span class="hint">Pas encore de guide des tailles : ajoute le PDF dans <button class="lien-btn" data-reglages>Réglages</button>.</span>':""}</article>
     ${designsVisibles()?carteDesigns():""}
     ${carteMaCommande(ouv)}
-    ${arts.length?`<div class="art-tete"><h3>Choisis tes articles</h3><span class="hint">${ouv?"Pour chaque article voulu : vérifie la taille, la quantité, puis touche « Ajouter ». Il apparaît alors dans « Ma commande ».":"Les commandes sont fermées : catalogue en consultation."}</span></div>`:""}
     ${arts.map(a=>carteArticle(a,ouv)).join("")||`<div class="empty"><b>Aucun article</b>${B?"Ajoute le premier avec le bouton « Article ».":"Le bureau n'a pas encore mis d'articles en ligne."}</div>`}
     ${B?carteBilanCommande():""}`;
 }
