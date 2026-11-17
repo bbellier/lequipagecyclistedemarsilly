@@ -494,7 +494,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17f";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17g";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -867,7 +867,8 @@ function fiche(id){
       ${passe?"":`<div><span class="lbl">Ne viennent pas (${q.non.length})</span>${tags(q.non,"n")}</div><div><span class="lbl">Sans réponse (${q.sans.length})</span>${tags(q.sans,"")}</div>`}</div>
     ${!passe&&q.r===true?`<span class="hint">Tu recevras un rappel par e-mail 10 jours et 1 jour avant${S.profils[me()]?.rappels===false?" (rappels désactivés dans ton profil)":""}.</span>`:""}
     ${e.cree_par&&S.membres.find(m=>m.id===e.cree_par)?.role!=="bureau"?`<span class="par">Ajouté par ${esc(prenom(e.cree_par))}</span>`:""}
-    ${bureau()||peutModifier(e)?`<div class="row">${bureau()?`<button class="btn sec" data-gerer="${e.id}">Gérer les participants</button>`:"<span></span>"}<button class="btn sec" data-edit="${e.id}">Modifier</button></div>`:""}`,{k:"fiche",id:e.id});
+    ${bureau()||peutModifier(e)?`<div class="row">${bureau()?`<button class="btn sec" data-gerer="${e.id}">Gérer les participants</button>`:"<span></span>"}<button class="btn sec" data-edit="${e.id}">Modifier</button></div>`:""}
+    ${bureau()?`<button class="btn sec" data-envoi="${e.id}">✉ Envoyer un e-mail (rappel ou bilan)</button>`:""}`,{k:"fiche",id:e.id});
   const el=$("#carte");if(el)initCarte(el,{trace:p?.gpx&&g?g.pts:null,point:e.lieu_lat!=null?[e.lieu_lat,e.lieu_lon]:null});
 }
 function repondre(eid,rep){
@@ -1083,6 +1084,29 @@ function renderResultats(){
       <span class="more">${jours(e.date_debut)===0?"C'est aujourd'hui · ajoute ton résultat ›":"Voir les résultats ›"}</span>
     </article>`}).join("")||`<div class="empty"><b>Pas encore de résultats</b>Les évènements apparaissent ici dès leur jour J.</div>`);
 }
+// ---------- E-mails à la demande (bureau) : la demande est déposée, la tâche GitHub l'envoie dans les 15 minutes ----------
+async function envoiMail(id){
+  const e=evt(id);if(!e)return;const passe=e.date_fin&&e.date_fin<J(0)||e.date_debut&&e.date_debut<J(0);
+  const venus=Object.values(S.part[id]||{}).filter(v=>v===true).length,tous=S.complets.filter(x=>x.actif&&x.email).length;
+  ouvrirPanel(`<form id="fen"><div class="ph"><h3>Envoyer un e-mail</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <p class="hint" style="margin:0">${esc(e.evenement)}${e.date_debut?" · "+fmt(e.date_debut,{day:"numeric",month:"long",year:"numeric"}):""}</p>
+    <span class="sect" style="padding:0">Quel e-mail ?</span>
+    <div class="seg" role="radiogroup">${[["bilan","Bilan (résultats, photos)"],["rappel","Rappel (date, lieu, parcours)"]].map(([v,l])=>`<label class="segr"><input type="radio" name="type" value="${v}"${(passe?"bilan":"rappel")===v?" checked":""}><span>${l}</span></label>`).join("")}</div>
+    <span class="sect" style="padding:0">À qui ?</span>
+    <div class="list" style="gap:6px">${[["moi","Moi seulement, pour tester","Objet préfixé « [Test] »"],["participants","Les participants",`${venus} inscrit${venus>1?"s":""} « Je viens »${""}`],["tous","Tous les membres",`${tous} membres avec e-mail, sauf ceux qui ont décoché ces e-mails`]].map(([v,l,h],i)=>`<label class="check" for="en-${v}"><input id="en-${v}" type="radio" style="flex:none" name="cible" value="${v}"${i?"":" checked"}> <span><b>${l}</b><br><small class="hint">${h}</small></span></label>`).join("")}</div>
+    <span class="hint">L'e-mail part dans les 15 minutes (tâche « Rappels e-mail » de GitHub), aux couleurs du club.</span>
+    <button class="btn pri" id="en-ok">Demander l'envoi</button>
+    <div id="en-hist"></div></form>`);
+  $("#fen").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target)),b=$("#en-ok");
+    if(d.cible==="tous"&&!b.dataset.ok){b.dataset.ok=1;b.textContent=`Confirmer : envoyer à ${tous} membres`;return}
+    occupe(b,true);const {error}=await sb.from("envois").insert({evenement_id:id,type:d.type,cible:d.cible,demande_par:me()});occupe(b,false);
+    if(error)return erreur(error,/envois|relation/i.test(error.message)?"Lance la mise à jour v15 dans Supabase":"Envoi");
+    toast("Demande enregistrée : l'e-mail part dans les 15 minutes",4000);b.textContent="Demander l'envoi";delete b.dataset.ok;histo()};
+  const histo=async()=>{const {data}=await sb.from("envois").select("*").eq("evenement_id",id).order("id",{ascending:false}).limit(6);const z=$("#en-hist");if(!z||!data?.length)return;
+    const C={moi:"moi",participants:"participants",tous:"tous les membres"},St={en_attente:"⏳ en attente",envoye:"✓ envoyé",erreur:"⚠ erreur"};
+    z.innerHTML=`<span class="sect" style="padding:0">Dernières demandes</span><ul class="lignes">${data.map(x=>`<li><span>${x.type==="bilan"?"Bilan":"Rappel"} → ${C[x.cible]}<br><small class="hint">${new Date(x.demande_le||Date.now()).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${x.detail?" · "+esc(x.detail):""}</small></span><b>${St[x.statut||"en_attente"]}${x.statut==="envoye"&&x.nb!=null?` (${x.nb})`:""}</b></li>`).join("")}</ul>`};
+  histo();
+}
 function ficheResultats(id){
   const e=evt(id);if(!e)return fermer();
   const r=S.res[id]||{},m=S.medias[id]||[],q=qui(e),moi=me();
@@ -1101,7 +1125,7 @@ function ficheResultats(id){
     </div>`}).join("")||`<div class="empty">Personne n'est encore indiqué comme participant.</div>`}</div>
     ${!ids.includes(moi)?`<button class="btn sec" data-editres="${id}:${moi}">J'y étais : ajouter mon résultat</button>`:""}
     ${bureau()?`<div class="row" style="align-items:end"><label for="r-qui" style="flex:1">Saisir le résultat d'un autre membre<select id="r-qui">${S.membres.filter(x=>!ids.includes(x.id)).map(x=>`<option value="${x.id}">${esc(x.prenom)}</option>`).join("")}</select></label><button class="btn sec" id="r-add">Saisir</button></div>
-      <button class="btn sec" data-gerer="${id}">Gérer les participants</button>`:""}
+      <button class="btn sec" data-gerer="${id}">Gérer les participants</button><button class="btn sec" data-envoi="${id}">✉ Envoyer le bilan par e-mail</button>`:""}
     <div class="sect">Photos et vidéos (${m.length})</div>
     <div class="gal">${m.map(x=>{const u=S.urls["medias/"+x.chemin];return `<button data-media="${id}:${x.id}" aria-label="${esc(x.legende||"Ouvrir le média")}">${u?(x.type==="video"?`<video src="${esc(u)}#t=0.1" muted playsinline preload="metadata"></video><span class="play">▶</span>`:`<img src="${esc(u)}" alt="${esc(x.legende||"")}" loading="lazy">`):""}<span class="badge">${esc(prenom(x.auteur_id))}</span></button>`}).join("")}
       <label class="add-media" for="m-add">+ Ajouter des photos ou vidéos<input id="m-add" type="file" accept="image/*,video/*" multiple data-upmedia="${id}" hidden></label></div>
@@ -1960,6 +1984,7 @@ document.addEventListener("click",e=>{
   const no=c("[data-note]");if(no)return formNote(no.dataset.note);
   const ed=c("[data-edit]");if(ed)return formEvt(evt(ed.dataset.edit));
   const ge=c("[data-gerer]");if(ge)return gererParticipants(+ge.dataset.gerer);
+  const en=c("[data-envoi]");if(en)return envoiMail(+en.dataset.envoi);
   const st=c("[data-set]");if(st){const [eid,mid,v]=st.dataset.set.split(":");return fixerParticipation(+eid,+mid,v)}
   const er=c("[data-editres]");if(er){const [eid,mid]=er.dataset.editres.split(":").map(Number);return formResultat(eid,mid)}
   const md=c("[data-media]");if(md){const [eid,id]=md.dataset.media.split(":").map(Number);return voirMedia(eid,id)}
