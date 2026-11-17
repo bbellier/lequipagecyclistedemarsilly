@@ -489,7 +489,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17c";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1317,9 +1317,11 @@ function carteMaCommande(ouv){
   const l=lignesDe(me()),b=S.boutique||{},su=S.suivi[me()]||{},tot=totalDe(l),p=S.profils[me()]||{},du=resteDu(me());
   const ref=`TENUE ${(p.nom||"").toUpperCase()} ${S.moi.prenom||""}`.replace(/\s+/g," ").trim();
   const iban=(b.rib||"").replace(/\s/g,"").match(/[A-Z]{2}\d{2}[A-Z0-9]{11,30}/)?.[0];
+  const sansSexe=l.length&&!p.sexe;
   return `<article class="card"><div class="row"><h2>Ma commande</h2>${l.length?`<span class="pill">${su.remis?"Remise ✓":su.paye&&du>0?"Reste "+eur(du):su.paye?"Payée ✓":"À payer"}</span>`:""}</div>
     ${l.length?`<ul class="lignes">${l.map(c=>`<li><span>${ouv?`${pas(c)} ${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?" ("+esc(c.taille)+")":""}`:esc(libLigne(c))}</span><b>${eur(prixL(c))}</b></li>`).join("")}<li class="tot"><span>Total</span><b>${eur(tot)}</b></li></ul>`
       :`<span class="hint">${ouv?"Rien pour l'instant : choisis tes articles ci-dessous.":"Tu n'as rien commandé."}</span>`}
+    ${sansSexe?`<div class="attente" style="border-color:var(--red);color:var(--ink)">Indique ton sexe (coupe homme ou femme) dans ton <button class="lien-btn" data-v="profil">profil</button> : le club en a besoin pour commander la bonne coupe.</div>`:""}
     ${l.length&&du>0&&b.rib&&!b.rib_visible?`<div class="attente">${B0()?"RIB caché aux membres : coche « Afficher le RIB » dans Réglages quand les paniers sont validés.":"Le RIB et le montant à payer s'afficheront ici quand le bureau aura validé les paniers."}</div>`:""}
     ${l.length&&du>0&&b.rib&&b.rib_visible?`<div class="paiement"><h3>Paiement par virement</h3>
       ${blocRib(b.rib,du,ref,su.paye)}
@@ -1327,8 +1329,9 @@ function carteMaCommande(ouv){
   </article>`;
 }
 function recapCommande(){
-  const ag={};(S.commandes||[]).forEach(c=>{const k=c.article_id+"|"+c.taille;(ag[k]??={a:article(c.article_id),t:c.taille,q:0}).q+=c.quantite});
-  const lignes=Object.values(ag).sort((x,y)=>(x.a?.ordre??0)-(y.a?.ordre??0)||String(x.a?.nom).localeCompare(String(y.a?.nom))||rangTaille(x.t)-rangTaille(y.t));
+  const ag={};(S.commandes||[]).forEach(c=>{const sx=S.profils[c.membre_id]?.sexe||"",k=c.article_id+"|"+sx+"|"+c.taille;(ag[k]??={a:article(c.article_id),sx,t:c.taille,q:0}).q+=c.quantite});
+  const rs=x=>({H:0,F:1}[x]??2);
+  const lignes=Object.values(ag).sort((x,y)=>(x.a?.ordre??0)-(y.a?.ordre??0)||String(x.a?.nom).localeCompare(String(y.a?.nom))||rs(x.sx)-rs(y.sx)||rangTaille(x.t)-rangTaille(y.t));
   const ids=[...new Set((S.commandes||[]).map(c=>c.membre_id))].sort((a,b)=>nomComplet(a).localeCompare(nomComplet(b)));
   return {lignes,ids};
 }
@@ -1338,14 +1341,15 @@ function carteBilanCommande(){
   const t=(v,l,c="")=>`<div class="tile ${c}"><b>${v}</b><span>${l}</span></div>`;
   return `<article class="card"><div class="row"><h2>Bilan de la commande</h2><span class="role">bureau</span></div>
     <div class="tiles t4">${t(ids.length,"membres")+t(pieces,"pièces")+t(eur(tot),"à encaisser")+t(eur(paye),"déjà payé",paye<tot?"acc":"")}</div>
-    ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table><thead><tr><th>Article</th><th>Taille</th><th>Qté</th></tr></thead><tbody>${lignes.map(x=>`<tr><td>${esc(x.a?.nom||"article retiré")}</td><td>${esc(x.t||"–")}</td><td><b>${x.q}</b></td></tr>`).join("")}</tbody></table></div>
+    ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table><thead><tr><th>Article</th><th>Sexe</th><th>Taille</th><th>Qté</th></tr></thead><tbody>${lignes.map(x=>`<tr><td>${esc(x.a?.nom||"article retiré")}</td><td>${x.sx?SEXE[x.sx]:'<span class="status warn">?</span>'}</td><td>${esc(x.t||"–")}</td><td><b>${x.q}</b></td></tr>`).join("")}</tbody></table></div>
+    ${lignes.some(x=>!x.sx)?`<span class="hint">« ? » : sexe non renseigné pour ${[...new Set((S.commandes||[]).filter(c=>!S.profils[c.membre_id]?.sexe).map(c=>prenom(c.membre_id)))].join(", ")} (à compléter dans le profil).</span>`:""}
     <button class="btn pri" data-recap>Copier le récap pour le fournisseur</button>`:'<span class="hint">Aucune commande pour l\'instant.</span>'}
     ${formPourMembre()}
     ${lignes.length?`
     <span class="sect">Par membre · ${ids.filter(i=>S.suivi[i]?.paye).length}/${ids.length} payés · ${remis}/${ids.length} remis</span>
     <div class="recap-m">${ids.map(i=>{const su=S.suivi[i]||{},l=lignesDe(i),reste=resteDu(i),nb=l.reduce((t,c)=>t+c.quantite,0);
       return `<details class="rm"${recapOuverts.has(i)?" open":""} data-rm="${i}"><summary>
-          <span class="rm-n"><b>${esc(nomComplet(i))}</b><small>${nb} pièce${nb>1?"s":""}</small></span>
+          <span class="rm-n"><b>${esc(nomComplet(i))}</b><small>${SEXE[S.profils[i]?.sexe]||'<span class="status warn">sexe ?</span>'} · ${nb} pièce${nb>1?"s":""}</small></span>
           <span class="rm-t">${eur(totalDe(l))}</span>
           <span class="rm-s">${su.remis?'<i class="ok">Remis</i>':su.paye&&reste>0?`<i class="warn">+${eur(reste)}</i>`:su.paye?'<i class="ok">Payé</i>':'<i>À payer</i>'}</span></summary>
         <ul class="rm-l">${l.map(c=>`<li><span class="rm-a">${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?`<em>${esc(c.taille)}</em>`:""}</span>${pas(c)}<span class="rm-p">${eur(prixL(c))}</span><button class="x-mini" data-delligne="${c.id}" aria-label="Tout retirer : ${esc(libLigne(c))}">✕</button></li>`).join("")}</ul>
@@ -1375,9 +1379,10 @@ function ajouterPourMembre(){
 }
 const recapOuverts=new Set();
 document.addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.rm)d.open?recapOuverts.add(+d.dataset.rm):recapOuverts.delete(+d.dataset.rm)},true);
+const SEXE={H:"Homme",F:"Femme"};
 function texteRecap(){
   const {lignes,ids}=recapCommande(),b=S.boutique||{};
-  return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
+  return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"} · ${SEXE[x.sx]||"sexe ?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} (${SEXE[S.profils[i]?.sexe]||"sexe ?"}) : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
 }
 // Étapes d'une commande ; l'étape en cours se déduit des réglages et du suivi du membre
 function etapeBoutique(){
@@ -1572,6 +1577,7 @@ function renderProfil(){
       <span class="sect">Fédérations</span>
       <div class="grid2" style="gap:8px 12px">${FEDS.map(f=>`<label class="check" for="p-${f}"><input id="p-${f}" type="checkbox" name="fed" value="${f}"${(p.federations||[]).includes(f)?" checked":""}> Licence ${f}</label>`).join("")}</div>
       <span class="sect">Tailles de tenue</span>
+      <div class="grid2"><label for="p-sx">Sexe (coupe des tenues)<select id="p-sx" name="sexe"><option value=""${!p.sexe?" selected":""}>—</option><option value="H"${p.sexe==="H"?" selected":""}>Homme</option><option value="F"${p.sexe==="F"?" selected":""}>Femme</option></select></label><span></span></div>
       <div class="grid2"><label for="p-tm">Maillot<select id="p-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="p-tc">Cuissard<select id="p-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
       ${guidePdf()?'<span class="hint"><button type="button" class="lien-btn" data-gtailles>Guide des tailles (PDF)</button></span>':""}
       ${boutiqueVue()?`<span class="hint">Ces tailles pré-remplissent tes choix dans la <button type="button" class="lien-btn" data-v="boutique">boutique</button>.</span>`:""}
@@ -1604,7 +1610,7 @@ function renderProfil(){
   $("#fp").onsubmit=async ev=>{ev.preventDefault();const b=$("#p-ok");occupe(b,true);const fd=new FormData(ev.target),d=Object.fromEntries(fd);
     const pre=d.prenom.trim();
     if(pre&&pre!==m.prenom){const r=await sb.rpc("maj_mon_prenom",{p_prenom:pre});if(r.error){occupe(b,false);return erreur(r.error,"Prénom")}S.moi.prenom=pre}
-    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom?.trim()),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),rappels:!!d.rappels,bilans:!!d.bilans,
+    const {error}=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom?.trim()),tel:nul(d.tel),urgence:nul(d.urgence),federations:fd.getAll("fed"),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),sexe:nul(d.sexe),rappels:!!d.rappels,bilans:!!d.bilans,
       ...(d.droit_image!==undefined&&(d.droit_image==="1")!==p.droit_image?{droit_image:d.droit_image==="1",droit_image_le:new Date().toISOString()}:{}),maj_le:new Date().toISOString()});
     occupe(b,false);b.blur();if(error)return erreur(error,"Profil");toast("Profil enregistré");recharger()};
   $("#logout").onclick=deconnecter;
@@ -1650,6 +1656,7 @@ function voirMembre(id){
     <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${m.email?esc(m.email):"Sans e-mail"}<br>${m.user_id?`Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.`:"Compte géré par le bureau tant qu'il ne s'est pas connecté."}</span></div>
     ${!m.user_id&&bureau()?`<form id="fgere" class="droit"><span class="sect" style="padding:0">Profil géré par le bureau</span>
       <div class="grid2"><label for="g-n">Nom<input id="g-n" name="nom" value="${esc(p.nom)}"></label><label for="g-e">E-mail <span class="hint">(s'il en a un plus tard)</span><input id="g-e" name="email" type="email" value="${esc(m.email)}"></label></div>
+      <div class="grid2"><label for="g-sx">Sexe (coupe des tenues)<select id="g-sx" name="sexe"><option value=""${!p.sexe?" selected":""}>—</option><option value="H"${p.sexe==="H"?" selected":""}>Homme</option><option value="F"${p.sexe==="F"?" selected":""}>Femme</option></select></label><span></span></div>
       <div class="grid2"><label for="g-tm">Taille maillot<select id="g-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="g-tc">Taille cuissard<select id="g-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
       <button class="btn sec" id="g-ok">Enregistrer</button></form>`:""}
     <dl class="facts">${COLS_DOCS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
@@ -1664,7 +1671,7 @@ function voirMembre(id){
     ${m.id!==me()?`<label for="m-role">Rôle<select id="m-role"><option value="membre"${m.role==="membre"?" selected":""}>Membre</option><option value="bureau"${m.role==="bureau"?" selected":""}>Bureau</option></select></label>
       <button class="btn ${m.actif?"del":"sec"}" id="m-actif">${m.actif?"Retirer du club":"Réintégrer au club"}</button>`:""}`);
   const fg=$("#fgere");if(fg)fg.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(fg)),b=$("#g-ok"),email=d.email.trim().toLowerCase()||null;occupe(b,true);
-    const r1=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom.trim()),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),maj_le:new Date().toISOString()});
+    const r1=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom.trim()),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),sexe:nul(d.sexe),maj_le:new Date().toISOString()});
     const r2=email!==(m.email||null)?await sb.from("membres").update({email}).eq("id",m.id):{};occupe(b,false);
     if(r1.error||r2.error){const e=r1.error||r2.error;return /duplicate|23505/.test(e.message)?toast("Cet e-mail est déjà utilisé"):erreur(e,"Profil")}
     toast(email&&!m.email?`${m.prenom} peut maintenant se connecter avec cet e-mail`:"Profil enregistré",3500);await recharger();voirMembre(m.id)};
