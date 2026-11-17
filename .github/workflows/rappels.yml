@@ -2,6 +2,8 @@
 # Chaque matin : envoie un rappel par e-mail aux membres qui ont répondu « Je viens »,
 # 10 jours (J-10) et 1 jour (J-1) avant l'évènement, puis un BILAN (participants, résultats,
 # photos) à tous les membres 2 jours après la fin de l'évènement. Chaque e-mail n'est envoyé qu'une fois.
+# Elle tourne toutes les 15 minutes pour traiter aussi les envois demandés depuis l'app (bouton « Envoyer un e-mail »
+# du bureau, table envois) ; les rappels et bilans automatiques ne partent qu'à partir de 7 h (heure de Paris).
 # Cette tâche garde aussi la base Supabase éveillée (le fichier supabase-reveil.yml devient inutile).
 #
 # Secrets à créer dans GitHub > Settings > Secrets and variables > Actions :
@@ -13,12 +15,18 @@
 name: Rappels e-mail
 on:
   schedule:
-    - cron: "7 6 * * *"      # tous les jours vers 7 h - 8 h (heure de Paris)
+    - cron: "7,22,37,52 * * * *"   # toutes les 15 minutes (envois demandés depuis l'app) ; automatiques à partir de 7 h
   workflow_dispatch:
     inputs:
       test:
         description: "Mode test : affiche les e-mails sans les envoyer (oui/non)"
         default: "non"
+      essai:
+        description: "Essai : oui = envoie le bilan et le rappel du DERNIER évènement à l'adresse ci-dessous seulement"
+        default: "non"
+      essai_email:
+        description: "Essai : adresse qui reçoit (vide = l'adresse Gmail du club)"
+        default: ""
 jobs:
   rappels:
     runs-on: ubuntu-latest
@@ -31,6 +39,8 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           APP_URL: ${{ secrets.APP_URL }}
           TEST: ${{ github.event.inputs.test }}
+          ESSAI: ${{ github.event.inputs.essai }}
+          ESSAI_EMAIL: ${{ github.event.inputs.essai_email }}
         run: |
           python3 - <<'PY'
           import os, json, smtplib, urllib.request, urllib.parse, html, re
@@ -91,6 +101,27 @@ jobs:
                   if not m["actif"] or m["id"] in sans_bilan or (e["id"], m["id"], "bilan") in deja: continue
                   a_envoyer.append(("bilan", e, m))
           a_envoyer = [x for x in a_envoyer if x[2].get("email")]   # membres sans e-mail : rien à envoyer
+          if os.environ.get("GITHUB_EVENT_NAME") == "schedule" and datetime.now(ZoneInfo("Europe/Paris")).hour < 7: a_envoyer = []
+
+          # Envois demandés depuis l'app par le bureau (table envois)
+          def charger(e):
+              e["_parcours"] = api(f"parcours?select=*&evenement_id=eq.{e['id']}&order=ordre")
+              e["_venus"] = [p["membre_id"] for p in api(f"participations?select=membre_id&evenement_id=eq.{e['id']}&reponse=eq.true")]
+              e["_res"] = api(f"resultats?select=*&evenement_id=eq.{e['id']}")
+              e["_photos"] = len(api(f"medias?select=id&evenement_id=eq.{e['id']}"))
+          maintenant = lambda: datetime.now(ZoneInfo("UTC")).isoformat()
+          demandes = []
+          try: demandes = api("envois?select=*&statut=eq.en_attente&order=id") or []
+          except Exception as err: print("Envois à la demande indisponibles (migration v15 ?) :", err)
+          for d in demandes:
+              ev = api(f"evenements?select=*&id=eq.{d['evenement_id']}")
+              if not ev: d["_liste"] = []; d["_err"] = "évènement introuvable"; continue
+              e = ev[0]; charger(e); t = d["type"]
+              if d["cible"] == "moi": dest = [membres.get(d.get("demande_par"))]
+              elif d["cible"] == "participants": dest = [membres.get(i) for i in sorted(set(e["_venus"]) | ({r["membre_id"] for r in e["_res"]} if t == "bilan" else set()))]
+              else: dest = [m for m in membres.values() if m["actif"] and m["id"] not in (sans_bilan if t == "bilan" else sans_rappel)]
+              d["_liste"] = [(t, e, m) for m in dest if m and m.get("email")]
+              print(f"Demande n° {d['id']} : {t} « {e['evenement']} » → {d['cible']} ({len(d['_liste'])} destinataire(s))")
           print(f"{auj} : {len(a_envoyer)} e-mail(s) à envoyer")
 
           def secondes(t):
@@ -121,7 +152,8 @@ jobs:
 
           def message(type_, e, m):
               if type_ == "bilan": return emballer(f"Bilan · {e['evenement']}", e['evenement'], bilan(e, m), m, "Bilan de l'évènement")
-              quand = "dans 10 jours" if type_ == "J-10" else "demain"
+              n = (date.fromisoformat(e["date_debut"]) - auj).days if e.get("date_debut") else None
+              quand = "dans 10 jours" if type_ == "J-10" else "demain" if type_ == "J-1" or n == 1 else "aujourd'hui" if n == 0 else f"dans {n} jours" if n and n > 1 else "bientôt"
               lignes = [f"Salut {m['prenom']},", "", f"Petit rappel : {e['evenement']}, c'est {quand}, le {fr(e['date_debut'])}."]
               if e.get("heure_depart"): lignes.append(f"Départ : {hr(e['heure_depart'])}")
               if e.get("lieu"): lignes.append(f"Lieu : {e['lieu']}")
@@ -133,7 +165,7 @@ jobs:
               if e.get("commentaires"): lignes += ["", e["commentaires"]]
               if APP: lignes += ["", f"La fiche dans l'app : {APP}"]
               lignes += ["", "À bientôt sur la route,", CLUB, "", "Pour ne plus recevoir ces rappels : app > Profil > décocher les rappels par e-mail."]
-              return emballer(f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}", e['evenement'], lignes, m, "Rappel · dans 10 jours" if type_ == "J-10" else "Rappel · c'est demain")
+              return emballer(f"{'J-10' if type_=='J-10' else 'Demain' if quand == 'demain' else 'Rappel'} · {e['evenement']}", e['evenement'], lignes, m, f"Rappel · c'est {quand}" if type_ != "J-10" else "Rappel · dans 10 jours")
 
           def emballer(sujet, titre, lignes, m, surtitre=""):
               # Mise en page aux couleurs du club : bandeau noir + logo, filet rouge, papier, croix rouges
@@ -165,17 +197,51 @@ jobs:
               msg.add_alternative(page, subtype="html")
               return msg
 
-          if not a_envoyer: raise SystemExit(0)
+          # Essai : bilan + rappel d'un évènement envoyés à une seule adresse, sans rien enregistrer
+          ESSAI = (os.environ.get("ESSAI") or "non").strip().lower() == "oui"
+          if ESSAI:
+              ev = api(f"evenements?select=*&date_fin=lte.{auj.isoformat()}&order=date_fin.desc,id.desc&limit=1")
+              if not ev: print("Essai : aucun évènement passé trouvé"); raise SystemExit(1)
+              e = ev[0]
+              e["_parcours"] = api(f"parcours?select=*&evenement_id=eq.{e['id']}&order=ordre")
+              e["_venus"] = [p["membre_id"] for p in api(f"participations?select=membre_id&evenement_id=eq.{e['id']}&reponse=eq.true")]
+              e["_res"] = api(f"resultats?select=*&evenement_id=eq.{e['id']}")
+              e["_photos"] = len(api(f"medias?select=id&evenement_id=eq.{e['id']}"))
+              dest = (os.environ.get("ESSAI_EMAIL") or os.environ.get("GMAIL_USER") or "").strip()
+              m0 = next((x for x in membres.values() if (x.get("email") or "").lower() == dest.lower()), None) or {"id": 0, "prenom": "Test", "actif": True}
+              m = {**m0, "email": dest}
+              a_envoyer = [("bilan", e, m), ("J-1", e, m)]
+              print(f"Essai : « {e['evenement']} » ({e.get('date_fin')}) → {dest}")
+
+          if ESSAI: demandes = []
+          if not a_envoyer and not demandes: raise SystemExit(0)
           if TEST:
-              for t, e, m in a_envoyer: print("---", t, m["email"]); print(message(t, e, m).get_body(("plain",)).get_content())
+              for t, e, m in a_envoyer + [x for d in demandes for x in d["_liste"]]: print("---", t, m["email"]); print(message(t, e, m).get_body(("plain",)).get_content())
               raise SystemExit(0)
           with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
               s.login(os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"].replace(" ", ""))
               for t, e, m in a_envoyer:
                   try:
-                      s.send_message(message(t, e, m))
+                      msg = message(t, e, m)
+                      if ESSAI:
+                          sujet = msg["Subject"]; del msg["Subject"]; msg["Subject"] = "[Essai] " + sujet
+                          s.send_message(msg); print("essai envoyé :", t, "→", m["email"]); continue
+                      s.send_message(msg)
                       api("rappels_envoyes", "POST", {"evenement_id": e["id"], "membre_id": m["id"], "type": t}, {"Prefer": "resolution=ignore-duplicates"})
                       print("envoyé :", t, e["evenement"], "→", m["prenom"])
                   except Exception as err:
                       print("échec :", m["email"], err)
+              for d in demandes:
+                  nb, echecs = 0, []
+                  for t, e, m in d["_liste"]:
+                      try:
+                          msg = message(t, e, m)
+                          if d["cible"] == "moi": sujet = msg["Subject"]; del msg["Subject"]; msg["Subject"] = "[Test] " + sujet
+                          s.send_message(msg); nb += 1
+                          if t == "bilan" and d["cible"] != "moi":
+                              api("rappels_envoyes", "POST", {"evenement_id": e["id"], "membre_id": m["id"], "type": "bilan"}, {"Prefer": "resolution=ignore-duplicates"})
+                      except Exception as err: echecs.append(m.get("prenom", "?")); print("échec :", m["email"], err)
+                  err = d.get("_err") or (f"échec pour {', '.join(echecs)}" if echecs else None)
+                  api(f"envois?id=eq.{d['id']}", "PATCH", {"statut": "erreur" if (err and not nb) else "envoye", "nb": nb, "detail": err, "traite_le": maintenant()})
+                  print(f"Demande n° {d['id']} traitée : {nb} e-mail(s)")
           PY
