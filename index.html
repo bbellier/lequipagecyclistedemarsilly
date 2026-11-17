@@ -278,7 +278,7 @@ tr.off td{opacity:.5}
 .attente{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--muted)}
 .art-k{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-4px 0 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
 .art-k b{font-weight:600}.art-k .ok{background:var(--red);color:#fff;border-radius:4px;padding:2px 7px;letter-spacing:.06em}
-.art .ajout{background:var(--red-soft);border:0;border-radius:10px;padding:10px}
+.art .ajout{background:color-mix(in srgb,var(--ink) 7%,transparent);border:0;border-radius:10px;padding:10px}
 .art-tete{display:grid;gap:4px;padding:12px 14px;border:1px dashed var(--line);border-radius:10px;background:var(--paper)}
 .art-tete h3{margin:0;font-family:var(--display);text-transform:uppercase;font-size:20px}.art-tete h3::before{content:"× ";color:var(--red)}.art-img{width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
 .prix{font-family:var(--display);font-weight:800;font-size:22px;white-space:nowrap}
@@ -317,7 +317,7 @@ tr.off td{opacity:.5}
 .rib-n{grid-column:1/-1;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .rib-v{grid-column:1/3;font-weight:600;overflow-wrap:anywhere}.rib-v.mono{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
 .rib-l .btn{grid-column:3;grid-row:2}.btn.fait{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
-.pas{display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:999px;overflow:hidden;vertical-align:middle;margin-right:2px}
+.pas{display:inline-flex;align-items:center;border:0;border-radius:999px;overflow:hidden;vertical-align:middle;margin-right:2px;background:color-mix(in srgb,currentColor 12%,transparent)}
 .pas button{border:0;background:none;color:inherit;font:700 15px/1 var(--display);width:26px;height:24px;cursor:pointer;padding:0}.pas button:disabled{opacity:.3}
 .pas b{min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
 .lignes .pas{margin-right:6px}.lignes li b{white-space:nowrap}.lg-b{display:block;padding:3px 0;min-width:180px}
@@ -337,6 +337,10 @@ tr.off td{opacity:.5}
 .interr{position:relative;flex:1}.interr input{position:absolute;opacity:0}.interr span{display:block;text-align:center;padding:8px;border-radius:8px;border:1.5px solid var(--line);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;color:var(--muted)}
 .interr span::before{content:"○ "}.interr input:checked+span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.interr input:checked+span::before{content:"✓ "}.interr input:focus-visible+span{outline:2px solid var(--red)}
 .sx-q{border:1.5px dashed var(--red);background:none;color:var(--red);border-radius:6px;width:28px;height:24px;font-weight:700;cursor:pointer}
+table.acmd td{vertical-align:middle}table.acmd tr.g1 td{border-top:2px solid var(--ink)}table.acmd thead+tbody tr.g1:first-child td{border-top:0}
+table.acmd .ga{font-weight:700}table.acmd .st,table.acmd .sa{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}table.acmd .sa{color:var(--red);font-size:17px}
+table.acmd td[rowspan]{border-right:1px solid var(--line)}table.acmd th:nth-child(n+3),table.acmd td.q,table.acmd td.tl{text-align:center}
+table.acmd{font-size:13px;width:100%}table.acmd th,table.acmd td{padding:6px 5px}table.acmd th{font-size:10px;letter-spacing:.04em;white-space:normal;line-height:1.2}table.acmd .ga{hyphens:auto;overflow-wrap:anywhere}
 .tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}
 td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .moi-bilan{border-left:3px solid var(--red);padding-left:10px;font-size:14.5px}
@@ -490,7 +494,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17d";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17f";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -999,7 +1003,7 @@ function palmares(){
 }
 const anneeDe=e=>e.date_debut.slice(0,4);
 const evsSaison=()=>new Set(S.evts.filter(e=>anneeRes==="Toutes"||anneeDe(e)===anneeRes).map(e=>e.id));
-const bilanMasque=()=>{try{return localStorage.getItem("bilanMasque")==="1"}catch(e){return false}};
+const bilanMasque=()=>{try{return localStorage.getItem("bilanMasque")!=="0"}catch(e){return true}};
 function renderSaisons(){
   const cette=String(new Date().getFullYear());
   const annees=["Toutes",...[...new Set([cette,...S.evts.filter(e=>jours(e.date_debut)<=0).map(anneeDe)])].sort().reverse()];
@@ -1342,7 +1346,7 @@ function carteBilanCommande(){
   const t=(v,l,c="")=>`<div class="tile ${c}"><b>${v}</b><span>${l}</span></div>`;
   return `<article class="card"><div class="row"><h2>Bilan de la commande</h2><span class="role">bureau</span></div>
     <div class="tiles t4">${t(ids.length,"membres")+t(pieces,"pièces")+t(eur(tot),"à encaisser")+t(eur(paye),"déjà payé",paye<tot?"acc":"")}</div>
-    ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table><thead><tr><th>Article</th><th>Sexe</th><th>Taille</th><th>Qté</th></tr></thead><tbody>${lignes.map(x=>`<tr><td>${esc(x.a?.nom||"article retiré")}</td><td>${x.sx?SEXE[x.sx]:'<span class="status warn">?</span>'}</td><td>${esc(x.t||"–")}</td><td><b>${x.q}</b></td></tr>`).join("")}</tbody></table></div>
+    ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table class="acmd"><thead><tr><th>Article</th><th>Sexe</th><th>Taille</th><th>Qté</th><th>Tot. sexe</th><th>Tot. article</th></tr></thead><tbody>${tableauACommander(lignes)}</tbody></table></div>
     ${lignes.some(x=>!x.sx)?`<span class="hint">« ? » : sexe non renseigné pour ${[...new Set((S.commandes||[]).filter(c=>!S.profils[c.membre_id]?.sexe).map(c=>c.membre_id))].map(i=>`<button class="lien-btn" data-sexe-rapide="${i}">${esc(prenom(i))}</button>`).join(", ")} : touche un nom pour le renseigner.</span>`:""}
     <button class="btn pri" data-recap>Copier le récap pour le fournisseur</button>`:'<span class="hint">Aucune commande pour l\'instant.</span>'}
     ${formPourMembre()}
@@ -1381,6 +1385,15 @@ function ajouterPourMembre(){
 const recapOuverts=new Set();
 document.addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.rm)d.open?recapOuverts.add(+d.dataset.rm):recapOuverts.delete(+d.dataset.rm)},true);
 const SEXE={H:"Homme",F:"Femme"};
+// Regroupe les lignes : article › sexe › taille, avec sous-totaux par sexe et par article (cellules fusionnées)
+function groupesACommander(lignes){
+  const G=[];for(const x of lignes){let g=G.find(y=>y.a===x.a);if(!g)G.push(g={a:x.a,sx:[],q:0});let h=g.sx.find(y=>y.sx===x.sx);if(!h)g.sx.push(h={sx:x.sx,l:[],q:0});h.l.push(x);h.q+=x.q;g.q+=x.q}
+  return G;
+}
+function tableauACommander(lignes){
+  return groupesACommander(lignes).map(g=>{const n=g.sx.reduce((t,h)=>t+h.l.length,0);let premier=true;
+    return g.sx.map(h=>h.l.map((x,k)=>{const r=`<tr class="${premier?"g1":""}">${premier?`<td rowspan="${n}" class="ga">${esc(g.a?.nom||"article retiré")}</td>`:""}${k===0?`<td rowspan="${h.l.length}">${h.sx?SEXE[h.sx]:'<span class="status warn">?</span>'}</td>`:""}<td class="tl">${esc(x.t||"–")}</td><td class="q">${x.q}</td>${k===0?`<td rowspan="${h.l.length}" class="st">${h.q}</td>`:""}${premier?`<td rowspan="${n}" class="sa">${g.q}</td>`:""}</tr>`;premier=false;return r}).join("")).join("")}).join("");
+}
 async function fixerSexe(mid,sx){
   const {error}=await sb.rpc("fixer_sexe",{p_membre:mid,p_sexe:sx});
   if(error)return erreur(error,/function|fixer_sexe/i.test(error.message)?"Lance la mise à jour v14 dans Supabase":"Sexe");
@@ -1388,7 +1401,7 @@ async function fixerSexe(mid,sx){
 }
 function texteRecap(){
   const {lignes,ids}=recapCommande(),b=S.boutique||{};
-  return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"} · ${SEXE[x.sx]||"sexe ?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} (${SEXE[S.profils[i]?.sexe]||"sexe ?"}) : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
+  return [`${b.titre||"Commande"} · ${CLUB}`,"",...groupesACommander(lignes).flatMap(g=>[`${g.a?.nom||"?"} : ${g.q} au total`,...g.sx.flatMap(h=>[`  ${SEXE[h.sx]||"Sexe ?"} : ${h.q}`,...h.l.map(x=>`    ${x.t?"taille "+x.t:"sans taille"} : ${x.q}`)]),""]),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} (${SEXE[S.profils[i]?.sexe]||"sexe ?"}) : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
 }
 // Étapes d'une commande ; l'étape en cours se déduit des réglages et du suivi du membre
 function etapeBoutique(){
@@ -1932,7 +1945,7 @@ document.addEventListener("click",e=>{
   if(c("[data-recap]")){const v=texteRecap();(navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast("Récap copié : colle-le dans ton mail au fournisseur",3500),()=>ouvrirPanel(`<div class="ph"><h3>Récap de la commande</h3><button class="x" data-close aria-label="Fermer">✕</button></div><textarea rows="14" readonly>${esc(v)}</textarea>`));return}
   const dr=c("[data-droit]");if(dr)return repondreDroit(dr.dataset.droit==="1");
   const df=c("[data-defiler]");if(df)return defilerMedia(+df.dataset.defiler);
-  if(c("[data-toggle-bilan]")){let m=false;try{m=localStorage.getItem("bilanMasque")==="1";localStorage.setItem("bilanMasque",m?"0":"1")}catch(e){}return render()}
+  if(c("[data-toggle-bilan]")){try{localStorage.setItem("bilanMasque",bilanMasque()?"0":"1")}catch(e){}return render()}
   if(c("[data-vue-membre]")&&bureauReel()){vueMembre=!vueMembre;fermer();render();scrollTo(0,0);return toast(vueMembre?"Aperçu membre activé":"Retour au mode bureau")}
   if(c("[data-ajout-course]"))return formEvt({},{resultat:true});
   const ar=c("[data-archiver]");if(ar)return archiverSondage(+ar.dataset.archiver);
