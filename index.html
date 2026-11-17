@@ -259,8 +259,8 @@ tr.off td{opacity:.5}
 .tile span{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);overflow-wrap:anywhere}
 .tile.acc b{color:var(--red)}
 .nav.n5 div{grid-template-columns:repeat(5,1fr)}.nav.n5 button{font-size:11px;letter-spacing:.02em}
-.art{gap:8px;border:2px solid var(--ink);box-shadow:5px 5px 0 var(--red);border-radius:12px}.art.off{opacity:.65;box-shadow:none;border-style:dashed}
-.art.pris{border-color:var(--red);box-shadow:5px 5px 0 var(--ink);position:relative}
+.art{gap:8px;border:2px solid var(--ink);box-shadow:none;border-radius:12px}.art.off{opacity:.65;box-shadow:none;border-style:dashed}
+.art.pris{border-color:var(--red);position:relative}
 .art .tic{position:absolute;top:-14px;right:-6px;width:50px;height:50px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;border:3px solid var(--card);box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;animation:tic .35s cubic-bezier(.3,1.6,.5,1)}
 .art .tic svg{width:28px;height:28px}.art .tic b{position:absolute;bottom:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:var(--on-ink);font:700 12px/22px var(--display);text-align:center;padding:0 5px;border:2px solid var(--card)}
 @keyframes tic{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
@@ -336,6 +336,7 @@ tr.off td{opacity:.5}
 .rm-b{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:var(--paper)}
 .interr{position:relative;flex:1}.interr input{position:absolute;opacity:0}.interr span{display:block;text-align:center;padding:8px;border-radius:8px;border:1.5px solid var(--line);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;color:var(--muted)}
 .interr span::before{content:"○ "}.interr input:checked+span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.interr input:checked+span::before{content:"✓ "}.interr input:focus-visible+span{outline:2px solid var(--red)}
+.sx-q{border:1.5px dashed var(--red);background:none;color:var(--red);border-radius:6px;width:28px;height:24px;font-weight:700;cursor:pointer}
 .tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}
 td.chk{text-align:center}td.chk input{width:20px;height:20px}
 .moi-bilan{border-left:3px solid var(--red);padding-left:10px;font-size:14.5px}
@@ -489,7 +490,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17c";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17d";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1342,7 +1343,7 @@ function carteBilanCommande(){
   return `<article class="card"><div class="row"><h2>Bilan de la commande</h2><span class="role">bureau</span></div>
     <div class="tiles t4">${t(ids.length,"membres")+t(pieces,"pièces")+t(eur(tot),"à encaisser")+t(eur(paye),"déjà payé",paye<tot?"acc":"")}</div>
     ${lignes.length?`<span class="sect">À commander</span><div class="tw"><table><thead><tr><th>Article</th><th>Sexe</th><th>Taille</th><th>Qté</th></tr></thead><tbody>${lignes.map(x=>`<tr><td>${esc(x.a?.nom||"article retiré")}</td><td>${x.sx?SEXE[x.sx]:'<span class="status warn">?</span>'}</td><td>${esc(x.t||"–")}</td><td><b>${x.q}</b></td></tr>`).join("")}</tbody></table></div>
-    ${lignes.some(x=>!x.sx)?`<span class="hint">« ? » : sexe non renseigné pour ${[...new Set((S.commandes||[]).filter(c=>!S.profils[c.membre_id]?.sexe).map(c=>prenom(c.membre_id)))].join(", ")} (à compléter dans le profil).</span>`:""}
+    ${lignes.some(x=>!x.sx)?`<span class="hint">« ? » : sexe non renseigné pour ${[...new Set((S.commandes||[]).filter(c=>!S.profils[c.membre_id]?.sexe).map(c=>c.membre_id))].map(i=>`<button class="lien-btn" data-sexe-rapide="${i}">${esc(prenom(i))}</button>`).join(", ")} : touche un nom pour le renseigner.</span>`:""}
     <button class="btn pri" data-recap>Copier le récap pour le fournisseur</button>`:'<span class="hint">Aucune commande pour l\'instant.</span>'}
     ${formPourMembre()}
     ${lignes.length?`
@@ -1380,6 +1381,11 @@ function ajouterPourMembre(){
 const recapOuverts=new Set();
 document.addEventListener("toggle",e=>{const d=e.target;if(d.dataset?.rm)d.open?recapOuverts.add(+d.dataset.rm):recapOuverts.delete(+d.dataset.rm)},true);
 const SEXE={H:"Homme",F:"Femme"};
+async function fixerSexe(mid,sx){
+  const {error}=await sb.rpc("fixer_sexe",{p_membre:mid,p_sexe:sx});
+  if(error)return erreur(error,/function|fixer_sexe/i.test(error.message)?"Lance la mise à jour v14 dans Supabase":"Sexe");
+  (S.profils[mid]??={membre_id:mid}).sexe=sx;toast(`${prenom(mid)} : ${SEXE[sx]||"non renseigné"}`);render();
+}
 function texteRecap(){
   const {lignes,ids}=recapCommande(),b=S.boutique||{};
   return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"} · ${SEXE[x.sx]||"sexe ?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} (${SEXE[S.profils[i]?.sexe]||"sexe ?"}) : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
@@ -1596,7 +1602,7 @@ function renderProfil(){
   </article>
   ${renderLiens()}
   ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th><th>Statut</th><th>Image</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":x.email?' <span class="hint">· jamais connecté</span>':' <span class="hint">· sans e-mail</span>'}</span></span></td><td>${(x.licences||[]).length?`<div class="statut">${x.licences.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adh.":esc(l)}</span>`).join("")}</div>`:'<span class="status ko">?</span>'}</td><td>${etatDroit(x.id)}</td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Membre</th><th>Sexe</th><th>Statut</th><th>Image</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":x.email?' <span class="hint">· jamais connecté</span>':' <span class="hint">· sans e-mail</span>'}</span></span></td><td>${S.profils[x.id]?.sexe?SEXE[S.profils[x.id].sexe]:'<button class="sx-q" data-sexe-rapide="'+x.id+'" title="Renseigner">?</button>'}</td><td>${(x.licences||[]).length?`<div class="statut">${x.licences.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adh.":esc(l)}</span>`).join("")}</div>`:'<span class="status ko">?</span>'}</td><td>${etatDroit(x.id)}</td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
     <span class="hint">Statut : renseigné par le bureau dans la fiche du membre. Image : ✓ accepté · ✗ refusé · ? sans réponse. Documents : ✓ déposé · ! licence cochée mais pas déposée · – rien.</span>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
@@ -1661,6 +1667,8 @@ function voirMembre(id){
       <button class="btn sec" id="g-ok">Enregistrer</button></form>`:""}
     <dl class="facts">${COLS_DOCS.map(f=>`<dt>${f}</dt><dd>${etatFed(id,f,true)}</dd>`).join("")}<dt>Tél.</dt><dd>${esc(p.tel||"–")}</dd><dt>Urgence</dt><dd>${esc(p.urgence||"–")}</dd><dt>Tailles</dt><dd>Maillot ${esc(p.taille_maillot||"–")} · cuissard ${esc(p.taille_cuissard||"–")}</dd><dt>Rappels</dt><dd>${p.rappels===false?"désactivés":"activés"}</dd></dl>
     ${docs.map(d=>fichierHTML(d.nom,(NOM_DOC[d.type]||"")+" · "+taille(d.taille),`<button class="btn sec small" data-doc-open="${d.id}">Ouvrir</button>`)).join("")||'<span class="hint">Aucun document déposé.</span>'}
+    ${bureau()?`<div class="droit"><span class="sect" style="padding:0">Sexe (coupe des tenues)</span>
+      <div class="seg s3" role="radiogroup" aria-label="Sexe">${[["H","Homme"],["F","Femme"],["","Non renseigné"]].map(([v,l])=>`<label class="segr"><input type="radio" name="ms-sx" value="${v}" data-fixsexe="${id}"${(p.sexe||"")===v?" checked":""}><span>${l}</span></label>`).join("")}</div></div>`:""}
     <div class="droit"><span class="sect" style="padding:0">Statut au club</span>
       <div class="grid2" style="gap:8px 12px">${["FFTri","FFC","UFOLEP","Adhérent"].map(l=>`<label class="check" for="ms-${l}"><input id="ms-${l}" type="checkbox" value="${l}" data-statut${(m.licences||[]).includes(l)?" checked":""}> ${l==="Adhérent"?"Adhérent (sans licence)":"Licencié "+l}</label>`).join("")}</div>
       <label for="ms-s">Saison<input id="ms-s" value="${esc(m.licences_saison||saisonDe(J(0)))}"></label>
@@ -1894,6 +1902,7 @@ document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="res-m"){membreRes=+t.value;return render()}
   if(t.id==="cb-m"||t.id==="cb-a"){pourMembre.m=+$("#cb-m").value;pourMembre.a=+$("#cb-a").value;$("#cb-t").innerHTML=optionsTaille(pourMembre.a,pourMembre.m);return}
+  if(t.dataset?.fixsexe){return fixerSexe(+t.dataset.fixsexe,t.value||null)}
   if(t.dataset?.suivi){const [mid,ch]=t.dataset.suivi.split(":");return suivreCommande(+mid,ch,t.checked)}
   if(t.dataset?.doc&&t.files?.[0]){envoyerDoc(t.dataset.doc,t.files[0]);t.value=""}
   if(t.dataset?.upmedia&&t.files?.length){envoyerMedias(+t.dataset.upmedia,[...t.files]);t.value=""}
@@ -1914,6 +1923,7 @@ document.addEventListener("click",e=>{
   const ma=c("[data-article]");if(ma)return formArticle(article(+ma.dataset.article));
   if(c("[data-reglages]"))return reglagesBoutique();
   if(c("[data-tuto-boutique]"))return tutoBoutique();
+  const sq=c("[data-sexe-rapide]");if(sq)return voirMembre(+sq.dataset.sexeRapide);
   if(c("[data-gtailles]"))return guideTailles();
   const zm=c("[data-zoom]");if(zm){const [aid,i]=zm.dataset.zoom.split(":");return zoomArticle(aid==="da"?"da":+aid,+i)}
   const vx=c("[data-vphoto]");if(vx){const [k,act]=vx.dataset.vphoto.split(":");return majVignettes(+k,act)}
