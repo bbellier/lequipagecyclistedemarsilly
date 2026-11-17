@@ -260,7 +260,22 @@ tr.off td{opacity:.5}
 .tile.acc b{color:var(--red)}
 .nav.n5 div{grid-template-columns:repeat(5,1fr)}.nav.n5 button{font-size:11px;letter-spacing:.02em}
 .art{gap:8px;border:2px solid var(--ink);box-shadow:5px 5px 0 var(--red);border-radius:12px}.art.off{opacity:.65;box-shadow:none;border-style:dashed}
-.art.pris{border-color:var(--red);box-shadow:5px 5px 0 var(--ink)}
+.art.pris{border-color:var(--red);box-shadow:5px 5px 0 var(--ink);position:relative}
+.art .tic{position:absolute;top:-14px;right:-6px;width:50px;height:50px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;border:3px solid var(--card);box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:2;animation:tic .35s cubic-bezier(.3,1.6,.5,1)}
+.art .tic svg{width:28px;height:28px}.art .tic b{position:absolute;bottom:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:var(--on-ink);font:700 12px/22px var(--display);text-align:center;padding:0 5px;border:2px solid var(--card)}
+@keyframes tic{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.tuto-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);padding:10px 12px;font:inherit;cursor:pointer}
+.tuto-btn .q{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font:700 16px var(--display)}
+.tuto-btn b{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em}.tuto-btn small{display:block;color:var(--muted)}
+.etapes{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:e}
+.etapes li{counter-increment:e;display:grid;grid-template-columns:34px 1fr;gap:4px 10px;padding:10px 0;position:relative}
+.etapes li::before{content:counter(e);width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:700 14px var(--display);background:var(--card);z-index:1}
+.etapes li:not(:last-child)::after{content:"";position:absolute;left:15px;top:40px;bottom:-10px;width:2px;background:var(--line)}
+.etapes li b{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;align-self:center}.etapes li span{grid-column:2;font-size:14px;color:var(--muted)}
+.etapes li.fait::before{content:"✓";background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.etapes li.fait::after{background:var(--ink)}
+.etapes li.ici::before{background:var(--red);color:#fff;border-color:var(--red)}.etapes li.ici b{color:var(--red)}
+.etapes li.ici span.ici-m{color:var(--red);font-weight:600}
+.attente{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--muted)}
 .art-k{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-4px 0 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
 .art-k b{font-weight:600}.art-k .ok{background:var(--red);color:#fff;border-radius:4px;padding:2px 7px;letter-spacing:.06em}
 .art .ajout{background:var(--red-soft);border:0;border-radius:10px;padding:10px}
@@ -459,7 +474,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-16o";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-17a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1233,8 +1248,10 @@ const tailleProfil=a=>{const p=S.profils[me()]||{};return a.taille==="maillot"?p
 function carteArticle(a,ouv){
   const mes=lignesDe(me()).filter(c=>c.article_id===a.id),ph=photosArticle(a).map(urlPhoto).filter(Boolean);
   const opts=a.taille==="aucune"?[]:(a.tailles||[]),def=tailleProfil(a),liste=def&&!opts.includes(def)?[def,...opts]:opts;
+  const nbPris=mes.reduce((t,c)=>t+c.quantite,0);
   return `<article class="card art${a.actif?"":" off"}${mes.length?" pris":""}">
-    <div class="art-k"><b>Article à commander</b>${mes.length?`<span class="ok">✓ Dans ta commande</span>`:ouv&&a.actif?"<span>À toi de choisir</span>":""}</div>
+    ${mes.length?`<span class="tic" aria-label="Dans ta commande : ${nbPris} pièce${nbPris>1?"s":""}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>${nbPris>1?`<b>${nbPris}</b>`:""}</span>`:""}
+    <div class="art-k"><b>${mes.length?"Dans ta commande":"Article à commander"}</b>${mes.length?"":ouv&&a.actif?"<span>À toi de choisir</span>":""}</div>
     ${ph.length?`<div class="galerie" data-galerie="${a.id}">${ph.map((u,i)=>`<img src="${esc(u)}" alt="${esc(a.nom)}${ph.length>1?` (${i+1}/${ph.length})`:""}" loading="lazy" data-zoom="${a.id}:${i}">`).join("")}</div>
       ${ph.length>1?`<div class="points" data-points="${a.id}">${ph.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <div class="row"><h2>${esc(a.nom)}</h2>${a.prix!=null?`<span class="prix">${eur(a.prix)}</span>`:""}</div>
@@ -1280,6 +1297,7 @@ function copier(v){
   return new Promise((ok,ko)=>{const t=document.createElement("textarea");t.value=v;t.setAttribute("readonly","");t.style.cssText="position:fixed;opacity:0;top:0";document.body.appendChild(t);t.select();t.setSelectionRange(0,v.length);
     let r=false;try{r=document.execCommand("copy")}catch(e){}t.remove();r?ok():ko()});
 }
+const B0=()=>bureau();
 function carteMaCommande(ouv){
   const l=lignesDe(me()),b=S.boutique||{},su=S.suivi[me()]||{},tot=totalDe(l),p=S.profils[me()]||{},du=resteDu(me());
   const ref=`TENUE ${(p.nom||"").toUpperCase()} ${S.moi.prenom||""}`.replace(/\s+/g," ").trim();
@@ -1287,7 +1305,8 @@ function carteMaCommande(ouv){
   return `<article class="card"><div class="row"><h2>Ma commande</h2>${l.length?`<span class="pill">${su.remis?"Remise ✓":su.paye&&du>0?"Reste "+eur(du):su.paye?"Payée ✓":"À payer"}</span>`:""}</div>
     ${l.length?`<ul class="lignes">${l.map(c=>`<li><span>${ouv?`${pas(c)} ${esc(article(c.article_id)?.nom||"article retiré")}${c.taille?" ("+esc(c.taille)+")":""}`:esc(libLigne(c))}</span><b>${eur(prixL(c))}</b></li>`).join("")}<li class="tot"><span>Total</span><b>${eur(tot)}</b></li></ul>`
       :`<span class="hint">${ouv?"Rien pour l'instant : choisis tes articles ci-dessous.":"Tu n'as rien commandé."}</span>`}
-    ${l.length&&du>0&&b.rib?`<div class="paiement"><h3>Paiement par virement</h3>
+    ${l.length&&du>0&&b.rib&&!b.rib_visible?`<div class="attente">${B0()?"RIB caché aux membres : coche « Afficher le RIB » dans Réglages quand les paniers sont validés.":"Le RIB et le montant à payer s'afficheront ici quand le bureau aura validé les paniers."}</div>`:""}
+    ${l.length&&du>0&&b.rib&&b.rib_visible?`<div class="paiement"><h3>Paiement par virement</h3>
       ${blocRib(b.rib,du,ref,su.paye)}
       <span class="hint">Le RIB du club n'est donné que dans l'app : ignore tout autre RIB reçu par mail ou message.</span></div>`:""}
   </article>`;
@@ -1336,12 +1355,32 @@ function texteRecap(){
   const {lignes,ids}=recapCommande(),b=S.boutique||{};
   return [`${b.titre||"Commande"} · ${CLUB}`,"",...lignes.map(x=>`${x.a?.nom||"?"}${x.t?" · taille "+x.t:""} : ${x.q}`),"",`Total : ${(S.commandes||[]).reduce((t,c)=>t+c.quantite,0)} pièces`,"","Détail par membre :",...ids.map(i=>`${nomComplet(i)} : ${lignesDe(i).map(libLigne).join(", ")}`)].join("\n");
 }
+// Étapes d'une commande ; l'étape en cours se déduit des réglages et du suivi du membre
+function etapeBoutique(){
+  const b=S.boutique||{},l=lignesDe(me()),su=S.suivi[me()]||{};
+  if(su.remis)return 7;if(su.paye&&resteDu(me())<=0)return 6;if(b.rib_visible&&l.length)return 4;if(ouverteB())return 1;if(l.length)return 2;return 1;
+}
+function tutoBoutique(){
+  const e=etapeBoutique(),b=S.boutique||{};
+  const E=[["Choisis tes articles","Dans chaque fiche, vérifie la taille (reprise de ton profil, guide des tailles si besoin) et la quantité, puis « Ajouter ». Un gros ✓ rouge apparaît sur l'article. Tu peux modifier avec − / + jusqu'à la date limite"+(b.limite?` (${fmt(b.limite,{day:"numeric",month:"long"})})`:"")+"."],
+    ["Attends que tout le monde ait choisi","Les commandes se ferment à la date limite. Rien à payer pour l'instant."],
+    ["Le club valide les paniers","Le bureau vérifie les commandes de chacun avant de les payer au fournisseur."],
+    ["Regarde ton total","Dans « Ma commande », en haut de la boutique : le détail et le montant à payer."],
+    ["Copie le RIB","Le RIB du club apparaît sous ta commande quand le bureau ouvre les paiements. Chaque ligne a son bouton Copier : IBAN, montant, référence."],
+    ["Paie le club par virement","Indique bien la référence « TENUE NOM Prénom ». Le bureau coche « payé » à réception. N'utilise jamais un RIB reçu ailleurs que dans l'app."],
+    ["Attends tes tenues","Le club passe la commande, puis te remet tes articles à une sortie ou à l'AG."]];
+  const msg={1:"Tu en es là : choisis tes articles.",2:"Ta commande est enregistrée : attends la validation du club.",4:"Paniers validés : regarde ton total et paie le club.",6:"Paiement reçu : il n'y a plus qu'à attendre tes tenues.",7:"Tes tenues t'ont été remises. Bonne route !"}[e];
+  ouvrirPanel(`<div class="ph"><h3>Comment préparer ma commande</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
+    <ol class="etapes">${E.map(([t,d],i)=>{const n=i+1,cl=n<e||(e===7)?"fait":n===e||(e===4&&n===5)||(e===2&&n===3)?"ici":"";return `<li class="${cl}"><b>${t}</b><span>${d}</span>${n===e&&msg?`<span class="ici-m">${msg}</span>`:""}</li>`}).join("")}</ol>
+    <button class="btn pri" data-close>J'ai compris</button>`);
+}
 function renderBoutique(){
   const b=S.boutique,ouv=ouverteB(),B=bureau();
   if(!b){$("#boutique").innerHTML=`<div class="empty"><b>Boutique pas encore installée</b>${B?"Lance la mise à jour v8 dans Supabase (SQL Editor) pour l'activer.":"Reviens bientôt."}</div>`;return}
   const arts=(S.articles||[]).filter(a=>B||a.actif);
   $("#boutique").innerHTML=`<article class="card"><div class="row"><h2>${esc(b.titre||"Boutique du club")}</h2>${B?'<button class="btn sec small" data-reglages>Réglages</button>':""}</div>
       <div class="extras"><span class="pill">${ouv?(b.limite?`Commandes ouvertes jusqu'au ${fmt(b.limite,{day:"numeric",month:"long"})}`:"Commandes ouvertes"):"Commandes fermées"}</span>${B&&!b.visible?'<span class="pill">Onglet caché aux membres</span>':""}</div>
+      <button class="tuto-btn" data-tuto-boutique><span class="q">?</span><span><b>Comment préparer ma commande</b><small>Les étapes, du choix des articles à la réception</small></span></button>
       ${b.infos?`<p class="desc">${esc(b.infos)}</p>`:""}
       ${guidePdf()?`<button class="pj" data-gtailles><span class="ic">PDF</span><span class="nm"><small>Avant de choisir</small><b>Guide des tailles</b></span><span class="go">Ouvrir</span></button>`:bureau()?'<span class="hint">Pas encore de guide des tailles : ajoute le PDF dans <button class="lien-btn" data-reglages>Réglages</button>.</span>':""}</article>
     ${designsVisibles()?carteDesigns():""}
@@ -1377,6 +1416,7 @@ function reglagesBoutique(){
   ouvrirPanel(`<form id="fbq"><div class="ph"><h3>Réglages de la boutique</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
     <label class="check" for="bq-v"><input id="bq-v" type="checkbox" name="visible"${b.visible?" checked":""}> Onglet Boutique visible par les membres</label>
     <label class="check" for="bq-o"><input id="bq-o" type="checkbox" name="ouverte"${b.ouverte?" checked":""}> Commandes ouvertes</label>
+    <label class="check" for="bq-rv"><input id="bq-rv" type="checkbox" name="rib_visible"${b.rib_visible?" checked":""}> Afficher le RIB aux membres (paniers validés, paiements ouverts)</label>
     <div class="grid2"><label for="bq-t">Titre<input id="bq-t" name="titre" value="${esc(b.titre)}" placeholder="Commande tenues 2027"></label><label for="bq-l">Date limite<input id="bq-l" type="date" name="limite" value="${b.limite||""}"></label></div>
     <label for="bq-i">Infos pour les membres<textarea id="bq-i" name="infos" rows="3" placeholder="Fournisseur, délai de livraison, remise prévue à l'AG…">${esc(b.infos)}</textarea></label>
     <label for="bq-r">RIB du club<textarea id="bq-r" name="rib" rows="3" placeholder="Titulaire : L'Équipage Cycliste de Marsilly&#10;IBAN : FR76 …&#10;BIC : …">${esc(b.rib)}</textarea></label>
@@ -1397,7 +1437,7 @@ function reglagesBoutique(){
     occupe(raz,true);const a=await sb.from("commandes").delete().gt("id",0),c=await sb.from("commandes_suivi").delete().gt("membre_id",0);
     if(a.error||c.error)return erreur(a.error||c.error,"Remise à zéro");fermer();toast("Commandes vidées");recharger()};
   $("#fbq").onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.target)),btn=$("#bq-ok");occupe(btn,true);
-    const row={visible:!!d.visible,ouverte:!!d.ouverte,titre:nul(d.titre.trim()),limite:nul(d.limite),infos:nul(d.infos.trim()),rib:nul(d.rib.trim()),designs_visible:!!d.designs_visible,designs_titre:nul(d.designs_titre.trim()),designs_texte:nul(d.designs_texte.trim())},g=$("#bq-g").files[0];
+    const row={visible:!!d.visible,ouverte:!!d.ouverte,titre:nul(d.titre.trim()),limite:nul(d.limite),infos:nul(d.infos.trim()),rib:nul(d.rib.trim()),designs_visible:!!d.designs_visible,rib_visible:!!d.rib_visible,designs_titre:nul(d.designs_titre.trim()),designs_texte:nul(d.designs_texte.trim())},g=$("#bq-g").files[0];
     try{const liste=[];for(const x of VG.ordre){if(x.off)continue;if(x.p){liste.push(x.p);continue}
         const im=await compresser(x.f,2000),ch=`boutique/design-${Date.now()}-${liste.length}-${nomPropre(im.name)}`;await ok(sb.storage.from("club").upload(ch,im,{contentType:im.type||undefined}),"Visuel");liste.push(ch)}
       row.designs=liste;var retires=(b.designs||[]).filter(x=>!liste.includes(x))}catch(e){return occupe(btn,false)}
@@ -1657,7 +1697,8 @@ function guideApp(){
     ${boutiqueVue()?`<section><h4><i>4</i>Boutique</h4><ul>
       <li>Choisis tes articles : la taille est pré-remplie depuis ton profil, tu peux la changer.</li>
       <li>Ta commande et son total sont en haut ; paie par virement avec le RIB et la référence affichés (le RIB n'est donné que dans l'app).</li>
-      <li>Tu peux retirer un article tant que les commandes sont ouvertes.</li></ul></section>`:""}
+      <li>Tu peux retirer un article tant que les commandes sont ouvertes.</li>
+      <li>Le bouton <b>Comment préparer ma commande</b>, en haut de la boutique, rappelle toutes les étapes.</li></ul></section>`:""}
     <section><h4><i>${boutiqueVue()?5:4}</i>Profil</h4><ul>
       <li>Photo, prénom et nom, téléphone, contact d'urgence, licences, tailles de tenue, rappels et bilans par e-mail, droit à l'image.</li>
       <li>Dépose ta licence (FFC, UFOLEP, FFTri), ton PPS ou ton certificat médical : seuls toi et le bureau les voient.</li>
@@ -1842,6 +1883,7 @@ document.addEventListener("click",e=>{
   const dq=c("[data-qte]");if(dq){const [id,d]=dq.dataset.qte.split(":").map(Number);return changerQuantite(id,d)}
   const ma=c("[data-article]");if(ma)return formArticle(article(+ma.dataset.article));
   if(c("[data-reglages]"))return reglagesBoutique();
+  if(c("[data-tuto-boutique]"))return tutoBoutique();
   if(c("[data-gtailles]"))return guideTailles();
   const zm=c("[data-zoom]");if(zm){const [aid,i]=zm.dataset.zoom.split(":");return zoomArticle(aid==="da"?"da":+aid,+i)}
   const vx=c("[data-vphoto]");if(vx){const [k,act]=vx.dataset.vphoto.split(":");return majVignettes(+k,act)}
