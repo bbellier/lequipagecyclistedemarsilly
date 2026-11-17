@@ -33,7 +33,7 @@ jobs:
           TEST: ${{ github.event.inputs.test }}
         run: |
           python3 - <<'PY'
-          import os, json, smtplib, urllib.request, urllib.parse, html
+          import os, json, smtplib, urllib.request, urllib.parse, html, re
           from datetime import date, datetime, timedelta
           from email.message import EmailMessage
           from zoneinfo import ZoneInfo
@@ -120,7 +120,7 @@ jobs:
               return lignes
 
           def message(type_, e, m):
-              if type_ == "bilan": return emballer(f"Bilan · {e['evenement']}", f"{e['evenement']} · le bilan", bilan(e, m), m)
+              if type_ == "bilan": return emballer(f"Bilan · {e['evenement']}", e['evenement'], bilan(e, m), m, "Bilan de l'évènement")
               quand = "dans 10 jours" if type_ == "J-10" else "demain"
               lignes = [f"Salut {m['prenom']},", "", f"Petit rappel : {e['evenement']}, c'est {quand}, le {fr(e['date_debut'])}."]
               if e.get("heure_depart"): lignes.append(f"Départ : {hr(e['heure_depart'])}")
@@ -133,15 +133,36 @@ jobs:
               if e.get("commentaires"): lignes += ["", e["commentaires"]]
               if APP: lignes += ["", f"La fiche dans l'app : {APP}"]
               lignes += ["", "À bientôt sur la route,", CLUB, "", "Pour ne plus recevoir ces rappels : app > Profil > décocher les rappels par e-mail."]
-              return emballer(f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}", f"{e['evenement']} · {'J-10' if type_=='J-10' else 'demain'}", lignes, m)
+              return emballer(f"{'J-10' if type_=='J-10' else 'Demain'} · {e['evenement']}", e['evenement'], lignes, m, "Rappel · dans 10 jours" if type_ == "J-10" else "Rappel · c'est demain")
 
-          def emballer(sujet, titre, lignes, m):
+          def emballer(sujet, titre, lignes, m, surtitre=""):
+              # Mise en page aux couleurs du club : bandeau noir + logo, filet rouge, papier, croix rouges
               msg = EmailMessage()
               msg["Subject"] = sujet
               msg["From"] = f"{CLUB} <{os.environ.get('GMAIL_USER','')}>"; msg["To"] = m["email"]
               msg.set_content("\n".join(lignes))
-              corps = "".join(f"<p style='margin:4px 0'>{html.escape(l)}</p>" if l else "<br>" for l in lignes)
-              msg.add_alternative(f"<div style='font-family:Arial,sans-serif;font-size:15px;color:#161514'><h2 style='font-family:Arial Narrow,Arial;text-transform:uppercase'>{html.escape(titre)}</h2>{corps}</div>", subtype="html")
+              pied = [l for l in lignes if l.startswith("Pour ne plus")]
+              corps_l = [l for l in lignes if l not in pied]
+              while corps_l and not corps_l[-1]: corps_l.pop()
+              def ligne(l):
+                  t = html.escape(l)
+                  t = re.sub(r"(https?://[^\s<]+)", r"<a href='\1' style='color:#c8102e;font-weight:bold'>\1</a>", t)
+                  if l.startswith("  • "): return f"<p style='margin:2px 0 2px 6px;padding:6px 10px;background:#f1ebe0;border-left:3px solid #c8102e;border-radius:4px'>{t[4:]}</p>"
+                  if l.rstrip().endswith(":") and len(l) < 32: return f"<p style='margin:14px 0 4px;font:bold 12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#c8102e'>&#10005; {t.rstrip(' :')}</p>"
+                  return f"<p style='margin:6px 0'>{t}</p>" if l else "<div style='height:6px'></div>"
+              corps = "".join(ligne(l) for l in corps_l)
+              logo = (APP.rstrip("/") + "/img/logo-blanc.png") if APP else ""
+              bouton = f"<tr><td style='padding:4px 24px 24px'><a href='{html.escape(APP)}' style='display:inline-block;background:#161514;color:#f4efe6;padding:12px 22px;border-radius:8px;text-decoration:none;font:bold 14px Arial,sans-serif;letter-spacing:1px;text-transform:uppercase'>Ouvrir l'app du club</a></td></tr>" if APP else ""
+              page = f"""<div style='background:#e9e2d5;padding:24px 10px;font-family:Arial,Helvetica,sans-serif'>
+          <table role='presentation' cellpadding='0' cellspacing='0' width='100%' style='max-width:580px;margin:0 auto;border-collapse:collapse;background:#fbf8f2;border:1px solid #d6cdbd'>
+          <tr><td style='background:#161514;padding:20px;text-align:center'>{f"<img src='{logo}' width='76' height='76' alt='' style='display:block;margin:0 auto 10px;border:0'>" if logo else ""}<div style='color:#f4efe6;font:bold 13px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase'>{html.escape(CLUB)}</div></td></tr>
+          <tr><td style='height:5px;line-height:5px;font-size:0;background:#c8102e'>&nbsp;</td></tr>
+          <tr><td style='padding:24px 24px 4px'>{f"<div style='color:#c8102e;font:bold 12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase'>&#10005; {html.escape(surtitre)}</div>" if surtitre else ""}<h1 style='margin:6px 0 0;font:bold 26px "Arial Narrow",Arial,sans-serif;text-transform:uppercase;color:#161514;line-height:1.15'>{html.escape(titre)}</h1></td></tr>
+          <tr><td style='padding:10px 24px 14px;font-size:15px;line-height:1.5;color:#161514'>{corps}</td></tr>
+          {bouton}
+          <tr><td style='background:#161514;padding:14px 20px;text-align:center;color:#a39d93;font-size:12px;line-height:1.5'><span style='color:#c8102e;letter-spacing:6px'>&#10005;&#10005;&#10005;</span><br>{html.escape(pied[0]) if pied else html.escape(CLUB)}</td></tr>
+          </table></div>"""
+              msg.add_alternative(page, subtype="html")
               return msg
 
           if not a_envoyer: raise SystemExit(0)
