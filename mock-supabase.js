@@ -6,7 +6,7 @@
   gpx=`<?xml version="1.0"?><gpx><trk><trkseg>${gpx}</trkseg></trk></gpx>`;
   const db={
     membres:[["Benjamin","bbellier.perso@gmail.com","bureau"],["Léa","lea@exemple.fr","membre"],["Hugo","hugo@exemple.fr","membre"],["Camille","camille@exemple.fr","membre"],["Thomas","thomas@exemple.fr","membre"]]
-      .map(([p,e,r],i)=>({id:i+1,user_id:i<3?"u"+(i+1):null,email:e,prenom:p,role:r,actif:true,licences:[["FFC","FFTri"],["FFTri"],["Adhérent"],[],["UFOLEP"]][i],licences_saison:i<3||i==4?"2026-2027":null})),
+      .map(([p,e,r],i)=>({id:i+1,user_id:i<3?"u"+(i+1):null,email:e,prenom:p,role:r,actif:true,licences:[["FFC","FFTri"],["FFTri"],["Adhérent"],[],["UFOLEP"]][i],licences_saison:i<3||i==4?"2026-2027":null,coach:i===0})),
     evenements:[
       {id:1,saison:"2026-2027",date_debut:J(6),date_fin:J(6),type:"Sortie club",evenement:"Sortie du dimanche",lieu:"Marsilly, place du marché",tarif:"Gratuit",heure_depart:"08:30:00",affiche:"affiches/a.webp",realise:false,commentaires:"Allure 27 km/h"},
       {id:2,saison:"2026-2027",date_debut:J(20),date_fin:J(20),type:"Gravel",evenement:"Gravel dans le marais",lieu:"Coulon, Deux-Sèvres",lieu_lat:46.3225,lieu_lon:-0.5878,tarif:"15 €",lien:"https://example.com",inscription_fermeture:J(12),realise:false},
@@ -34,11 +34,16 @@
       {id:3,nom:"Trifonction",description:"Pour les triathlons, tailles du fournisseur.",prix:95,taille:"libre",tailles:["XS","S","M","L","XL"],actif:true,ordre:3},
       {id:4,nom:"Casquette",prix:15,taille:"aucune",tailles:[],actif:true,ordre:4},{id:5,nom:"Veste hiver",prix:110,taille:"maillot",tailles:["S","M","L"],actif:false,ordre:5}],
     commandes:[{id:1,membre_id:1,article_id:1,taille:"M",quantite:1},{id:2,membre_id:2,article_id:1,taille:"S",quantite:2},{id:3,membre_id:2,article_id:2,taille:"S",quantite:1},{id:4,membre_id:3,article_id:4,taille:"",quantite:1}],
-    commandes_suivi:[{membre_id:2,paye:true,remis:false}]
+    commandes_suivi:[{membre_id:2,paye:true,remis:false}],
+    // Entraînement : Léa est suivie par Benjamin (plan et ressentis générés par entrainement.js à l'ouverture)
+    entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:[0,2,4],statut:"publie",bilan_mail:true}],
+    objectifs:[{id:1,membre_id:2,titre:"Triathlon L de printemps",sport:"tri",distance:"L",date:J(140),principal:true},{id:2,membre_id:2,titre:"Cyclo 150",sport:"bike",distance:"150",date:J(98),principal:false}],
+    indisponibilites:[{id:1,membre_id:2,du:J(30),au:J(36),motif:"Vacances"}],
+    seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[]
   };
   db.membres.push({id:6,user_id:null,email:null,prenom:"Bruno",role:"membre",actif:true,licences:["Adhérent"],licences_saison:"2026-2027"});db.profils.push({membre_id:6,nom:"Durand",taille_maillot:"L"});
   const files={club:{"gpx/boucle.gpx":new Blob([gpx]),"affiches/a.webp":"img/montagne.webp","sondages/guide.pdf":new Blob(["%PDF"]),"partenaires/logo.png":"img/logo-noir.png","partenaires/carre.png":"img/icon-192.png","boutique/maillot.webp":"img/montagne.webp"},medias:{"4/2/photo.webp":"img/montagne2.webp","4/1/velo.webp":"img/montagne.webp","4/3/course.webp":"img/montagne2.webp"},documents:{"2/licence.pdf":new Blob(["%PDF"])},avatars:{"2/photo.webp":"img/montagne2.webp"}};
-  const keys={notes_membres:["membre_id"],participations:[{evenement_id:5,membre_id:3,reponse:true},"evenement_id","membre_id"],votes:["sondage_id","membre_id"],resultats:["evenement_id","membre_id"],profils:["membre_id"],commandes:["membre_id","article_id","taille"],commandes_suivi:["membre_id"]};
+  const keys={notes_membres:["membre_id"],participations:[{evenement_id:5,membre_id:3,reponse:true},"evenement_id","membre_id"],votes:["sondage_id","membre_id"],resultats:["evenement_id","membre_id"],profils:["membre_id"],commandes:["membre_id","article_id","taille"],commandes_suivi:["membre_id"],entrainement_athletes:["membre_id"],ressentis:["seance_id"],reflexes_jours:["membre_id","jour","idx"],reglages_entrainement:["id"]};
   let seq=100,session=null;window.MOCK={db,files,log:[]};
   const moi=()=>session&&db.membres.find(m=>m.user_id===session.user.id&&m.actif);
   const bureau=()=>moi()?.role==="bureau";
@@ -46,6 +51,8 @@
   // Règles simplifiées : les écritures d'un membre sur la ligne d'un autre sont refusées
   function autorise(t,row){
     const m=moi();if(!m)return false;if(bureau())return true;
+    if(["entrainement_athletes","objectifs","indisponibilites","seances","reglages_entrainement"].includes(t))return !!m.coach;
+    if(t==="ressentis"||t==="reflexes_jours")return row.membre_id===m.id||!!m.coach;
     if(t==="evenements")return row.cree_par===m.id;
     if(t==="parcours")return db.evenements.some(e=>e.id===row.evenement_id&&e.cree_par===m.id);
     if(["sondages","membres","liens","notes_bureau","notes_membres","partenaires","boutique","articles","commandes_suivi"].includes(t))return false;
@@ -73,6 +80,7 @@
         if(this.t==="votes"&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
         if(["notes_bureau","notes_membres"].includes(this.t)&&!bureau())l=[];
         if(["profils","documents","commandes","commandes_suivi"].includes(this.t)&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
+        if(["entrainement_athletes","objectifs","indisponibilites","seances","ressentis","reflexes_jours"].includes(this.t)&&!moi().coach){l=l.filter(r=>r.membre_id===moi().id);if(this.t==="seances"&&!db.entrainement_athletes.some(a=>a.membre_id===moi().id&&a.statut==="publie"))l=[]}
         if(this.ord)l=[...l].sort((a,b)=>String(a[this.ord[0]]).localeCompare(String(b[this.ord[0]]))*(this.ord[1]?1:-1));
         l=JSON.parse(JSON.stringify(l));return {data:this.one?l[0]??null:l,error:this.one&&!l[0]?{message:"no rows"}:null}}
       if(this.op==="insert"||this.op==="upsert"){const out=[];
