@@ -474,6 +474,8 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
   <section id="v-sondages" hidden><div class="list" id="polls"></div></section>
   <section id="v-boutique" hidden><div class="list" id="boutique"></div></section>
   <section id="v-profil" hidden><div class="list" id="profil"></div></section>
+  <section id="v-coach" hidden><div class="list" id="coach"></div></section>
+  <section id="v-entrainement" hidden><div class="list" id="entrainement"></div></section>
   <div id="partners"></div>
 </div>
 <button class="fab" id="fab" hidden></button>
@@ -482,19 +484,22 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
   <button data-v="resultats" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>Résultats</button>
   <button data-v="sondages" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Sondages</button>
   <button data-v="boutique" aria-selected="false" hidden><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Boutique</button>
+  <button data-v="coach" aria-selected="false" hidden><svg viewBox="0 0 24 24"><path d="M4 20h16M6 20V11M12 20V6M18 20v-6"/><circle cx="6" cy="8" r="2"/><circle cx="12" cy="3.5" r="1.5"/><circle cx="18" cy="11" r="2"/></svg>Coach</button>
+  <button data-v="entrainement" aria-selected="false" hidden><svg viewBox="0 0 24 24"><path d="M5 19l5-7 4 4 5-9"/><path d="M15 7h4v4"/></svg>Entraîn.</button>
   <button data-v="profil" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profil</button>
 </div></nav>
 <div class="sheet" id="sheet" hidden><div class="panel" id="panel"></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>/* Aperçu avec données fictives : ajouter ?demo à l'adresse */document.write('<script src="'+(/[?&]demo\b/.test(location.search)?"mock-supabase.js":"supabase.js")+'"><\/script>')</script>
+<script src="entrainement.js"></script>
 <script>
 // =====================================================================
 // CONFIGURATION : les deux valeurs de Supabase > Project Settings > API
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-17g";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-23a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -632,6 +637,7 @@ async function charger(){
   S.docs={};(dc||[]).forEach(d=>(S.docs[d.membre_id]??=[]).push(d));
   const moi=S.membres.find(m=>m.id===me());if(moi)S.moi.prenom=moi.prenom;
   await signer();
+  try{await ENT.charger()}catch(e){console.error("Entraînement",e)}
   S.charge=Date.now();
 }
 // Liens temporaires pour afficher affiches, photos, vidéos et photos de profil
@@ -1917,11 +1923,13 @@ function render(){
   if(!co){$("#fab").hidden=true;renderLogin();return}
   const m=S.moi;
   $("#user").innerHTML=avatar(m.id);
-  const bv=boutiqueVue();$("#nav").classList.toggle("n5",bv);$('.nav [data-v="boutique"]').hidden=!bv;if(vue==="boutique"&&!bv)vue="agenda";
-  for(const v of ["agenda","resultats","sondages","boutique","profil"])$("#v-"+v).hidden=v!==vue;
+  const bv=boutiqueVue(),ec=ENT.coachVue(),ea=ENT.athleteVue(),nb=4+bv+ec+ea;$("#nav").classList.toggle("n5",nb===5);$("#nav").classList.toggle("n6",nb>=6);
+  $('.nav [data-v="boutique"]').hidden=!bv;$('.nav [data-v="coach"]').hidden=!ec;$('.nav [data-v="entrainement"]').hidden=!ea;
+  if((vue==="boutique"&&!bv)||(vue==="coach"&&!ec)||(vue==="entrainement"&&!ea))vue="agenda";
+  for(const v of ["agenda","resultats","sondages","boutique","coach","entrainement","profil"])$("#v-"+v).hidden=v!==vue;
   document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===vue));
-  const actif=document.activeElement,garde=(vue==="profil"&&actif&&actif.closest("#profil form"))||(vue==="boutique"&&actif&&actif.matches("select,input")&&actif.closest(".ajout,.pour"));
-  if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,boutique:renderBoutique,profil:renderProfil})[vue]();
+  const actif=document.activeElement,garde=((vue==="coach"||vue==="entrainement")&&actif&&actif.matches("input,select,textarea")&&actif.closest("#coach,#entrainement"))||(vue==="profil"&&actif&&actif.closest("#profil form"))||(vue==="boutique"&&actif&&actif.matches("select,input")&&actif.closest(".ajout,.pour"));
+  if(!garde)({agenda:renderAgenda,resultats:renderResultats,sondages:renderSondages,boutique:renderBoutique,coach:ENT.renderCoach,entrainement:ENT.renderAthlete,profil:renderProfil})[vue]();
   $("#partners").innerHTML=renderPartenaires();
   $("#apercu-m").hidden=!vueMembre;
   if(!render.guide){render.guide=1;
