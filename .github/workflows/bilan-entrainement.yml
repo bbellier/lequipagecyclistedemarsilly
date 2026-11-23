@@ -90,6 +90,8 @@ jobs:
               l += ["", f"Semaine qui commence : {st['dec']}.", "", "Au programme :"]
               l += [f"  • {jsem[date.fromisoformat(s['date']).weekday()]} : {s['texte']}" for s in st["suite"]] or ["  • Repos"]
               if st["obj"]: l += ["", f"Prochain cap : {st['obj']['titre']}, dans {(date.fromisoformat(st['obj']['date']) - auj).days} jours."]
+              cits = [c for c in (C.get("citations") or []) if c and c.strip()]
+              if cits: l += ["", f"« {cits[lundi.toordinal() // 7 % len(cits)]} »"]
               if APP: l += ["", f"Ton onglet Entraînement : {APP}"]
               l += ["", "Bonne semaine,", "Ton coach", "", "Pour ne plus recevoir ce bilan : demande à ton coach."]
               return l
