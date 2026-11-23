@@ -1,0 +1,65 @@
+# Toutes les 15 minutes : envoie les messages écrits par le bureau dans l'app (Profil > Écrire aux membres),
+# à la mise en page du club. {prenom} dans le message est remplacé par le prénom de chaque destinataire.
+# Mêmes secrets que rappels.yml : SUPABASE_URL, SUPABASE_SECRET_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, APP_URL.
+name: Messages du bureau
+on:
+  schedule:
+    - cron: "3,18,33,48 * * * *"
+  workflow_dispatch:
+jobs:
+  messages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer les messages en attente
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          python3 - <<'PY'
+          import os, json, smtplib, urllib.request, html, re
+          from datetime import datetime
+          from email.message import EmailMessage
+          from zoneinfo import ZoneInfo
+          URL = os.environ["SUPABASE_URL"].rstrip("/"); KEY = os.environ["SUPABASE_KEY"]; APP = os.environ.get("APP_URL") or ""
+          CLUB = "L'Équipage Cycliste de Marsilly"
+          H = {"apikey": KEY, "Content-Type": "application/json"}
+          if not KEY.startswith("sb_"): H["Authorization"] = "Bearer " + KEY
+          def api(chemin, methode="GET", corps=None):
+              req = urllib.request.Request(f"{URL}/rest/v1/{chemin}", method=methode, headers=H, data=json.dumps(corps).encode() if corps is not None else None)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  t = r.read().decode(); return json.loads(t) if t else None
+          try: attente = api("envois_libres?select=*&statut=eq.en_attente&order=id") or []
+          except Exception as err: print("Table envois_libres absente (lancer messages-bureau.sql) :", err); raise SystemExit(0)
+          if not attente: raise SystemExit(0)
+          membres = {m["id"]: m for m in api("membres?select=id,prenom,email,actif")}
+          def emballer(sujet, lignes, email):
+              msg = EmailMessage(); msg["Subject"] = sujet; msg["From"] = f"{CLUB} <{os.environ.get('GMAIL_USER','')}>"; msg["To"] = email
+              msg.set_content("\n".join(lignes))
+              def ligne(x):
+                  t = html.escape(x); t = re.sub(r"(https?://[^\s<]+)", r"<a href='\1' style='color:#c8102e;font-weight:bold'>\1</a>", t)
+                  return f"<p style='margin:6px 0'>{t}</p>" if x.strip() else "<div style='height:6px'></div>"
+              logo = (APP.rstrip("/") + "/img/logo-blanc.png") if APP else ""
+              bouton = f"<tr><td style='padding:4px 24px 24px'><a href='{html.escape(APP)}' style='display:inline-block;background:#161514;color:#f4efe6;padding:12px 22px;border-radius:8px;text-decoration:none;font:bold 14px Arial,sans-serif;letter-spacing:1px;text-transform:uppercase'>Ouvrir l'app du club</a></td></tr>" if APP else ""
+              page = f"""<div style='background:#e9e2d5;padding:24px 10px;font-family:Arial,Helvetica,sans-serif'><table role='presentation' cellpadding='0' cellspacing='0' width='100%' style='max-width:580px;margin:0 auto;border-collapse:collapse;background:#fbf8f2;border:1px solid #d6cdbd'>
+          <tr><td style='background:#161514;padding:20px;text-align:center'>{f"<img src='{logo}' width='76' height='76' alt='' style='display:block;margin:0 auto 10px;border:0'>" if logo else ""}<div style='color:#f4efe6;font:bold 13px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase'>{html.escape(CLUB)}</div></td></tr>
+          <tr><td style='height:5px;line-height:5px;font-size:0;background:#c8102e'>&nbsp;</td></tr>
+          <tr><td style='padding:24px 24px 4px'><div style='color:#c8102e;font:bold 12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase'>&#10005; Message du bureau</div><h1 style='margin:6px 0 0;font:bold 26px "Arial Narrow",Arial,sans-serif;text-transform:uppercase;color:#161514;line-height:1.15'>{html.escape(sujet)}</h1></td></tr>
+          <tr><td style='padding:10px 24px 14px;font-size:15px;line-height:1.5;color:#161514'>{"".join(ligne(x) for x in lignes)}</td></tr>{bouton}
+          <tr><td style='background:#161514;padding:14px 20px;text-align:center;color:#a39d93;font-size:12px'><span style='color:#c8102e;letter-spacing:6px'>&#10005;&#10005;&#10005;</span><br>{html.escape(CLUB)}</td></tr></table></div>"""
+              msg.add_alternative(page, subtype="html"); return msg
+          with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+              s.login(os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"].replace(" ", ""))
+              for d in attente:
+                  nb, echecs = 0, []
+                  for mid in d.get("destinataires") or []:
+                      m = membres.get(mid)
+                      if not m or not m.get("actif") or not m.get("email"): continue
+                      try: s.send_message(emballer(d["sujet"], d["message"].replace("{prenom}", m["prenom"]).split("\n"), m["email"])); nb += 1
+                      except Exception as err: echecs.append(m["prenom"]); print("échec :", m["email"], err)
+                  api(f"envois_libres?id=eq.{d['id']}", "PATCH", {"statut": "erreur" if echecs and not nb else "envoye", "nb": nb,
+                      "detail": f"échec pour {', '.join(echecs)}" if echecs else None, "traite_le": datetime.now(ZoneInfo("UTC")).isoformat()})
+                  print(f"Message n° {d['id']} « {d['sujet']} » : {nb} envoyé(s)")
+          PY

@@ -1,0 +1,150 @@
+# Chaque lundi matin : bilan de la semaine passée par e-mail à chaque athlète suivi (plan publié),
+# et bilan de tous les athlètes à l'entraîneur. Chaque bilan n'est envoyé qu'une fois (table bilans_entrainement_envoyes).
+# Mêmes secrets que rappels.yml : SUPABASE_URL, SUPABASE_SECRET_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, APP_URL.
+name: Bilan entraînement
+on:
+  schedule:
+    - cron: "10 5,6,7 * * 1"   # lundi ; n'envoie qu'à partir de 7 h (heure de Paris)
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Mode test : affiche les e-mails sans les envoyer (oui/non)"
+        default: "oui"
+jobs:
+  bilan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer les bilans de la semaine
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_URL: ${{ secrets.APP_URL }}
+          TEST: ${{ github.event.inputs.test }}
+        run: |
+          python3 - <<'PY'
+          import os, json, smtplib, urllib.request, html, re
+          from datetime import date, datetime, timedelta
+          from email.message import EmailMessage
+          from zoneinfo import ZoneInfo
+
+          URL = os.environ["SUPABASE_URL"].rstrip("/"); KEY = os.environ["SUPABASE_KEY"]
+          APP = os.environ.get("APP_URL") or ""; TEST = (os.environ.get("TEST") or "non").lower() == "oui"
+          CLUB = "L'Équipage Cycliste de Marsilly"
+          H = {"apikey": KEY, "Content-Type": "application/json"}
+          if not KEY.startswith("sb_"): H["Authorization"] = "Bearer " + KEY
+          def api(chemin, methode="GET", corps=None, entetes=None):
+              req = urllib.request.Request(f"{URL}/rest/v1/{chemin}", method=methode, headers={**H, **(entetes or {})},
+                                           data=json.dumps(corps).encode() if corps is not None else None)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  t = r.read().decode(); return json.loads(t) if t else None
+
+          maintenant = datetime.now(ZoneInfo("Europe/Paris"))
+          if os.environ.get("GITHUB_EVENT_NAME") == "schedule" and (maintenant.weekday() != 0 or maintenant.hour < 7): raise SystemExit(0)
+          auj = maintenant.date(); lundi = auj - timedelta(days=auj.weekday()); debut = lundi - timedelta(days=7); fin = lundi - timedelta(days=1)
+          mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
+          jsem = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"]
+          def court(d): return f"{d.day} {mois[d.month-1]}"
+          def hm(m):
+              m = int(round(m)); return f"{m // 60}h{m % 60:02d}" if m >= 60 else f"{m} min"
+
+          reg = (api("reglages_entrainement?select=data&id=eq.1") or [{}])[0].get("data") or {}
+          C = {"xpBase": 5, "xpDiv": 10, "xpWeek": 30, "regLow": 60, "regHigh": 80, **reg}
+          membres = {m["id"]: m for m in api("membres?select=id,prenom,email,actif,coach")}
+          athletes = api("entrainement_athletes?select=*&statut=neq.brouillon")
+          deja = {(r["membre_id"], r["type"]) for r in api(f"bilans_entrainement_envoyes?select=membre_id,type&semaine=eq.{debut.isoformat()}")}
+          FEU = {"vert": "vert", "orange": "orange", "rouge": "rouge", "bonus": "bonus"}
+
+          def stats(a):
+              mid = a["membre_id"]
+              ses = api(f"seances?select=*&membre_id=eq.{mid}&date=gte.{(debut - timedelta(days=7)).isoformat()}&order=date")
+              res = {r["seance_id"]: r for r in api(f"ressentis?select=*&membre_id=eq.{mid}")}
+              def semaine(d0):
+                  l = [s for s in ses if d0.isoformat() <= s["date"] <= (d0 + timedelta(days=6)).isoformat() and s["duree"] > 0]
+                  faites = [s for s in l if res.get(s["id"], {}).get("faite")]
+                  reel = lambda s: res[s["id"]].get("duree_reelle") or s["duree"]
+                  return {"l": l, "faites": faites, "partielles": [s for s in faites if (res[s["id"]].get("duree_reelle") or s["duree"]) < s["duree"]],
+                          "hp": sum(s["duree"] for s in l), "hr": sum(reel(s) for s in faites), "km": sum(float(res[s["id"]].get("km") or 0) for s in faites),
+                          "feux": [res[s["id"]].get("feu") for s in faites], "douleur": any(res[s["id"]].get("douleur") for s in faites)}
+              S0, S1 = semaine(debut), semaine(debut - timedelta(days=7))
+              n2 = len(S0["l"]) + len(S1["l"]); reg = (len(S0["faites"]) + len(S1["faites"])) / n2 if n2 else 1
+              pts = sum(C["xpBase"] + round((res[s["id"]].get("duree_reelle") or s["duree"]) / C["xpDiv"]) for s in S0["faites"]) + (C["xpWeek"] if S0["l"] and len(S0["faites"]) >= len(S0["l"]) - 1 else 0)
+              if S0["feux"].count("orange") >= 3: dec = "Semaine de récup (3 feux orange)"
+              elif reg < C["regLow"] / 100: dec = "On refait la semaine (assiduité basse)"
+              elif reg < C["regHigh"] / 100: dec = "Volume maintenu"
+              else: dec = "Progression normale"
+              suite = api(f"seances?select=*&membre_id=eq.{mid}&date=gte.{lundi.isoformat()}&date=lte.{(lundi + timedelta(days=6)).isoformat()}&order=date")
+              obj = api(f"objectifs?select=*&membre_id=eq.{mid}&date=gte.{auj.isoformat()}&order=date&limit=1")
+              return {"S": S0, "reg": reg, "pts": pts, "dec": dec, "suite": suite, "obj": obj[0] if obj else None}
+
+          def bilan_athlete(a, st, m):
+              S = st["S"]; n = len(S["l"]); f = len(S["faites"])
+              l = [f"Salut {m['prenom']},", "", f"Ta semaine du {court(debut)} au {court(fin)} :", "",
+                   f"  • Séances : {f} sur {n}" + (f" (dont {len(S['partielles'])} en partie)" if S["partielles"] else ""),
+                   f"  • Volume : {hm(S['hr'])} faites sur {hm(S['hp'])} prévues" + (f" · {S['km']:.0f} km".replace(".", ",") if S["km"] else ""),
+                   f"  • Feux : " + (", ".join(f"{S['feux'].count(k)} {k}" for k in ["vert", "bonus", "orange", "rouge"] if S["feux"].count(k)) or "aucun ressenti"),
+                   f"  • Points gagnés : +{st['pts']}"]
+              if S["douleur"]: l += ["", "Tu as signalé une douleur : si elle dure plus de 3 jours, on coupe et on consulte."]
+              l += ["", f"Semaine qui commence : {st['dec']}.", "", "Au programme :"]
+              l += [f"  • {jsem[date.fromisoformat(s['date']).weekday()]} : {s['texte']}" for s in st["suite"]] or ["  • Repos"]
+              if st["obj"]: l += ["", f"Prochain cap : {st['obj']['titre']}, dans {(date.fromisoformat(st['obj']['date']) - auj).days} jours."]
+              if APP: l += ["", f"Ton onglet Entraînement : {APP}"]
+              l += ["", "Bonne semaine,", "Ton coach", "", "Pour ne plus recevoir ce bilan : demande à ton coach."]
+              return l
+
+          def bilan_coach(c, lignes_ath):
+              l = [f"Salut {c['prenom']},", "", f"Tes athlètes, semaine du {court(debut)} au {court(fin)} :", ""]
+              for nom, st in lignes_ath:
+                  S = st["S"]; al = []
+                  if "rouge" in S["feux"]: al.append("feu rouge")
+                  if S["douleur"]: al.append("douleur")
+                  if len(S["l"]) - len(S["faites"]) >= 2: al.append(f"{len(S['l']) - len(S['faites'])} séances manquées")
+                  l.append(f"  • {nom} : {len(S['faites'])}/{len(S['l'])} séances · {hm(S['hr'])}/{hm(S['hp'])} · assiduité 2 sem. {round(st['reg'] * 100)} % · {st['dec']}" + (f" · À SURVEILLER : {', '.join(al)}" if al else ""))
+              if APP: l += ["", f"Ton onglet Coach : {APP}"]
+              l += ["", CLUB]
+              return l
+
+          def emballer(sujet, titre, lignes, email, surtitre):
+              msg = EmailMessage(); msg["Subject"] = sujet; msg["From"] = f"{CLUB} <{os.environ.get('GMAIL_USER','')}>"; msg["To"] = email
+              msg.set_content("\n".join(lignes))
+              def ligne(x):
+                  t = html.escape(x); t = re.sub(r"(https?://[^\s<]+)", r"<a href='\1' style='color:#c8102e;font-weight:bold'>\1</a>", t)
+                  if x.startswith("  • "): return f"<p style='margin:2px 0 2px 6px;padding:6px 10px;background:#f1ebe0;border-left:3px solid #c8102e;border-radius:4px'>{t[4:]}</p>"
+                  if x.rstrip().endswith(":") and len(x) < 40: return f"<p style='margin:14px 0 4px;font:bold 12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#c8102e'>&#10005; {t.rstrip(' :')}</p>"
+                  return f"<p style='margin:6px 0'>{t}</p>" if x else "<div style='height:6px'></div>"
+              logo = (APP.rstrip("/") + "/img/logo-blanc.png") if APP else ""
+              page = f"""<div style='background:#e9e2d5;padding:24px 10px;font-family:Arial,Helvetica,sans-serif'><table role='presentation' cellpadding='0' cellspacing='0' width='100%' style='max-width:580px;margin:0 auto;border-collapse:collapse;background:#fbf8f2;border:1px solid #d6cdbd'>
+          <tr><td style='background:#161514;padding:20px;text-align:center'>{f"<img src='{logo}' width='76' height='76' alt='' style='display:block;margin:0 auto 10px;border:0'>" if logo else ""}<div style='color:#f4efe6;font:bold 13px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase'>{html.escape(CLUB)}</div></td></tr>
+          <tr><td style='height:5px;line-height:5px;font-size:0;background:#c8102e'>&nbsp;</td></tr>
+          <tr><td style='padding:24px 24px 4px'><div style='color:#c8102e;font:bold 12px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase'>&#10005; {html.escape(surtitre)}</div><h1 style='margin:6px 0 0;font:bold 26px "Arial Narrow",Arial,sans-serif;text-transform:uppercase;color:#161514;line-height:1.15'>{html.escape(titre)}</h1></td></tr>
+          <tr><td style='padding:10px 24px 20px;font-size:15px;line-height:1.5;color:#161514'>{"".join(ligne(x) for x in lignes)}</td></tr></table></div>"""
+              msg.add_alternative(page, subtype="html"); return msg
+
+          a_envoyer, par_coach = [], {}
+          for a in athletes:
+              m = membres.get(a["membre_id"])
+              if not m or not m.get("actif"): continue
+              st = stats(a)
+              if not st["S"]["l"] and not st["suite"]: continue
+              if a.get("bilan_mail", True) and m.get("email") and (m["id"], "athlete") not in deja:
+                  a_envoyer.append((m["id"], "athlete", emballer(f"Ta semaine d'entraînement · {court(debut)}", "Ta semaine", bilan_athlete(a, st, m), m["email"], "Bilan d'entraînement")))
+              par_coach.setdefault(a.get("coach_id"), []).append((m["prenom"], st))
+          for cid, l in par_coach.items():
+              c = membres.get(cid)
+              if c and c.get("email") and (cid, "coach") not in deja:
+                  a_envoyer.append((cid, "coach", emballer(f"Bilan de tes athlètes · {court(debut)}", "Tes athlètes", bilan_coach(c, l), c["email"], "Bilan coach")))
+          print(f"{len(a_envoyer)} bilan(s) à envoyer")
+          if TEST:
+              for mid, t, msg in a_envoyer: print("---", t, msg["To"]); print(msg.get_body(("plain",)).get_content())
+              raise SystemExit(0)
+          if not a_envoyer: raise SystemExit(0)
+          with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+              s.login(os.environ["GMAIL_USER"], os.environ["GMAIL_APP_PASSWORD"].replace(" ", ""))
+              for mid, t, msg in a_envoyer:
+                  try:
+                      s.send_message(msg)
+                      api("bilans_entrainement_envoyes", "POST", {"semaine": debut.isoformat(), "membre_id": mid, "type": t}, {"Prefer": "resolution=ignore-duplicates"})
+                      print("envoyé :", t, "→", msg["To"])
+                  except Exception as err: print("échec :", msg["To"], err)
+          PY
