@@ -39,7 +39,8 @@
     entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:[0,2,4],statut:"publie",bilan_mail:true}],
     objectifs:[{id:1,membre_id:2,titre:"Triathlon L de printemps",sport:"tri",distance:"L",date:J(140),principal:true},{id:2,membre_id:2,titre:"Cyclo 150",sport:"bike",distance:"150",date:J(98),principal:false}],
     indisponibilites:[{id:1,membre_id:2,du:J(30),au:J(36),motif:"Vacances"}],
-    seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[]
+    seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[],
+    envois_libres:[]
   };
   db.membres.push({id:6,user_id:null,email:null,prenom:"Bruno",role:"membre",actif:true,licences:["Adhérent"],licences_saison:"2026-2027"});db.profils.push({membre_id:6,nom:"Durand",taille_maillot:"L"});
   const files={club:{"gpx/boucle.gpx":new Blob([gpx]),"affiches/a.webp":"img/montagne.webp","sondages/guide.pdf":new Blob(["%PDF"]),"partenaires/logo.png":"img/logo-noir.png","partenaires/carre.png":"img/icon-192.png","boutique/maillot.webp":"img/montagne.webp"},medias:{"4/2/photo.webp":"img/montagne2.webp","4/1/velo.webp":"img/montagne.webp","4/3/course.webp":"img/montagne2.webp"},documents:{"2/licence.pdf":new Blob(["%PDF"])},avatars:{"2/photo.webp":"img/montagne2.webp"}};
@@ -55,7 +56,7 @@
     if(t==="ressentis"||t==="reflexes_jours")return row.membre_id===m.id||!!m.coach;
     if(t==="evenements")return row.cree_par===m.id;
     if(t==="parcours")return db.evenements.some(e=>e.id===row.evenement_id&&e.cree_par===m.id);
-    if(["sondages","membres","liens","notes_bureau","notes_membres","partenaires","boutique","articles","commandes_suivi"].includes(t))return false;
+    if(["sondages","membres","liens","notes_bureau","notes_membres","partenaires","boutique","articles","commandes_suivi","envois_libres"].includes(t))return false;
     if(t==="commandes"){const b=db.boutique[0];return row.membre_id===m.id&&b.visible&&b.ouverte&&(!b.limite||b.limite>=J(0))}
     if(t==="participations"||t==="votes"||t==="resultats"||t==="profils"||t==="documents")return row.membre_id===m.id;
     if(t==="medias")return row.auteur_id===m.id;return true;
@@ -78,7 +79,7 @@
       if(this.op==="select"){let l=T.filter(r=>this.f.every(f=>f(r)));
         if(this.t==="membres"&&!bureau())l=l.filter(r=>r.id===moi()?.id);
         if(this.t==="votes"&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
-        if(["notes_bureau","notes_membres"].includes(this.t)&&!bureau())l=[];
+        if(["notes_bureau","notes_membres","envois_libres"].includes(this.t)&&!bureau())l=[];
         if(["profils","documents","commandes","commandes_suivi"].includes(this.t)&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
         if(["entrainement_athletes","objectifs","indisponibilites","seances","ressentis","reflexes_jours"].includes(this.t)&&!moi().coach){l=l.filter(r=>r.membre_id===moi().id);if(this.t==="seances"&&!db.entrainement_athletes.some(a=>a.membre_id===moi().id&&a.statut==="publie"))l=[]}
         if(this.ord)l=[...l].sort((a,b)=>String(a[this.ord[0]]).localeCompare(String(b[this.ord[0]]))*(this.ord[1]?1:-1));
