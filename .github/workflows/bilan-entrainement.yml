@@ -66,7 +66,8 @@ jobs:
                   reel = lambda s: res[s["id"]].get("duree_reelle") or s["duree"]
                   return {"l": l, "faites": faites, "partielles": [s for s in faites if (res[s["id"]].get("duree_reelle") or s["duree"]) < s["duree"]],
                           "hp": sum(s["duree"] for s in l), "hr": sum(reel(s) for s in faites), "km": sum(float(res[s["id"]].get("km") or 0) for s in faites),
-                          "feux": [res[s["id"]].get("feu") for s in faites], "douleur": any(res[s["id"]].get("douleur") for s in faites)}
+                          "feux": [res[s["id"]].get("feu") for s in faites], "douleur": any(res[s["id"]].get("douleur") for s in faites) or any(res.get(s["id"], {}).get("raison") == "douleur" for s in l),
+                          "raisons": [res.get(s["id"], {}).get("raison") for s in l]}
               S0, S1 = semaine(debut), semaine(debut - timedelta(days=7))
               n2 = len(S0["l"]) + len(S1["l"]); reg = (len(S0["faites"]) + len(S1["faites"])) / n2 if n2 else 1
               pts = sum(C["xpBase"] + round((res[s["id"]].get("duree_reelle") or s["duree"]) / C["xpDiv"]) for s in S0["faites"]) + (C["xpWeek"] if S0["l"] and len(S0["faites"]) >= len(S0["l"]) - 1 else 0)
@@ -100,6 +101,8 @@ jobs:
                   if "rouge" in S["feux"]: al.append("feu rouge")
                   if S["douleur"]: al.append("douleur")
                   if len(S["l"]) - len(S["faites"]) >= 2: al.append(f"{len(S['l']) - len(S['faites'])} séances manquées")
+                  rs = [x for x in S.get("raisons", []) if x]
+                  if rs: al.append("raisons : " + ", ".join(f"{rs.count(k)} {v}" for k, v in [("fatigue", "fatigue"), ("motivation", "motivation"), ("temps", "manque de temps"), ("douleur", "douleur")] if rs.count(k)))
                   l.append(f"  • {nom} : {len(S['faites'])}/{len(S['l'])} séances · {hm(S['hr'])}/{hm(S['hp'])} · assiduité 2 sem. {round(st['reg'] * 100)} % · {st['dec']}" + (f" · À SURVEILLER : {', '.join(al)}" if al else ""))
               if APP: l += ["", f"Ton onglet Coach : {APP}"]
               l += ["", CLUB]
