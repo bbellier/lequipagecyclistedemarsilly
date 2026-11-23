@@ -499,7 +499,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-23a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-23b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1653,6 +1653,7 @@ function renderProfil(){
       <button class="btn pri" id="i-ok">Ajouter au club</button></form>
     <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
+  ${bureau()?`<button class="btn sec" data-mail-membres>✉ Écrire aux membres</button>`:""}
   ${bureauReel()&&!vueMembre?`<button class="btn sec" data-vue-membre>Voir l'app comme un membre</button>`:""}
   <button class="btn sec" id="logout">Se déconnecter</button>
   <span class="hint" style="text-align:center">Version ${VERSION}</span>`;
@@ -1699,12 +1700,41 @@ async function retirerDoc(id){
   const {error}=await sb.from("documents").delete().eq("id",d.id);if(error)return erreur(error,"Suppression");
   await sb.storage.from("documents").remove([d.chemin]);toast("Document retiré");recharger();
 }
+// ================= E-mail du bureau aux membres (table envois_libres, envoyé par GitHub Actions) =================
+function apercuMail(sujet,texte,pre){const l=String(texte||"").replaceAll("{prenom}",pre).split("\n");
+  return `<div style="background:#e9e2d5;padding:12px;border-radius:10px"><div style="background:#fbf8f2;border:1px solid #d6cdbd;color:#161514;font-family:Arial,sans-serif">
+  <div style="background:#161514;padding:14px;text-align:center"><img src="img/logo-blanc.png" alt="" width="56" height="56" style="display:block;margin:0 auto 6px"><div style="color:#f4efe6;font:bold 11px Arial;letter-spacing:3px;text-transform:uppercase">${esc(CLUB)}</div></div>
+  <div style="height:5px;background:#c8102e"></div><div style="padding:16px 18px 4px"><div style="color:#c8102e;font:bold 11px Arial;letter-spacing:2px;text-transform:uppercase">✕ Message du bureau</div><h3 style="margin:6px 0 0;font:bold 22px 'Arial Narrow',Arial;text-transform:uppercase">${esc(sujet||"Objet")}</h3></div>
+  <div style="padding:8px 18px 16px;font-size:15px;line-height:1.5">${l.map(x=>x.trim()?`<p style="margin:6px 0">${esc(x)}</p>`:'<div style="height:6px"></div>').join("")}</div>
+  <div style="background:#161514;padding:10px;text-align:center;color:#c8102e;letter-spacing:6px">✕✕✕</div></div></div>`}
+function ecrireMembres(){
+  const L=S.complets.filter(x=>x.actif&&x.email),sel=new Set(),G=[["tous","Tous",()=>true],["FFTri","Licenciés FFTri",x=>(x.licences||[]).includes("FFTri")],["FFC","Licenciés FFC",x=>(x.licences||[]).includes("FFC")],["UFOLEP","Licenciés UFOLEP",x=>(x.licences||[]).includes("UFOLEP")],["Adhérent","Adhérents",x=>(x.licences||[]).includes("Adhérent")],["bureau","Bureau",x=>x.role==="bureau"]];
+  ouvrirPanel(`<form id="fml" style="display:grid;gap:10px"><div class="ph"><h3>Écrire aux membres</h3><button type="button" class="x" data-close aria-label="Fermer">✕</button></div>
+    <span class="sect" style="padding:0">Destinataires</span><div class="chips" style="flex-wrap:wrap">${G.map(g=>`<button type="button" data-mlg="${g[0]}" aria-pressed="false">${g[1]}</button>`).join("")}<button type="button" data-mlg="aucun" aria-pressed="false">Aucun</button></div>
+    <div id="ml-liste" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;max-height:220px;overflow:auto">${L.map(x=>`<label class="check" for="ml-${x.id}"><input id="ml-${x.id}" type="checkbox" data-mlm="${x.id}"> ${esc(x.prenom)}${S.profils[x.id]?.nom?" "+esc(S.profils[x.id].nom):""}</label>`).join("")}</div>
+    <span class="hint" id="ml-n">0 destinataire</span>
+    <label for="ml-s">Objet<input id="ml-s" required maxlength="120" placeholder="Assemblée générale le 18 janvier"></label>
+    <label for="ml-t">Message <span class="hint">({prenom} est remplacé par le prénom de chacun)</span><textarea id="ml-t" rows="8" required placeholder="Salut {prenom},&#10;&#10;…"></textarea></label>
+    <span class="sect" style="padding:0">Aperçu</span><div id="ml-ap"></div>
+    <button class="btn pri" id="ml-ok">Envoyer</button><span class="hint">L'e-mail part dans les 15 minutes, à la mise en page du club.</span><div id="ml-h"></div></form>`);
+  const maj=()=>{document.querySelectorAll("[data-mlm]").forEach(c=>c.checked=sel.has(+c.dataset.mlm));$("#ml-n").textContent=`${sel.size} destinataire${sel.size>1?"s":""}`;$("#ml-ap").innerHTML=apercuMail($("#ml-s").value,$("#ml-t").value,S.moi.prenom)};
+  const f=$("#fml");maj();
+  f.onclick=e=>{const g=e.target.closest("[data-mlg]");if(!g)return;const k=g.dataset.mlg;if(k==="aucun")sel.clear();else{const fn=G.find(x=>x[0]===k)[2];L.filter(fn).forEach(x=>sel.add(x.id))}maj()};
+  f.onchange=e=>{const c=e.target.closest("[data-mlm]");if(!c)return;c.checked?sel.add(+c.dataset.mlm):sel.delete(+c.dataset.mlm);maj()};
+  f.oninput=e=>{if(e.target.id==="ml-s"||e.target.id==="ml-t")$("#ml-ap").innerHTML=apercuMail($("#ml-s").value,$("#ml-t").value,S.moi.prenom)};
+  f.onsubmit=async ev=>{ev.preventDefault();const b=$("#ml-ok");if(!sel.size)return toast("Choisis au moins un destinataire");if(!b.dataset.ok){b.dataset.ok=1;b.textContent=`Confirmer : envoyer à ${sel.size} membre${sel.size>1?"s":""}`;return}
+    occupe(b,true);const {error}=await sb.from("envois_libres").insert({sujet:$("#ml-s").value.trim(),message:$("#ml-t").value,destinataires:[...sel],demande_par:me()});occupe(b,false);delete b.dataset.ok;b.textContent="Envoyer";
+    if(error)return erreur(error,/envois_libres|relation/i.test(error.message)?"Lance messages-bureau.sql dans Supabase":"Envoi");toast("Message enregistré : il part dans les 15 minutes",4000);histo()};
+  const histo=async()=>{const r=await sb.from("envois_libres").select("*").order("id",{ascending:false}),data=(r.data||[]).slice(0,5);const z=$("#ml-h");if(!z||!data.length)return;const St={en_attente:"⏳ en attente",envoye:"✓ envoyé",erreur:"⚠ erreur"};
+    z.innerHTML=`<span class="sect" style="padding:0">Derniers messages</span>${data.map(x=>`<div class="hint">${esc(x.sujet)} · ${(x.destinataires||[]).length} dest. · ${St[x.statut||"en_attente"]||esc(x.statut)}${x.nb!=null?` (${x.nb})`:""}</div>`).join("")}`};histo();
+}
 function voirMembre(id){
   const m=S.complets.find(x=>x.id==id);if(!m)return;const p=S.profils[id]||{},docs=S.docs[id]||[],note=S.notesM[id]?.note||"";
   ouvrirPanel(`<div class="ph"><h3>${esc(m.prenom)} ${esc(p.nom||"")}</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
-    <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${m.email?esc(m.email):"Sans e-mail"}<br>${m.user_id?`Lecture seule : seul ${esc(m.prenom)} peut modifier son profil.`:"Compte géré par le bureau tant qu'il ne s'est pas connecté."}</span></div>
+    <div class="photo-row">${avatar(m.id,"l")}<span class="hint">${m.email?esc(m.email):"Sans e-mail"}<br>${m.user_id?`Seul ${esc(m.prenom)} modifie le reste de son profil.`:"Compte géré par le bureau tant qu'il ne s'est pas connecté."}</span></div>
+    ${bureau()?`<form id="fident" class="droit"><span class="sect" style="padding:0">Identité</span><div class="grid2"><label for="id-p">Prénom<input id="id-p" name="prenom" required maxlength="40" value="${esc(m.prenom)}"></label><label for="id-n">Nom<input id="id-n" name="nom" maxlength="60" value="${esc(p.nom)}"></label></div><button class="btn sec" id="id-ok">Enregistrer le nom</button></form>`:""}
     ${!m.user_id&&bureau()?`<form id="fgere" class="droit"><span class="sect" style="padding:0">Profil géré par le bureau</span>
-      <div class="grid2"><label for="g-n">Nom<input id="g-n" name="nom" value="${esc(p.nom)}"></label><label for="g-e">E-mail <span class="hint">(s'il en a un plus tard)</span><input id="g-e" name="email" type="email" value="${esc(m.email)}"></label></div>
+      <div class="grid2"><label for="g-e">E-mail <span class="hint">(s'il en a un plus tard)</span><input id="g-e" name="email" type="email" value="${esc(m.email)}"></label></div>
       <div class="grid2"><label for="g-sx">Sexe (coupe des tenues)<select id="g-sx" name="sexe"><option value=""${!p.sexe?" selected":""}>—</option><option value="H"${p.sexe==="H"?" selected":""}>Homme</option><option value="F"${p.sexe==="F"?" selected":""}>Femme</option></select></label><span></span></div>
       <div class="grid2"><label for="g-tm">Taille maillot<select id="g-tm" name="taille_maillot">${TAILLES.map(t=>`<option${t===(p.taille_maillot||"")?" selected":""}>${t}</option>`).join("")}</select></label><label for="g-tc">Taille cuissard<select id="g-tc" name="taille_cuissard">${TAILLES.map(t=>`<option${t===(p.taille_cuissard||"")?" selected":""}>${t}</option>`).join("")}</select></label></div>
       <button class="btn sec" id="g-ok">Enregistrer</button></form>`:""}
@@ -1721,8 +1751,11 @@ function voirMembre(id){
     <button class="btn sec" id="m-note-ok">Enregistrer la note</button>
     ${m.id!==me()?`<label for="m-role">Rôle<select id="m-role"><option value="membre"${m.role==="membre"?" selected":""}>Membre</option><option value="bureau"${m.role==="bureau"?" selected":""}>Bureau</option></select></label>
       <button class="btn ${m.actif?"del":"sec"}" id="m-actif">${m.actif?"Retirer du club":"Réintégrer au club"}</button>`:""}`);
+  const fi=$("#fident");if(fi)fi.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(fi)),b=$("#id-ok"),pre=d.prenom.trim(),nom=nul(d.nom.trim());if(!pre)return toast("Le prénom est obligatoire");occupe(b,true);
+    const r1=pre!==m.prenom?await sb.from("membres").update({prenom:pre}).eq("id",m.id):{},r2=nom!==(p.nom||null)?await sb.from("profils").upsert({membre_id:m.id,nom,maj_le:new Date().toISOString()}):{};occupe(b,false);
+    if(r1.error||r2.error)return erreur(r1.error||r2.error,"Identité");toast("Nom enregistré");await recharger();voirMembre(m.id)};
   const fg=$("#fgere");if(fg)fg.onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(fg)),b=$("#g-ok"),email=d.email.trim().toLowerCase()||null;occupe(b,true);
-    const r1=await sb.from("profils").upsert({membre_id:m.id,nom:nul(d.nom.trim()),taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),sexe:nul(d.sexe),maj_le:new Date().toISOString()});
+    const r1=await sb.from("profils").upsert({membre_id:m.id,taille_maillot:nul(d.taille_maillot),taille_cuissard:nul(d.taille_cuissard),sexe:nul(d.sexe),maj_le:new Date().toISOString()});
     const r2=email!==(m.email||null)?await sb.from("membres").update({email}).eq("id",m.id):{};occupe(b,false);
     if(r1.error||r2.error){const e=r1.error||r2.error;return /duplicate|23505/.test(e.message)?toast("Cet e-mail est déjà utilisé"):erreur(e,"Profil")}
     toast(email&&!m.email?`${m.prenom} peut maintenant se connecter avec cet e-mail`:"Profil enregistré",3500);await recharger();voirMembre(m.id)};
@@ -1923,7 +1956,7 @@ function render(){
   if(!co){$("#fab").hidden=true;renderLogin();return}
   const m=S.moi;
   $("#user").innerHTML=avatar(m.id);
-  const bv=boutiqueVue(),ec=ENT.coachVue(),ea=ENT.athleteVue(),nb=4+bv+ec+ea;$("#nav").classList.toggle("n5",nb===5);$("#nav").classList.toggle("n6",nb>=6);
+  const bv=boutiqueVue(),ec=ENT.coachVue(),ea=ENT.athleteVue(),nb=4+bv+ec+ea;$("#nav").classList.toggle("n5",nb===5);$("#nav").classList.toggle("n6",nb===6);$("#nav").classList.toggle("n7",nb>=7);
   $('.nav [data-v="boutique"]').hidden=!bv;$('.nav [data-v="coach"]').hidden=!ec;$('.nav [data-v="entrainement"]').hidden=!ea;
   if((vue==="boutique"&&!bv)||(vue==="coach"&&!ec)||(vue==="entrainement"&&!ea))vue="agenda";
   for(const v of ["agenda","resultats","sondages","boutique","coach","entrainement","profil"])$("#v-"+v).hidden=v!==vue;
@@ -1978,6 +2011,7 @@ document.addEventListener("click",e=>{
   const dr=c("[data-droit]");if(dr)return repondreDroit(dr.dataset.droit==="1");
   const df=c("[data-defiler]");if(df)return defilerMedia(+df.dataset.defiler);
   if(c("[data-toggle-bilan]")){try{localStorage.setItem("bilanMasque",bilanMasque()?"0":"1")}catch(e){}return render()}
+  if(c("[data-mail-membres]")&&bureau())return ecrireMembres();
   if(c("[data-vue-membre]")&&bureauReel()){vueMembre=!vueMembre;fermer();render();scrollTo(0,0);return toast(vueMembre?"Aperçu membre activé":"Retour au mode bureau")}
   if(c("[data-ajout-course]"))return formEvt({},{resultat:true});
   const ar=c("[data-archiver]");if(ar)return archiverSondage(+ar.dataset.archiver);
