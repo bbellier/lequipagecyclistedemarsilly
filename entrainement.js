@@ -7,7 +7,7 @@
 const E={};window.ENT=E;
 // ---------- styles propres au module ----------
 document.head.insertAdjacentHTML("beforeend",`<style>
-.nav.n6 div{grid-template-columns:repeat(6,1fr)}#coach input[type=range],#entrainement input[type=range]{accent-color:var(--red)}.nav.n6 button{font-size:10.5px;letter-spacing:0}
+.nav.n6 div{grid-template-columns:repeat(6,1fr)}.nav.n7 div{grid-template-columns:repeat(7,1fr)}.nav.n7 button{font-size:9.5px;letter-spacing:0}#coach input[type=range],#entrainement input[type=range]{accent-color:var(--red)}.nav.n6 button{font-size:10.5px;letter-spacing:0}
 .en-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;padding-bottom:10px;border-bottom:2px solid var(--ink)}
 .en-hero h2{font-size:28px}.en-j{font-family:var(--display);font-weight:800;font-size:48px;line-height:1;color:var(--red);text-align:right}.en-j small{display:block;font:500 11px var(--mono);color:var(--muted);text-transform:uppercase}
 .en-rank{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:14px}.en-rank b{font:800 18px var(--display);text-transform:uppercase}
@@ -137,7 +137,8 @@ E.charger=async()=>{if(!sb)return;const t=n=>sb.from(n).select("*").then(r=>r.er
   CFG=Object.assign(JSON.parse(JSON.stringify(CFG0)),rg[0]?.data||{});D={ath,obj,off,ses:ses.sort((a,b)=>a.date.localeCompare(b.date)),res,ref};
   if(window.MOCK&&!window.MOCK.enDemo)demo()};
 E.coachVue=()=>!!S.moi?.coach;
-E.athleteVue=()=>D.ath.some(a=>a.membre_id===me()&&a.statut==="publie");
+E.apercu=null;const AID=()=>E.apercu??me();
+E.athleteVue=()=>E.apercu!=null||D.ath.some(a=>a.membre_id===me()&&a.statut!=="brouillon");
 const athOf=id=>D.ath.find(a=>a.membre_id===id),goalsOf=id=>D.obj.filter(o=>o.membre_id===id).sort((a,b)=>a.date.localeCompare(b.date)),offsOf=id=>D.off.filter(o=>o.membre_id===id),sesOf=id=>D.ses.filter(s=>s.membre_id===id),resOf=sid=>D.res.find(r=>r.seance_id===sid);
 
 // ---------- feux, points, badges ----------
@@ -182,7 +183,7 @@ const C={top:"ath",sel:null,sub:"suivi",draft:null,sim:100,gSel:null};
 const chipsH=(opts,on,attr,dis)=>`<div class="en-chips">${opts.map(o=>`<button type="button" ${attr}="${esc(o[0])}" aria-pressed="${on(o[0])}" ${dis&&dis(o[0])?"disabled":""}>${esc(o[1])}</button>`).join("")}</div>`;
 function draftDe(id){const a=athOf(id)||{},g=goalsOf(id);return{heures:+a.heures||6,jours:a.jours||[1,3,6],jour_long:a.jour_long??6,niveau:a.niveau||"deb",point_faible:a.point_faible||"Aucun",debut:a.debut||iso(monday(addD(auj(),7))),reflexes:a.reflexes||[0,1,2],
   goals:g.length?g.map(x=>({...x})):[{titre:"Mon objectif",sport:"run",distance:"21",date:iso(addD(auj(),112)),principal:true}],offs:offsOf(id).map(o=>({...o}))}}
-E.renderCoach=()=>{const el=$("#coach");if(!el)return;
+E.renderCoach=()=>{const el=$("#coach");if(!el)return;E.apercu=null;
   let h=`<div class="en-tabs" role="tablist"><button data-en-top="ath" aria-selected="${C.top==="ath"}">Athlètes</button><button data-en-top="game" aria-selected="${C.top==="game"}">Points, badges, feux</button></div>`;
   h+=C.top==="game"?coachGame():C.sel==null?coachListe():coachFiche();el.innerHTML=h;dessiner()};
 function coachListe(){const l=D.ath.filter(a=>a.coach_id===me()||S.moi?.coach);
@@ -192,7 +193,7 @@ function coachListe(){const l=D.ath.filter(a=>a.coach_id===me()||S.moi?.coach);
 function membresAjout(){const base=S.complets?.length?S.complets:S.membres;return base.filter(m=>(m.actif??true)&&!athOf(m.id))}
 function coachFiche(){const id=C.sel,a=athOf(id),G=mainG(goalsOf(id));
   let h=`<button class="btn sec small" style="justify-self:start" data-en-back>‹ Mes athlètes</button><div class="en-hero"><div><h2>${esc(prenomDe(id))}</h2><span class="hint">${G?esc(G.titre+" · "+gLabel(G)):""}</span></div><div class="en-j">${G?"J-"+jx(G.date):""}</div></div>
-  <div class="en-tabs">${[["suivi","Suivi"],["obj","Objectifs et dispos"],["plan","Plan"]].map(x=>`<button data-en-sub="${x[0]}" aria-selected="${C.sub===x[0]}">${x[1]}</button>`).join("")}</div>`;
+  <button class="btn sec" data-en-voir="${id}">Voir son onglet Entraînement</button><div class="en-tabs">${[["suivi","Suivi"],["obj","Objectifs et dispos"],["plan","Plan"]].map(x=>`<button data-en-sub="${x[0]}" aria-selected="${C.sub===x[0]}">${x[1]}</button>`).join("")}</div>`;
   if(C.sub==="suivi")h+=coachSuivi(id);else if(C.sub==="obj")h+=coachObj(id);else h+=coachPlan(id,a);return h}
 function coachSuivi(id){const s=suiviDe(id);if(!s.wks.length)return`<div class="card"><p class="hint" style="margin:0">Pas encore de ressenti.</p></div>`;const D2=decision(s),mx=Math.max(...s.wks.map(w=>Math.max(w.pl,w.re)))||1,cnt=f=>s.fx.filter(x=>x.f===f).length;
   return`<div class="card" style="border-left:5px solid ${D2[2]}"><span class="sect">Semaine prochaine</span><h2>${D2[0]}</h2><span class="hint">${D2[1]}</span></div>
@@ -263,6 +264,7 @@ const coachEl=()=>$("#coach");
 document.addEventListener("click",async e=>{const root=e.target.closest("#coach");if(!root)return;const b=e.target.closest("button");if(!b)return;const d=b.dataset,dr=C.draft;e.stopPropagation();
   const re=()=>E.renderCoach();
   if(d.enTop){C.top=d.enTop;return re()}if(d.enInfo)return info(d.enInfo);
+  if(d.enVoir){E.apercu=+d.enVoir;A.sub="today";A.phase="signal";vue="entrainement";render();scrollTo(0,0);return toast(`Aperçu : l'onglet de ${prenomDe(E.apercu)}`)}
   if(d.enAth){C.sel=+d.enAth;C.sub="suivi";C.draft=null;return re()}if("enBack" in d){C.sel=null;C.draft=null;return re()}if(d.enSub){C.sub=d.enSub;return re()}
   if("enAdd" in d){const l=membresAjout();return ouvrirPanel(`<div style="display:grid;gap:12px"><h2>Ajouter un athlète</h2><span class="hint">Membres actifs du club.</span>${l.length?`<div class="en-chips">${l.map(m=>`<button data-en-pick="${m.id}" ${m.user_id===null?"disabled":""}>${esc(m.prenom)}${m.user_id===null?" · sans compte":""}</button>`).join("")}</div>`:'<p class="hint">Tous les membres sont déjà suivis.</p>'}<button class="btn sec" data-close>Fermer</button></div>`)}
   if(dr&&d.enSport!==undefined){const g=dr.goals[+d.enSport];g.sport=d.enV;g.distance=DEFD[d.enV];return re()}
@@ -305,8 +307,8 @@ const DAYT=[{n:"Sortie longue le matin",sess:8.5,len:3,m:[[1,[.55,.15,.3],"Floco
   {n:"Séance le soir",sess:18,len:1.25,m:[[.8,[.45,.2,.35],"Pain complet, œufs, fruit"],[.3,[0,.6,.4],"Fruit ou yaourt"],[.9,[.35,.35,.3],"Assiette équilibrée"],[.6,[.65,.15,.2],"Banane, pain, chocolat : 1h30 avant"],[.7,[.3,.4,.3],"Féculents, légumes, protéines"]]},
   {n:"Repos",sess:null,m:[[.7,[.35,.25,.4],"Pain complet, œufs, fruit"],[.2,[0,1,0],"Un fruit si faim"],[.8,[.2,.5,.3],"Moitié légumes, protéines"],[.25,[0,.5,.5],"Yaourt"],[.6,[.15,.55,.3],"Légumes, protéines, peu de féculents"]]}];
 const MEALS=["7h","10h","12h30","16h30","19h30"],MN=["Petit-déj","Collation","Déjeuner","Goûter","Dîner"],FC=["var(--warn)","var(--ok)","var(--red)"];
-E.renderAthlete=()=>{const el=$("#entrainement");if(!el)return;const id=me(),s=suiviDe(id),G=mainG(goalsOf(id)),{g,n}=grade(s.xp);
-  el.innerHTML=`<div class="en-hero"><div><h2>${G?`Cap sur ${esc(G.titre)}`:"Mon entraînement"}</h2><span class="hint">${G?`${esc(gLabel(G))} · ${fds(pd(G.date))}`:""}</span></div><div class="en-j">${G?"J-"+jx(G.date):""}<small>semaine ${Math.max(1,s.TW)}</small></div></div>
+E.renderAthlete=()=>{const el=$("#entrainement");if(!el)return;const id=AID(),s=suiviDe(id),G=mainG(goalsOf(id)),{g,n}=grade(s.xp);
+  el.innerHTML=`${E.apercu!=null?`<div class="apercu-m" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>Aperçu de ${esc(prenomDe(id))} · rien n'est enregistré</span><button data-en-quit type="button">Quitter l'aperçu</button></div>`:""}<div class="en-hero"><div><h2>${G?`Cap sur ${esc(G.titre)}`:"Mon entraînement"}</h2><span class="hint">${G?`${esc(gLabel(G))} · ${fds(pd(G.date))}`:""}</span></div><div class="en-j">${G?"J-"+jx(G.date):""}<small>semaine ${Math.max(1,s.TW)}</small></div></div>
   <div class="en-rank"><b>${esc(g[0])}</b><div class="en-meter"><i style="width:${n?100*(s.xp-g[1])/(n[1]-g[1]):100}%"></i></div><span>${s.xp} pts · série ${s.streak} sem.</span></div>
   <div class="en-tabs">${[["today","Aujourd'hui"],["map","Saison"],["fuel","Carburant"],["poids","Poids"],["rules","Règles"]].map(x=>`<button data-en-a="${x[0]}" aria-selected="${A.sub===x[0]}">${x[1]}</button>`).join("")}</div>`
   +({today:aToday,map:aMap,fuel:aFuel,poids:aPoids,rules:aRules}[A.sub])(id,s);dessiner()};
@@ -337,7 +339,9 @@ function aRules(){return`<div class="card"><h2>Après chaque séance</h2>${["ver
   <div class="card"><h2>Selon mon assiduité</h2><div>Moins de ${CFG.regLow} % : semaine refaite</div><div>${CFG.regLow} à ${CFG.regHigh} % : volume maintenu</div><div>${CFG.regHigh} % et plus : progression</div><div>3 feux orange : semaine de récup</div></div>`}
 async function ressenti(id,se,faite){const c={...A.c,effort:A.rpe,x:se.effort},row={seance_id:se.id,membre_id:id,faite,duree_reelle:faite&&A.mode==="partiel"?Math.min(se.duree,+A.dmin||0):null,km:faite&&+A.km>0?+A.km:null,effort:faite?A.rpe:null,fatigue:faite?A.c.fatigue:null,sommeil:faite?A.c.sommeil:null,douleur:faite?A.c.douleur:null,feu:faite?feu(c):null};
   await q(sb.from("ressentis").upsert(row),"Ressenti");const i=D.res.findIndex(r=>r.seance_id===se.id);i>=0?D.res[i]=row:D.res.push(row);return row}
-document.addEventListener("click",async e=>{if(!e.target.closest("#entrainement"))return;const b=e.target.closest("button");if(!b)return;e.stopPropagation();const d=b.dataset,id=me(),re=()=>E.renderAthlete();
+document.addEventListener("click",async e=>{if(!e.target.closest("#entrainement"))return;const b=e.target.closest("button");if(!b)return;e.stopPropagation();const d=b.dataset,id=AID(),re=()=>E.renderAthlete();
+  if("enQuit" in d){E.apercu=null;vue="coach";render();scrollTo(0,0);return}
+  if(E.apercu!=null&&("enSend" in d||"enSkip" in d||"enRedo" in d||d.enHab!==undefined))return toast("Aperçu : rien n'est enregistré");
   if(d.enA){A.sub=d.enA;return re()}if(d.enInfo)return info(d.enInfo);
   const se=jourSeances(id).td[0];
   if("enDone" in d||"enPart" in d){A.phase="action";A.mode="enPart" in d?"partiel":"complet";if(se)A.dmin=Math.round(se.duree/2/5)*5;A.km="";moveTok(0);return re()}
@@ -355,7 +359,7 @@ document.addEventListener("input",e=>{const t=e.target;if(!t.closest("#entrainem
 // =====================================================================
 function dessiner(){drawMy();drawVol();drawXP();drawLoop();drawTrack();drawDay();drawKg()}
 let ro=null;function observer(){if(ro)ro.disconnect();ro=new ResizeObserver(()=>dessiner());document.querySelectorAll("#coach .en-fig,#entrainement .en-fig").forEach(f=>ro.observe(f))}
-function drawMy(){const s=$("#en-mvol");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const st=suiviDe(me()),Wk=semaines(me()),km=A.unit==="km";
+function drawMy(){const s=$("#en-mvol");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const st=suiviDe(AID()),Wk=semaines(AID()),km=A.unit==="km";
   const rows=Wk.filter(w=>w.w<=st.TW+4).map(w=>{const z=st.wks.find(x=>x.w===w.w);return{w:w.w,p:w.ses.reduce((a,x)=>a+(x.duree||0),0)/60,r:z?(km?z.km:z.hr):null,fut:w.w>=st.TW}});if(!rows.length)return;
   const mx=Math.max(...rows.map(r=>km?(r.r||0):Math.max(r.p,r.r||0)),1)*1.12,L=28,B=22,T=10,bw=(W-L-4)/rows.length,Y=v=>T+(1-v/mx)*(H-T-B);let h="";
   [0,Math.round(mx/2),Math.floor(mx)].forEach(y=>h+=`<line x1="${L}" x2="${W}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)"/><text x="${L-5}" y="${Y(y)+4}" text-anchor="end" fill="var(--muted)" font-size="13">${y}</text>`);
@@ -375,14 +379,14 @@ function drawXP(){const s=$("#en-xp");if(!s||C.gSel==null)return;const W=s.clien
   const f=Math.max(0,real-1);h+=line(p7,f,"var(--warn)",1)+line(p1,f,"var(--red)",1);if(real)h+=line(p1.slice(0,real),0,"var(--ink)");
   [0,Math.floor(n/2),n-1].forEach(i=>h+=`<text x="${X(i)}" y="${H-5}" text-anchor="middle" fill="var(--muted)" font-size="13">S${Wk[i].w}</text>`);s.innerHTML=h;observer()}
 const STN=[["Rappel",-Math.PI/2],["Séance",0],["Récompense",Math.PI/2],["Prochain cap",Math.PI]],PH=["signal","action","reward","envie"];
-function drawLoop(){const s=$("#en-loop");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const x=suiviDe(me()).xp,cx=W/2,cy=H/2,nw=W<480,rx=Math.min(W/2-(nw?46:100),210),ry=Math.min(H/2-46,105),pt=a=>[cx+rx*Math.cos(a),cy+ry*Math.sin(a)],act=PH.indexOf(A.phase);
+function drawLoop(){const s=$("#en-loop");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const x=suiviDe(AID()).xp,cx=W/2,cy=H/2,nw=W<480,rx=Math.min(W/2-(nw?46:100),210),ry=Math.min(H/2-46,105),pt=a=>[cx+rx*Math.cos(a),cy+ry*Math.sin(a)],act=PH.indexOf(A.phase);
   let h=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="var(--wash)" stroke-width="22"/><ellipse class="en-flow" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 14"/>`;
   STN.forEach(([n,a],i)=>{const[px,py]=pt(a),on=i===act,lx=nw?px:i===1?px+26:i===3?px-26:px,ly=i===0||(nw&&i%2)?py-26:i===2?py+36:py+5,an=nw?"middle":i===1?"start":i===3?"end":"middle";
     h+=`<circle cx="${px}" cy="${py}" r="16" fill="${on?"var(--red)":"var(--ink)"}" stroke="var(--card)" stroke-width="3"/><text class="n" x="${px}" y="${py+5}" text-anchor="middle" fill="${on?"#fff":"var(--paper)"}" font-weight="800" font-size="14">${i+1}</text><text x="${lx}" y="${ly}" text-anchor="${an}" fill="var(--ink)" font-weight="700" font-size="14">${nw&&i===3?"Cap":n}</text>`});
   const[tx,ty]=pt(A.tok);h+=X_(tx,ty,11,"var(--red)")+`<text x="${cx}" y="${cy+2}" text-anchor="middle" fill="var(--ink)" font-family="Barlow Condensed" font-weight="800" font-size="${Math.min(42,ry*.42)}">${x} pts</text><text x="${cx}" y="${cy+25}" text-anchor="middle" fill="var(--muted)" font-size="14">${esc(grade(x).g[0])}</text>`;s.innerHTML=h;observer()}
 function moveTok(to){const from=A.tok,end=to<=from?to+2*Math.PI:to,t0=performance.now(),D2=matchMedia("(prefers-reduced-motion:reduce)").matches?1:650;const step=t=>{const k=Math.min(1,(t-t0)/D2);A.tok=from+(end-from)*(1-(1-k)**3);drawLoop();if(k<1)requestAnimationFrame(step);else A.tok=end%(2*Math.PI)};requestAnimationFrame(step)}
 const CP=[[.1,.55],[.12,.25],[.3,.1],[.48,.24],[.62,.1],[.86,.14],[.92,.42],[.76,.55],[.9,.8],[.68,.92],[.46,.76],[.28,.9],[.1,.84]];
-function drawTrack(){const s=$("#en-track");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const id=me(),Wk=semaines(id),N=Math.max(1,Wk.length),TW=suiviDe(id).TW,m=26,p=CP.map(([x,y])=>[m+x*(W-2*m),m+y*(H-2*m)]),n=p.length;
+function drawTrack(){const s=$("#en-track");if(!s)return;const W=s.clientWidth,H=s.clientHeight;if(!W)return;const id=AID(),Wk=semaines(id),N=Math.max(1,Wk.length),TW=suiviDe(id).TW,m=26,p=CP.map(([x,y])=>[m+x*(W-2*m),m+y*(H-2*m)]),n=p.length;
   let d=`M${p[0]}`;for(let i=0;i<n;i++){const a=p[(i-1+n)%n],b=p[i],c=p[(i+1)%n],e=p[(i+2)%n];d+=`C${b[0]+(c[0]-a[0])/6},${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6},${c[1]-(e[1]-b[1])/6} ${c[0]},${c[1]}`}
   s.innerHTML=`<path id="en-pth" d="${d}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="7 7"/>`;const pth=s.querySelector("#en-pth"),L=pth.getTotalLength(),at=i=>pth.getPointAtLength(i/N*L);
   let h=`<path d="${d}" fill="none" stroke="var(--red)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${Math.max(0,TW-1)/N*L} ${L}"/>`;
