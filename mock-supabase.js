@@ -36,7 +36,7 @@
     commandes:[{id:1,membre_id:1,article_id:1,taille:"M",quantite:1},{id:2,membre_id:2,article_id:1,taille:"S",quantite:2},{id:3,membre_id:2,article_id:2,taille:"S",quantite:1},{id:4,membre_id:3,article_id:4,taille:"",quantite:1}],
     commandes_suivi:[{membre_id:2,paye:true,remis:false}],
     // Entraînement : Léa est suivie par Benjamin (plan et ressentis générés par entrainement.js à l'ouverture)
-    entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:[0,2,4],statut:"publie",bilan_mail:true}],
+    entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:["leg","sun","moon"],statut:"publie",bilan_mail:true}],
     objectifs:[{id:1,membre_id:2,titre:"Triathlon L de printemps",sport:"tri",distance:"L",date:J(140),principal:true},{id:2,membre_id:2,titre:"Cyclo 150",sport:"bike",distance:"150",date:J(98),principal:false}],
     indisponibilites:[{id:1,membre_id:2,du:J(30),au:J(36),motif:"Vacances"}],
     seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[],
@@ -44,7 +44,7 @@
   };
   db.membres.push({id:6,user_id:null,email:null,prenom:"Bruno",role:"membre",actif:true,licences:["Adhérent"],licences_saison:"2026-2027"});db.profils.push({membre_id:6,nom:"Durand",taille_maillot:"L"});
   const files={club:{"gpx/boucle.gpx":new Blob([gpx]),"affiches/a.webp":"img/montagne.webp","sondages/guide.pdf":new Blob(["%PDF"]),"partenaires/logo.png":"img/logo-noir.png","partenaires/carre.png":"img/icon-192.png","boutique/maillot.webp":"img/montagne.webp"},medias:{"4/2/photo.webp":"img/montagne2.webp","4/1/velo.webp":"img/montagne.webp","4/3/course.webp":"img/montagne2.webp"},documents:{"2/licence.pdf":new Blob(["%PDF"])},avatars:{"2/photo.webp":"img/montagne2.webp"}};
-  const keys={notes_membres:["membre_id"],participations:[{evenement_id:5,membre_id:3,reponse:true},"evenement_id","membre_id"],votes:["sondage_id","membre_id"],resultats:["evenement_id","membre_id"],profils:["membre_id"],commandes:["membre_id","article_id","taille"],commandes_suivi:["membre_id"],entrainement_athletes:["membre_id"],ressentis:["seance_id"],reflexes_jours:["membre_id","jour","idx"],reglages_entrainement:["id"]};
+  const keys={notes_membres:["membre_id"],participations:[{evenement_id:5,membre_id:3,reponse:true},"evenement_id","membre_id"],votes:["sondage_id","membre_id"],resultats:["evenement_id","membre_id"],profils:["membre_id"],commandes:["membre_id","article_id","taille"],commandes_suivi:["membre_id"],entrainement_athletes:["membre_id"],ressentis:["seance_id"],reflexes_jours:["membre_id","jour","ref"],reglages_entrainement:["id"]};
   let seq=100,session=null;window.MOCK={db,files,log:[]};
   const moi=()=>session&&db.membres.find(m=>m.user_id===session.user.id&&m.actif);
   const bureau=()=>moi()?.role==="bureau";
