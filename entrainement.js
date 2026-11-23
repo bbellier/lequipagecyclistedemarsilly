@@ -17,6 +17,7 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .en-tabs button[aria-selected=true]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .en-chips{display:flex;flex-wrap:wrap;gap:6px}.en-chips button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font-size:15px;min-height:40px}
 .en-chips button[aria-pressed=true]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}.en-chips button:disabled{opacity:.4}
+.en-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}.en-leg span{display:inline-flex;align-items:center;gap:5px}.en-leg i{width:12px;height:12px;border-radius:3px;border:1px solid var(--ink)}
 .en-ttl{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .en-i{width:30px;height:30px;min-width:30px;border-radius:50%;border:1.5px solid var(--muted);background:none;color:var(--muted);font-weight:700;padding:0}
 .en-fig{position:relative;min-height:260px}.en-fig>svg{position:absolute;inset:0;width:100%;height:100%}
@@ -225,7 +226,7 @@ function semaines(id){const a=athOf(id),st0=monday(pd(a?.debut||iso(auj()))),W={
 function coachPlan(id,a){if(!a)return`<div class="card"><p class="hint" style="margin:0">Enregistre d'abord les objectifs.</p></div>`;const W=semaines(id),TW=suiviDe(id).TW;
   const lab={publie:"Publié",modifie:"Modifié, à republier",brouillon:"Brouillon, non visible"}[a.statut]||"Brouillon";
   return`<div class="en-ttl"><span class="pill">${lab}</span><span style="display:flex;gap:8px;align-items:center"><button class="en-i" data-en-info="plan">?</button><button class="btn pri" data-en-pub>Publier</button></span></div>
-  ${W.length?`<div class="card"><div class="en-ttl"><h2>Volume par semaine</h2><button class="en-i" data-en-info="sim">?</button></div><div class="en-fig" style="min-height:200px"><svg id="en-vol"></svg></div>
+  ${W.length?`<div class="card"><div class="en-ttl"><h2>Volume par semaine</h2><button class="en-i" data-en-info="sim">?</button></div><div class="en-fig" style="min-height:200px"><svg id="en-vol"></svg></div><div class="en-leg">${[["Base 1","var(--wash)"],["Base 2","#d9cdb8"],["Spécifique","var(--warn)"],["Récup","var(--ok-soft)"],["Affûtage","#2b5f8a"],["Course","var(--red)"]].map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join("")}<span><b style="color:var(--red)">✕</b> objectif</span><span><i style="background:var(--red);height:3px;border:0"></i>volume adapté (curseur)</span></div>
   <label>Assiduité simulée : ${C.sim} %<input type="range" min="40" max="100" step="5" value="${C.sim}" data-en-sim></label></div>`:`<p class="hint">Aucune séance : génère le plan depuis « Objectifs et dispos ».</p>`}
   ${W.map(w=>`<details class="en-wk" ${w.w===Math.max(1,TW)?"open":""}><summary><b>S${w.w}</b><span><span class="pill">${esc(w.phase||"")}</span> <span class="hint">${fds(w.mon)}</span></span><span>${dec(w.ses.reduce((x,s)=>x+(s.duree||0),0)/60)} h</span></summary>
     ${w.ses.map(s=>`<button class="en-ses ${s.cle?"cle":""}" data-en-ses="${s.id}"><span>${WK[(pd(s.date).getDay()+6)%7]}</span><span>${esc(s.texte)}${resOf(s.id)?` <span class="en-dot" style="background:${resOf(s.id).faite?FEU[resOf(s.id).feu]?.[1]:"var(--red)"}"></span>`:""}</span></button>`).join("")}
