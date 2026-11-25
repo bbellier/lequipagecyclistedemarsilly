@@ -23,7 +23,7 @@
     sondages:[{id:1,question:"Quelle taille de maillot ?",options:["S","M","L","XL"],multiple:false,limite:J(20),fichier:"sondages/guide.pdf",fichier_nom:"Guide des tenues.pdf",cree_le:"2026-10-01"},
               {id:2,question:"Pièces à commander ?",options:["Maillot","Cuissard","Gilet"],multiple:true,limite:J(20),cree_le:"2026-10-02"},{id:3,question:"Destination du stage 2026 ?",options:["Pyrénées","Ventoux"],multiple:false,limite:J(-60),archive:true,cree_le:"2026-06-01"}],
     votes:[{sondage_id:1,membre_id:1,choix:[1]},{sondage_id:1,membre_id:3,choix:[2]}],
-    profils:[{membre_id:2,nom:"Martin",federations:["FFTri"],taille_maillot:"S",photo:"2/photo.webp"},{membre_id:1,federations:["FFC","FFTri"],droit_image:true,droit_image_le:"2026-11-01T10:00:00Z",bilans:true},{membre_id:3,droit_image:false,droit_image_le:"2026-11-02T10:00:00Z"}],
+    profils:[{membre_id:2,nom:"Martin",federations:["FFTri"],taille_maillot:"S",photo:"2/photo.webp"},{membre_id:1,nom:"Bellier",federations:["FFC","FFTri"],droit_image:true,droit_image_le:"2026-11-01T10:00:00Z",bilans:true},{membre_id:3,droit_image:false,droit_image_le:"2026-11-02T10:00:00Z"}],
     documents:[{id:1,membre_id:2,type:"licence_fftri",chemin:"2/licence.pdf",nom:"licence-fftri.pdf",taille:310000}],
     liens:[{id:1,titre:"Club Strava",url:"https://www.strava.com/clubs/2383594",ordre:1},{id:2,titre:"E-mail du club",url:"mailto:lequipagecycliste@gmail.com",ordre:2},{id:3,titre:"Instagram",url:"https://www.instagram.com/exemple/",ordre:3}],
     notes_bureau:[{id:1,titre:"Réunion de bureau",texte:"Commander les maillots avant fin novembre.\nPrévoir l'AG en janvier.",auteur_id:1,maj_le:"2026-10-20T10:00:00Z"}],
@@ -39,7 +39,7 @@
     entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:["leg","sun","moon"],statut:"publie",bilan_mail:true}],
     objectifs:[{id:1,membre_id:2,titre:"Triathlon L de printemps",sport:"tri",distance:"L",date:J(140),principal:true},{id:2,membre_id:2,titre:"Cyclo 150",sport:"bike",distance:"150",date:J(98),principal:false}],
     indisponibilites:[{id:1,membre_id:2,du:J(30),au:J(36),motif:"Vacances"}],
-    seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[],
+    seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[],demandes_seances:[],
     envois_libres:[]
   };
   db.membres.push({id:6,user_id:null,email:null,prenom:"Bruno",role:"membre",actif:true,licences:["Adhérent"],licences_saison:"2026-2027"});db.profils.push({membre_id:6,nom:"Durand",taille_maillot:"L"});
@@ -54,6 +54,7 @@
     const m=moi();if(!m)return false;if(bureau())return true;
     if(["entrainement_athletes","objectifs","indisponibilites","seances","reglages_entrainement"].includes(t))return !!m.coach;
     if(t==="ressentis"||t==="reflexes_jours")return row.membre_id===m.id||!!m.coach;
+    if(t==="demandes_seances")return !!m.coach||(row.membre_id===m.id&&row.statut==="en_attente");
     if(t==="evenements")return row.cree_par===m.id;
     if(t==="parcours")return db.evenements.some(e=>e.id===row.evenement_id&&e.cree_par===m.id);
     if(["sondages","membres","liens","notes_bureau","notes_membres","partenaires","boutique","articles","commandes_suivi","envois_libres"].includes(t))return false;
@@ -81,7 +82,7 @@
         if(this.t==="votes"&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
         if(["notes_bureau","notes_membres","envois_libres"].includes(this.t)&&!bureau())l=[];
         if(["profils","documents","commandes","commandes_suivi"].includes(this.t)&&!bureau())l=l.filter(r=>r.membre_id===moi().id);
-        if(["entrainement_athletes","objectifs","indisponibilites","seances","ressentis","reflexes_jours"].includes(this.t)&&!moi().coach){l=l.filter(r=>r.membre_id===moi().id);if(this.t==="seances"&&!db.entrainement_athletes.some(a=>a.membre_id===moi().id&&a.statut==="publie"))l=[]}
+        if(["entrainement_athletes","objectifs","indisponibilites","seances","ressentis","reflexes_jours","demandes_seances"].includes(this.t)&&!moi().coach){l=l.filter(r=>r.membre_id===moi().id);if(this.t==="seances"&&!db.entrainement_athletes.some(a=>a.membre_id===moi().id&&a.statut==="publie"))l=[]}
         if(this.ord)l=[...l].sort((a,b)=>String(a[this.ord[0]]).localeCompare(String(b[this.ord[0]]))*(this.ord[1]?1:-1));
         l=JSON.parse(JSON.stringify(l));return {data:this.one?l[0]??null:l,error:this.one&&!l[0]?{message:"no rows"}:null}}
       if(this.op==="insert"||this.op==="upsert"){const out=[];
@@ -102,6 +103,7 @@
     if(!m)return {data:[],error:null};
     if(n==="maj_mon_prenom"){m.prenom=args.p_prenom.trim();return {data:null,error:null}}
     if(n==="annuaire")return {data:db.membres.filter(r=>r.actif).map(({id,prenom,role})=>({id,prenom,role,photo:db.profils.find(p=>p.membre_id===id)?.photo||null})).sort((a,b)=>a.prenom.localeCompare(b.prenom)),error:null};
+    if(n==="initiales")return {data:db.membres.filter(r=>r.actif).map(r=>({id:r.id,ini:(db.profils.find(p=>p.membre_id===r.id)?.nom||"").trim().charAt(0).toUpperCase()||null})),error:null};
     if(n==="stats_sondages")return {data:db.sondages.map(s=>({sondage_id:s.id,totaux:s.options.map((_,i)=>db.votes.filter(v=>v.sondage_id===s.id&&v.choix.includes(i)).length),votants:db.votes.filter(v=>v.sondage_id===s.id).length})),error:null};
     return {data:null,error:{message:"rpc inconnue "+n}}});
   const url=(b,p)=>{const f=files[b][p];return typeof f==="string"?f:f?URL.createObjectURL(f):null};
