@@ -499,7 +499,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-23b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-26a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -508,7 +508,7 @@ const sb = configOK ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{p
 // ================= État =================
 const S={moi:null,membres:[],complets:[],evts:[],part:{},res:{},medias:{},sondages:[],stats:{},votes:{},profils:{},docs:{},liens:[],notes:[],notesM:{},parcours:[],aDefinir:[],partenaires:[],selP:{},urls:{},gpx:{},charge:0};
 let vue="agenda",tab="up",filtre="Tous",anneeRes=String(new Date().getFullYear()),porteeRes="club",membreRes=null,apresEvt=null,L={etape:"email"};
-const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","CLM","Gravel","VTT","Triathlon","Course à pied","Trail"];
+const TYPES=["Sortie club","Évènement club","Cyclosportive","Route","CLM","Gravel","VTT","Triathlon","Course à pied","Trail","Autres"];
 const DISC={velo:"Vélo",course:"Course à pied",triathlon:"Triathlon",autre:"Autre"};
 const FORMATS_TRI=["XS","S","M","L","XL","XXL"];
 const TAILLES=["","XS","S","M","L","XL","XXL","3XL"];
@@ -527,7 +527,9 @@ const bureauReel=()=>S.moi?.role==="bureau";
 let vueMembre=false;   // aperçu membre : le bureau voit l'app comme un membre (affichage seulement)
 const bureau=()=>bureauReel()&&!vueMembre;
 const peutModifier=e=>bureau()||(e?.cree_par&&e.cree_par===me());
-const prenom=id=>S.membres.find(m=>m.id==id)?.prenom||S.complets.find(m=>m.id==id)?.prenom||"Ancien membre";
+// Affichage « Prénom N. » : initiale du nom (profils pour le bureau, sinon fonction initiales())
+const iniDe=id=>{const n=(S.profils[id]?.nom||"").trim();return n?n[0].toUpperCase():S.ini?.[id]||""};
+const prenom=id=>{const p=S.membres.find(m=>m.id==id)?.prenom||S.complets.find(m=>m.id==id)?.prenom;return p?p+(iniDe(id)?` ${iniDe(id)}.`:""):"Ancien membre"};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const J=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d)};
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
@@ -544,7 +546,7 @@ const quand=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"shor
 const photoDe=id=>S.membres.find(m=>m.id==id)?.photo||(id==me()?S.profils[id]?.photo:null);
 const avatar=(id,cls="")=>{const u=photoDe(id)&&S.urls["avatars/"+photoDe(id)];return `<span class="avatar ${cls}">${u?`<img src="${esc(u)}" alt="">`:SIL}</span>`};
 const placeTxt=x=>x?.place?`${x.place}${x.place===1?"er":"e"}${x.partants?" / "+x.partants:""}`:x?.classement||"";
-const disciplineDe=t=>/Course|Trail/.test(t||"")?"course":t==="Triathlon"?"triathlon":t==="Évènement club"?"autre":"velo";
+const disciplineDe=t=>/Course|Trail/.test(t||"")?"course":t==="Triathlon"?"triathlon":t==="Évènement club"||t==="Autres"?"autre":"velo";
 const heure=h=>{if(!h)return "";const [a,b]=h.split(":");return `${+a} h${b&&b!=="00"?" "+b:""}`};
 const fmtKm=k=>(+k).toLocaleString("fr-FR",{maximumFractionDigits:1});
 const fmtTri=f=>f==="XXL"?"XXL (Ironman)":f;
@@ -605,7 +607,7 @@ async function charger(){
   const B=bureau();
   if(Date.now()-S.charge>6*3600e3)S.urls={};
   const doux=q=>q.then(r=>r.error?null:r.data,()=>null);
-  const [moiM,ann,ev,pa,re,md,so,st,vo,pr,dc,li,pc,pt,mb,nb,nm,bq,ar,co,cs]=await Promise.all([
+  const [moiM,ann,ev,pa,re,md,so,st,vo,pr,dc,li,pc,pt,mb,nb,nm,bq,ar,co,cs,ini]=await Promise.all([
     ok(sb.from("membres").select("*").eq("id",me()).single(),"Profil"),
     ok(sb.rpc("annuaire"),"Membres"),
     ok(sb.from("evenements").select("*").order("date_debut"),"Évènements"),
@@ -623,9 +625,9 @@ async function charger(){
     B?ok(sb.from("membres").select("*").order("prenom"),"Membres"):Promise.resolve([]),
     B?ok(sb.from("notes_bureau").select("*").order("maj_le",{ascending:false}),"Notes"):Promise.resolve([]),
     B?ok(sb.from("notes_membres").select("*"),"Notes"):Promise.resolve([]),
-    doux(sb.from("boutique").select("*")),doux(sb.from("articles").select("*").order("ordre")),doux(sb.from("commandes").select("*").order("cree_le")),doux(sb.from("commandes_suivi").select("*"))
+    doux(sb.from("boutique").select("*")),doux(sb.from("articles").select("*").order("ordre")),doux(sb.from("commandes").select("*").order("cree_le")),doux(sb.from("commandes_suivi").select("*")),doux(sb.rpc("initiales"))
   ]);
-  S.boutique=bq?.[0]||null;S.articles=ar||[];S.commandes=co||[];S.suivi={};(cs||[]).forEach(x=>S.suivi[x.membre_id]=x);
+  S.ini={};(ini||[]).forEach(x=>S.ini[x.id]=x.ini);S.boutique=bq?.[0]||null;S.articles=ar||[];S.commandes=co||[];S.suivi={};(cs||[]).forEach(x=>S.suivi[x.membre_id]=x);
   if(moiM)S.moi={...S.moi,...moiM};S.membres=ann||[];S.evts=(ev||[]).filter(e=>e.date_debut);S.aDefinir=(ev||[]).filter(e=>!e.date_debut);S.complets=mb||[];S.sondages=so||[];S.liens=li||[];S.notes=nb||[];S.parcours=pc||[];S.partenaires=pt||[];
   S.notesM={};(nm||[]).forEach(n=>S.notesM[n.membre_id]=n);
   S.part={};(pa||[]).forEach(p=>(S.part[p.evenement_id]??={})[p.membre_id]=p.reponse);
@@ -809,7 +811,7 @@ const qui=e=>{const p=S.part[e.id]||{};return {oui:S.membres.filter(m=>p[m.id]==
 const plage=e=>!e.date_debut?"Date à définir":e.date_fin&&e.date_fin!==e.date_debut?`du ${fmt(e.date_debut,{day:"numeric",month:"short"})} au ${fmt(e.date_fin,{day:"numeric",month:"short",year:"numeric"})}`:fmt(e.date_debut,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 const boutons=e=>{const q=qui(e);return `<div class="answer"><button class="y" data-rep="${e.id}:1" aria-pressed="${q.r===true}">✓ Je viens <span class="count">${q.oui.length}</span></button><button class="n" data-rep="${e.id}:0" aria-pressed="${q.r===false}">✕ Je ne viens pas <span class="count">${q.non.length}</span></button></div>`};
 const bib=e=>{if(!e.date_debut)return `<div class="bib"><div class="d">?</div><div class="m">date</div><div class="j">À DÉF.</div></div>`;const n=jours(e.date_debut),passe=jours(e.date_fin)<0;return `<div class="bib${!passe&&n<=14?" soon":""}"><div class="d">${dt(e.date_debut).getDate()}</div><div class="m">${fmt(e.date_debut,{month:"short"}).replace(".","")}</div><div class="j">${n===0?"AUJ.":n<0?(passe?"FAIT":"EN COURS"):"J-"+n}</div></div>`};
-const tags=(l,c)=>l.map(m=>`<span class="tag ${c}${m.id===me()?" me":""}">${esc(m.prenom)}</span>`).join("")||`<span class="hint">personne</span>`;
+const tags=(l,c)=>l.map(m=>`<span class="tag ${c}${m.id===me()?" me":""}">${esc(prenom(m.id))}</span>`).join("")||`<span class="hint">personne</span>`;
 function carte(e){
   const passe=jours(e.date_fin)<0,q=qui(e);
   const ps=parcoursDe(e.id);let pt="";
@@ -888,7 +890,7 @@ function gererParticipants(id){
   const e=evt(id);if(!e)return fermer();const p=S.part[id]||{};
   ouvrirPanel(`<div class="ph"><h3>Participants</h3><button class="x" data-close aria-label="Fermer">✕</button></div>
     <span class="hint">${esc(e.evenement)} · ${plage(e)}</span>
-    <div>${S.membres.map(m=>{const v=p[m.id];return `<div class="pm"><b class="cell-m">${avatar(m.id,"s")}${esc(m.prenom)}</b><div class="tri" role="group" aria-label="Participation de ${esc(m.prenom)}">
+    <div>${S.membres.map(m=>{const v=p[m.id];return `<div class="pm"><b class="cell-m">${avatar(m.id,"s")}${esc(prenom(m.id))}</b><div class="tri" role="group" aria-label="Participation de ${esc(prenom(m.id))}">
       <button class="y" data-set="${id}:${m.id}:1" aria-pressed="${v===true}">Vient</button><button class="n" data-set="${id}:${m.id}:0" aria-pressed="${v===false}">Absent</button><button class="z" data-set="${id}:${m.id}:" aria-pressed="${v===undefined}">—</button></div></div>`}).join("")}</div>
     <button class="btn sec" data-open="${id}">Retour à la fiche</button>`,{k:"gererParticipants",id});
 }
@@ -1015,7 +1017,7 @@ function renderSaisons(){
   const cette=String(new Date().getFullYear());
   const annees=["Toutes",...[...new Set([cette,...S.evts.filter(e=>jours(e.date_debut)<=0).map(anneeDe)])].sort().reverse()];
   if(!annees.includes(anneeRes))anneeRes=cette;
-  const choixM=porteeRes==="indiv"?`<label for="res-m" style="flex:1;min-width:150px">Membre<select id="res-m">${S.membres.map(m=>`<option value="${m.id}"${m.id==(membreRes||me())?" selected":""}>${esc(m.prenom)}${m.id===me()?" (moi)":""}</option>`).join("")}</select></label>`:"";
+  const choixM=porteeRes==="indiv"?`<label for="res-m" style="flex:1;min-width:150px">Membre<select id="res-m">${S.membres.map(m=>`<option value="${m.id}"${m.id==(membreRes||me())?" selected":""}>${esc(prenom(m.id))}${m.id===me()?" (moi)":""}</option>`).join("")}</select></label>`:"";
   return `<div class="bar">
     <div class="seg" role="tablist"><button data-portee="club" aria-selected="${porteeRes==="club"}">Club</button><button data-portee="indiv" aria-selected="${porteeRes==="indiv"}">Individuel</button></div>
     ${choixM}
@@ -1130,7 +1132,7 @@ function ficheResultats(id){
       ${peut(mid)?`<div class="acts"><button class="btn sec small" data-editres="${id}:${mid}">${x?"Modifier":"Ajouter"} ${mid===moi?"mon résultat":"le résultat"}</button></div>`:""}
     </div>`}).join("")||`<div class="empty">Personne n'est encore indiqué comme participant.</div>`}</div>
     ${!ids.includes(moi)?`<button class="btn sec" data-editres="${id}:${moi}">J'y étais : ajouter mon résultat</button>`:""}
-    ${bureau()?`<div class="row" style="align-items:end"><label for="r-qui" style="flex:1">Saisir le résultat d'un autre membre<select id="r-qui">${S.membres.filter(x=>!ids.includes(x.id)).map(x=>`<option value="${x.id}">${esc(x.prenom)}</option>`).join("")}</select></label><button class="btn sec" id="r-add">Saisir</button></div>
+    ${bureau()?`<div class="row" style="align-items:end"><label for="r-qui" style="flex:1">Saisir le résultat d'un autre membre<select id="r-qui">${S.membres.filter(x=>!ids.includes(x.id)).map(x=>`<option value="${x.id}">${esc(prenom(x.id))}</option>`).join("")}</select></label><button class="btn sec" id="r-add">Saisir</button></div>
       <button class="btn sec" data-gerer="${id}">Gérer les participants</button><button class="btn sec" data-envoi="${id}">✉ Envoyer le bilan par e-mail</button>`:""}
     <div class="sect">Photos et vidéos (${m.length})</div>
     <div class="gal">${m.map(x=>{const u=S.urls["medias/"+x.chemin];return `<button data-media="${id}:${x.id}" aria-label="${esc(x.legende||"Ouvrir le média")}">${u?(x.type==="video"?`<video src="${esc(u)}#t=0.1" muted playsinline preload="metadata"></video><span class="play">▶</span>`:`<img src="${esc(u)}" alt="${esc(x.legende||"")}" loading="lazy">`):""}<span class="badge">${esc(prenom(x.auteur_id))}</span></button>`}).join("")}
@@ -1227,7 +1229,7 @@ function carteSondage(s){
         <span class="fill" style="width:${voir?tot[i]/max*100:0}%"></span>
         <span class="lab"><span class="box">${mes.includes(i)?"✓":""}</span>${esc(o)}</span>${voir?`<span class="n">${tot[i]}</span>`:""}</button>`).join("")}</div>
       <span class="hint">${clos?"Sondage terminé.":mes.length?"Ta réponse est enregistrée, tu peux la modifier jusqu'à la clôture.":"Réponds pour voir les résultats."}</span>
-      ${bureau()?`<details><summary class="more">Détail des réponses (bureau)</summary><div class="who" style="margin-top:8px">${s.options.map((o,i)=>`<div><span class="lbl">${esc(o)}</span>${S.membres.filter(m=>(S.votes[s.id]?.[m.id]||[]).includes(i)).map(m=>`<span class="tag y">${esc(m.prenom)}</span>`).join("")||'<span class="hint">personne</span>'}</div>`).join("")}
+      ${bureau()?`<details><summary class="more">Détail des réponses (bureau)</summary><div class="who" style="margin-top:8px">${s.options.map((o,i)=>`<div><span class="lbl">${esc(o)}</span>${S.membres.filter(m=>(S.votes[s.id]?.[m.id]||[]).includes(i)).map(m=>`<span class="tag y">${esc(prenom(m.id))}</span>`).join("")||'<span class="hint">personne</span>'}</div>`).join("")}
         <div class="row" style="justify-content:flex-start"><button class="btn sec small" data-modsondage="${s.id}">Modifier</button><button class="btn sec small" data-archiver="${s.id}">${s.archive?"Désarchiver":"Archiver"}</button><button class="btn del small" data-delsondage="${s.id}">Supprimer le sondage</button></div></div></details>`:""}
     </article>`;
 }
@@ -1293,7 +1295,7 @@ const resteDu=id=>{const su=S.suivi[id]||{},t=totalDe(lignesDe(id));return Math.
 const lignesDe=id=>(S.commandes||[]).filter(c=>c.membre_id===id);
 const libLigne=c=>`${c.quantite} × ${article(c.article_id)?.nom||"article retiré"}${c.taille?" ("+c.taille+")":""}`;
 const rangTaille=t=>{const i=TAILLES.indexOf(t);return i<0?99:i};
-const nomComplet=id=>{const n=S.profils[id]?.nom;return prenom(id)+(n?" "+n:"")};
+const nomComplet=id=>{const n=S.profils[id]?.nom,p=S.membres.find(m=>m.id==id)?.prenom||S.complets.find(m=>m.id==id)?.prenom||"Ancien membre";return p+(n?" "+n:"")};
 const tailleProfil=a=>{const p=S.profils[me()]||{};return a.taille==="maillot"?p.taille_maillot||"":a.taille==="cuissard"?p.taille_cuissard||"":""};
 function carteArticle(a,ouv){
   const mes=lignesDe(me()).filter(c=>c.article_id===a.id),ph=photosArticle(a).map(urlPhoto).filter(Boolean);
@@ -1645,7 +1647,7 @@ function renderProfil(){
   </article>
   ${renderLiens()}
   ${bureau()?renderNotes()+`<article class="card"><h2>Membres du club</h2><span class="hint">Réservé au bureau. Touche un membre pour voir sa fiche, ses documents et sa note.</span>
-    <div class="tw"><table><thead><tr><th>Membre</th><th>Sexe</th><th>Statut</th><th>Image</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(x.prenom)}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":x.email?' <span class="hint">· jamais connecté</span>':' <span class="hint">· sans e-mail</span>'}</span></span></td><td>${S.profils[x.id]?.sexe?SEXE[S.profils[x.id].sexe]:'<button class="sx-q" data-sexe-rapide="'+x.id+'" title="Renseigner">?</button>'}</td><td>${(x.licences||[]).length?`<div class="statut">${x.licences.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adh.":esc(l)}</span>`).join("")}</div>`:'<span class="status ko">?</span>'}</td><td>${etatDroit(x.id)}</td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Membre</th><th>Sexe</th><th>Statut</th><th>Image</th>${COLS_DOCS.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>${S.complets.map(x=>`<tr data-voirmembre="${x.id}" style="cursor:pointer" class="${x.actif?"":"off"}"><td><span class="cell-m">${avatar(x.id,"s")}<span>${esc(prenom(x.id))}${x.role==="bureau"?' <span class="role">bureau</span>':""}${!x.actif?' <span class="hint">· retiré</span>':x.user_id?"":x.email?' <span class="hint">· jamais connecté</span>':' <span class="hint">· sans e-mail</span>'}</span></span></td><td>${S.profils[x.id]?.sexe?SEXE[S.profils[x.id].sexe]:'<button class="sx-q" data-sexe-rapide="'+x.id+'" title="Renseigner">?</button>'}</td><td>${(x.licences||[]).length?`<div class="statut">${x.licences.map(l=>`<span class="${l==="Adhérent"?"adh":""}">${l==="Adhérent"?"Adh.":esc(l)}</span>`).join("")}</div>`:'<span class="status ko">?</span>'}</td><td>${etatDroit(x.id)}</td>${COLS_DOCS.map(f=>`<td>${etatFed(x.id,f)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
     <span class="hint">Statut : renseigné par le bureau dans la fiche du membre. Image : ✓ accepté · ✗ refusé · ? sans réponse. Documents : ✓ déposé · ! licence cochée mais pas déposée · – rien.</span>
     <form id="finv" style="display:grid;gap:10px"><span class="sect">Ajouter un membre</span>
       <div class="grid2"><label for="i-p">Prénom<input id="i-p" name="prenom" required maxlength="40"></label><label for="i-r">Rôle<select id="i-r" name="role"><option value="membre">Membre</option><option value="bureau">Bureau</option></select></label></div>
