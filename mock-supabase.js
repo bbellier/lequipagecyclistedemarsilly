@@ -36,7 +36,7 @@
     commandes:[{id:1,membre_id:1,article_id:1,taille:"M",quantite:1},{id:2,membre_id:2,article_id:1,taille:"S",quantite:2},{id:3,membre_id:2,article_id:2,taille:"S",quantite:1},{id:4,membre_id:3,article_id:4,taille:"",quantite:1}],
     commandes_suivi:[{membre_id:2,paye:true,remis:false}],
     // Entraînement : Léa est suivie par Benjamin (plan et ressentis générés par entrainement.js à l'ouverture)
-    entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:["leg","sun","moon"],statut:"publie",bilan_mail:true}],
+    entrainement_athletes:[{membre_id:2,coach_id:1,heures:8.5,jours:[1,2,3,4,5,6],jour_long:5,niveau:"deb",point_faible:"Course à pied",debut:J(-56),reflexes:["leg","sun","moon"],jours_detail:{"1":{s:["N"],m:"midi"},"3":{s:["CAP","V"],m:"soir"},"5":{m:"matin"},"0":{r:"soir"}},statut:"publie",bilan_mail:true}],
     objectifs:[{id:1,membre_id:2,titre:"Triathlon L de printemps",sport:"tri",distance:"L",date:J(140),principal:true},{id:2,membre_id:2,titre:"Cyclo 150",sport:"bike",distance:"150",date:J(98),principal:false}],
     indisponibilites:[{id:1,membre_id:2,du:J(30),au:J(36),motif:"Vacances"}],
     seances:[],ressentis:[],reflexes_jours:[],reglages_entrainement:[],demandes_seances:[],
