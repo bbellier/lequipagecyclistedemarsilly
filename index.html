@@ -499,7 +499,7 @@ td.chk{text-align:center}td.chk input{width:20px;height:20px}
 // =====================================================================
 const SUPABASE_URL = "https://dmhuhkgnrxgxqxgxqxkf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H07oICbFso7EE1EIz8BgjQ_6Pgzm4xo";   // clé publique, faite pour être visible
-const VERSION = "2026-11-26a";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
+const VERSION = "2026-11-26b";   // affichée en bas du profil : permet de vérifier que la dernière version est en ligne
 const CLUB = "L'Équipage Cycliste de Marsilly";
 
 const configOK = !SUPABASE_URL.includes("A_REMPLACER") && !SUPABASE_KEY.includes("A_REMPLACER");
@@ -1655,7 +1655,7 @@ function renderProfil(){
       <button class="btn pri" id="i-ok">Ajouter au club</button></form>
     <div class="row"><span class="hint" style="flex:1">Envoie ensuite le lien de l'app au nouveau membre : il se connecte avec cet e-mail.</span><button class="btn sec small" data-copier="${esc(location.origin+location.pathname)}">Copier le lien</button></div>
   </article>`:""}
-  ${bureau()?`<button class="btn sec" data-mail-membres>✉ Écrire aux membres</button>`:""}
+  ${bureau()?`<button class="btn sec" data-mail-membres>Écrire aux membres</button>`:""}
   ${bureauReel()&&!vueMembre?`<button class="btn sec" data-vue-membre>Voir l'app comme un membre</button>`:""}
   <button class="btn sec" id="logout">Se déconnecter</button>
   <span class="hint" style="text-align:center">Version ${VERSION}</span>`;
