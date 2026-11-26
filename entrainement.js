@@ -104,29 +104,29 @@ const BT=[["velo","Vélo ≥ min"],["cap","Course ≥ min"],["sem","Semaines ple
 const HIC={leg:'<circle cx="24" cy="26" r="18"/><path d="M24 8v36M24 26h18"/>',prot:'<ellipse cx="24" cy="26" rx="12" ry="15"/><path d="M18 22c2-3 5-4 8-3"/>',sun:'<circle cx="16" cy="18" r="7"/><path d="M16 5v3M5 18h3M7 9l2 2M25 9l-2 2"/><path d="M38 30a8 8 0 1 1-8-10 6 6 0 0 0 8 10z"/>',bar:'<rect x="16" y="10" width="16" height="30" rx="4"/><path d="M19 10V6h10v4M16 20h16"/>',moon:'<path d="M30 10a14 14 0 1 0 8 22 11 11 0 0 1-8-22z"/><path d="M12 38l24-24"/>',bed:'<path d="M6 32h36M8 32V18M40 32v-8a6 6 0 0 0-6-6H20v14"/><circle cx="14" cy="22" r="3"/>',eau:'<path d="M14 8h20l-3 32H17z"/><path d="M15 18h18"/>',fruit:'<circle cx="24" cy="28" r="13"/><path d="M24 15c0-4 3-7 7-7"/>'};
 
 // ---------- aides (popups) ----------
-const INFO={goals:"Le principal fixe la fin du plan. Les autres deviennent des jalons : semaine allégée, veille à 30 min souple.",off:"Les séances de ces jours sont retirées. La date de fin ne bouge pas.",
-  plan:"Séances clés en rouge. Touche une séance pour la modifier, la déplacer ou la supprimer. Une retouche repasse le plan « à republier ».",
-  sim:"Volume si l'athlète fait ce pourcentage de séances : sous le seuil haut le plan ne progresse plus, sous le seuil bas il recule.",
-  xp:"Noir : points gagnés. Rouge : projection si tout est fait. Orange : projection à 70 %. Pointillés : seuils des grades.",
-  badges:"Ils se débloquent seuls : séance vélo ou course faite d'au moins X minutes, semaines pleines d'affilée, jours avec au moins 2 réflexes tenus (cumulés), objectif passé.",
-  habsC:"Liste des réflexes proposés. Les 3 réflexes de chaque athlète se choisissent dans sa fiche › Paramétrage. Touche l'icône pour la changer.",
-  feux:"Rouge : repos à la place de la séance suivante. Orange : séance suivante en endurance et raccourcie. Bonus : rien ne change.",
-  loop:"1. Rappel : la séance du jour. 2. Séance : tu la fais et notes ton ressenti. 3. Récompense : points, série, badges. 4. Prochain cap : le prochain jalon.",
-  fuel:"Taille de l'assiette = son importance. Jour d'effort : gros petit-déjeuner et déjeuner, dîner plus léger car on va dormir.",
-  habs:"Chaque jour repart à zéro à minuit. Touche la carte si tu as tenu le réflexe aujourd'hui. Les jours avec au moins 2 réflexes comptent pour les badges.",
-  allures:"Repères de l'athlète : son allure facile (endurance) et son allure à fond sur une distance courte. Les autres allures en sont déduites. Format : 27 pour 27 km/h, 6:00 pour 6 min par km ou par 100 m. Laisse vide si tu ne sais pas.",
-  phases:"<b>Fond</b> : beaucoup de facile, on construit le moteur.<br><b>Fond + rythme</b> : on ajoute un peu de rythme.<br><b>Prépa objectif</b> : on travaille le rythme du jour J.<br><b>Récup</b> : une semaine sur quatre, moins de volume pour assimiler.<br><b>On allège</b> : moins de volume avant le jour J pour arriver frais.<br><b>Objectif</b> : la semaine du jour J.",
-  jd:"Pour chaque jour possible : les sports que l'athlète peut faire ce jour-là (rien de coché = tous) et le moment (matin, midi, soir). Si la séance prévue n'est pas dans les sports cochés, elle passe dans un sport coché, à durée équivalente. Midi : 1 h maximum, sauf le jour de sortie longue. Le moment s'affiche sur chaque séance.",
-  renfo:"Ajoute une séance de 30 min de gainage et renforcement le jour choisi, au moment choisi, en plus de la séance du jour s'il y en a une. Ces 30 min sont prises sur le temps par semaine. Pas de renfo la semaine de l'objectif.",
-  aplan:"Ton plan est préparé par ton coach : tu ne peux pas le modifier. Touche une séance pour voir son détail. En cas d'empêchement, propose de la décaler ou de l'échanger avec une autre : ton coach accepte ou non."};
-// Petit lexique : chaque terme technique s'ouvre avec (i)
-const GLO=[["EF","facile","Tu peux parler en phrases complètes. La plus grande partie du temps se passe ici : c'est ce qui construit le fond."],["souple","tranquille","Encore plus facile : les jambes tournent sans forcer."],
-  ["tempo","rythme soutenu","Ça demande de l'effort mais tu pourrais tenir longtemps : tu ne dis plus que quelques mots."],["seuil","rythme dur","Difficile : tu souffles fort, impossible de parler. Tenable environ 30 min à fond."],
-  ["allure course","rythme de course","Le rythme que tu tiendras le jour de l'objectif."],["vite","vite","Accélérations courtes, presque à fond, avec une vraie pause entre chaque."],
-  ["×","séries","3×8 min = 3 fois 8 minutes d'effort, avec quelques minutes faciles entre chaque (environ la moitié du temps d'effort)."],
-  ["HT","vélo d'intérieur","Home trainer ou vélo de salle : pratique pour tenir un rythme précis."],["éducatifs","exercices de technique","Exercices de natation pour mieux nager : battements de jambes, une main après l'autre, respirer tous les 3 mouvements…"],
-  ["enchaînée","juste après","Tu cours dès que tu poses le vélo, sans pause : les jambes s'habituent au triathlon."],["Renfo","renfo","Renforcement musculaire sans matériel : gainage, squats, fentes, pompes."],
-  ["Activation","réveil musculaire","Séance très courte avec quelques accélérations, la veille de l'objectif, pour réveiller les jambes."],["clé","séance clé","La séance la plus importante de la semaine : à ne pas sauter."]];
+const INFO={goals:"Le principal fixe la fin du plan. Les autres : semaine allégée et veille tranquille.",off:"Pas de séance ces jours-là. La date de fin ne change pas.",
+  plan:"Rouge = séance clé. Touche une séance pour la modifier, la déplacer ou la supprimer. Toute retouche oblige à republier.",
+  sim:"Volume si l'athlète fait ce % de séances. Sous le seuil haut, le plan stagne ; sous le seuil bas, il recule.",
+  xp:"Noir : points gagnés. Rouge : si tout est fait. Orange : si 70 % est fait. Pointillés : grades.",
+  badges:"Ils se gagnent seuls : séance longue faite, semaines pleines d'affilée, jours à 2 réflexes tenus, objectif passé.",
+  habsC:"Réflexes proposés. Chaque athlète en a 3, choisis dans sa fiche › Paramétrage. Touche l'icône pour la changer.",
+  feux:"Rouge : repos à la place de la séance suivante. Orange : séance suivante facile et plus courte. Bonus : rien ne change.",
+  loop:"1. La séance du jour. 2. Tu la fais et tu dis comment ça s'est passé. 3. Tu gagnes des points. 4. Cap sur la suivante.",
+  fuel:"Plus l'assiette est grande, plus le repas compte. Jour d'effort : gros petit-déjeuner et déjeuner, dîner léger.",
+  habs:"Coche un réflexe quand tu l'as tenu aujourd'hui. Remise à zéro à minuit.",
+  allures:"Allure facile et allure à fond sur une courte distance. Le reste est calculé. Exemples : 27 (km/h), 6:00 (min par km ou par 100 m). Vide si inconnu.",
+  phases:"<b>Fond</b> : surtout du facile.<br><b>Fond + rythme</b> : un peu d'intensité en plus.<br><b>Prépa objectif</b> : au rythme du jour J.<br><b>Récup</b> : semaine plus légère, une sur quatre.<br><b>On allège</b> : moins de volume pour arriver frais.<br><b>Objectif</b> : la semaine du jour J.",
+  jd:"Sports possibles ce jour-là (rien coché = tous) et moment. Une séance d'un autre sport est convertie, durée équivalente. Midi : 1 h max, sauf sortie longue.",
+  renfo:"30 min de gainage et renforcement ce jour-là, en plus de la séance. Pris sur le temps par semaine. Pas de renfo la semaine de l'objectif.",
+  aplan:"Ton coach prépare le plan. Touche une séance pour le détail. Un empêchement ? Propose de la décaler ou de l'échanger."};
+// Lexique : chaque terme s'ouvre avec (i)
+const GLO=[["EF","facile","Tu peux parler sans être essoufflé. C'est la majorité de l'entraînement."],["souple","tranquille","Encore plus facile que facile."],
+  ["tempo","rythme soutenu","Tu peux encore dire quelques mots, pas plus."],["seuil","rythme dur","Tu ne peux plus parler. Tenable environ 30 min."],
+  ["allure course","rythme de course","Le rythme prévu le jour de l'objectif."],["vite","vite","Presque à fond, sur un temps court."],
+  ["×","séries","3×8 min : 3 efforts de 8 min, avec quelques minutes faciles entre chaque."],
+  ["HT","vélo d'intérieur","Home trainer ou vélo de salle."],["éducatifs","exercices de technique","Exercices pour nager mieux : jambes seules, un bras après l'autre, respiration…"],
+  ["enchaînée","juste après","Tu cours dès la fin du vélo, sans pause."],["Renfo","renfo","Gainage, squats, fentes, pompes. Sans matériel."],
+  ["Activation","réveil musculaire","Séance courte avec quelques accélérations, la veille de l'objectif."],["clé","séance clé","La plus importante de la semaine : ne la saute pas."]];
 const momentDe=(id,s)=>{const J=athOf(id)?.jours_detail||{},di=(pd(s.date).getDay()+6)%7;return(/^Renfo/.test(s.texte)?J[di]?.r:J[di]?.m)||""};
 const termes=t=>GLO.filter(g=>g[0]==="×"?/\d×/.test(t):g[0]==="clé"?false:new RegExp(`(^|[^\\p{L}])${g[0]}([^\\p{L}]|$)`,"u").test(t));
 const termesH=(t,cle)=>{const l=termes(t);if(cle)l.push(GLO.at(-1));return l.length?`<div class="en-chips">${l.map(g=>`<button type="button" class="en-term" data-en-glo="${esc(g[1])}">${esc(g[1])}<b>i</b></button>`).join("")}</div><p class="en-note en-glo-x" style="margin:0" hidden></p>`:""};
@@ -169,7 +169,7 @@ function detailH(s,id){const a=athOf(id),G=mainG(goalsOf(id)),Z=zones(a?.allures
   const lv=s.effort>=8?"maximal":s.effort>=7?"dur":s.effort>=5?"soutenu":"facile";
   return`<span class="sect">${fdl(pd(s.date))}${momentDe(id,s)?" · "+momentDe(id,s):""} · ${disc(t)}${s.cle?" · séance clé":""}</span><h2 style="text-transform:none">${esc(clair(t))}</h2>
   <span class="hint">${fmn(s.duree||0)} · effort visé ${s.effort}/10 (${lv})${km>=1?` · environ ${dec(km,0)} km`:""}</span>
-  ${L.map((x,i)=>`<div class="en-step"><i>${i+1}</i><span>${x}</span></div>`).join("")}${!Object.keys(Z).length?'<span class="hint">Pas encore de repères d\'allure : ton coach peut les ajouter.</span>':""}${termesH(t,s.cle)}`}
+  ${L.map((x,i)=>`<div class="en-step"><i>${i+1}</i><span>${x}</span></div>`).join("")}${!Object.keys(Z).length?'<span class="hint">Allures pas encore renseignées par ton coach.</span>':""}${termesH(t,s.cle)}`}
 const info=k=>ouvrirPanel(`<div style="display:grid;gap:12px"><p style="margin:0;line-height:1.45">${INFO[k]}</p><button class="btn pri" data-close>OK</button></div>`);
 const glo=k=>{const g=GLO.find(x=>x[1]===k);if(g)ouvrirPanel(`<div style="display:grid;gap:12px"><h2>${esc(g[1])}</h2><p style="margin:0">${esc(g[2])}</p><button class="btn pri" data-close>OK</button></div>`)};
 // clic sur un terme du lexique, où qu'il soit (onglets ou panneau)
@@ -185,7 +185,7 @@ const effort=s=>/OBJECTIF/.test(s)?8:/seuil|test \d|vite/.test(s)?7:/tempo|allur
 const disc=s=>/^N /.test(s)?"Natation":/^CAP/.test(s)?"Course":/^Renfo/.test(s)?"Renfo":/^OBJECTIF/.test(s)?"Objectif":"Vélo";
 const soften=t=>t.split(" + ").filter((g,i)=>!i||/^(N|CAP|HT|V) |^renfo/i.test(g)).map(g=>/^renfo/i.test(g)?g:(m=>m?`${m[1]} ${fm(Math.max(20,Math.round(dur(g)*(1-CFG.cut/100)/5)*5))} EF`:g)(g.match(/^(N|CAP|HT|V) /))).join(" + ");
 const RAISONS=[["fatigue","Fatigue"],["motivation","Pas motivé·e"],["temps","Pas le temps"],["douleur","Douleur"]],RLAB=Object.fromEntries(RAISONS);
-const RMSG={fatigue:"Séance suivante plus courte.",motivation:"La prochaine séance compense un peu.",temps:"On ne rattrape pas, suite inchangée.",douleur:"Repos ou mobilité. Si ça dure plus de 3 jours : médecin."};
+const RMSG={fatigue:"La séance suivante sera plus courte.",motivation:"La séance suivante sera un peu plus longue.",temps:"On ne rattrape pas. La suite ne change pas.",douleur:"Repos. Plus de 3 jours : consulte un médecin."};
 const boost=(t,plus)=>t.replace(/^(N|CAP|HT|V) (\d+h\d*|\d+')/,(m0,dsc,d0)=>`${dsc} ${fm(dur(d0)+plus)}`);
 // Séance suivante selon le ressenti du jour : douleur ou feu rouge → repos ; fatigue ou feu orange → plus courte ; manque de motivation → un peu plus longue
 function adaptSuite(nx,r,se){if(!r||!nx)return{t:nx?.texte,pq:""};const f=r.faite?r.feu:null,ra=r.raison;
@@ -246,7 +246,7 @@ const athOf=id=>D.ath.find(a=>a.membre_id===id),goalsOf=id=>D.obj.filter(o=>o.me
 
 // ---------- feux, points, badges ----------
 const feu=c=>c.douleur||c.fatigue>=CFG.fatRed||(c.fatigue>=CFG.fatOrange&&c.sommeil==="mauvais")?"rouge":c.effort-c.x>=CFG.orangeUp||c.fatigue>=CFG.fatOrange||c.sommeil==="mauvais"?"orange":c.x-c.effort>=CFG.bonusDown&&c.fatigue<=2?"bonus":"vert";
-const FEU={vert:["Feu vert","var(--ok)","Suite inchangée."],orange:["Feu orange","var(--warn)","Séance suivante en endurance, plus courte."],rouge:["Feu rouge","var(--red)","Repos ou 20' de mobilité. Douleur plus de 3 jours : médecin."],bonus:["Bonus","#2b5f8a","Inchangé. 3 fois de suite : +10 % la semaine suivante."]};
+const FEU={vert:["Feu vert","var(--ok)","La suite ne change pas."],orange:["Feu orange","var(--warn)","La séance suivante sera facile et plus courte."],rouge:["Feu rouge","var(--red)","Repos ou 20 min d'étirements. Douleur plus de 3 jours : médecin."],bonus:["Bonus","#2b5f8a","C'était facile : la suite ne change pas."]};
 const fait=s=>(r=>r?.faite?(r.duree_reelle??s.duree??0):0)(resOf(s.id));
 const xpOf=(s,m)=>CFG.xpBase+Math.round((m??s.duree??0)/CFG.xpDiv);
 const grade=x=>{const G=[...CFG.grades].sort((a,b)=>a[1]-b[1]),g=G.filter(g=>x>=g[1]).pop()||G[0];return{g,n:G[G.indexOf(g)+1]}};
@@ -481,29 +481,29 @@ function aToday(id,s){const{td,nx,se}=jourSeances(id),r=se&&resOf(se.id),lastF=[
 function aPlan(id){const W=semaines(id),TW=suiviDe(id).TW,t=iso(auj()),dm=demOf(id).slice(0,4);if(!W.length)return`<div class="card"><p class="hint" style="margin:0">Ton coach n'a pas encore publié ton plan.</p></div>`;
   return`<div class="card"><div class="en-ttl"><h2>Mes semaines</h2><button class="en-i" data-en-info="aplan">?</button></div><div class="en-fig" style="min-height:200px"><svg id="en-avol"></svg></div>
   <div class="en-leg">${[["Base","var(--wash)"],["Base 2","#d9cdb8"],["Spécifique","var(--warn)"],["Récup","var(--ok-soft)"],["Affûtage","#2b5f8a"],["Course","var(--red)"]].map(([n,c])=>`<span><i style="background:${c}"></i>${phn(n)}</span>`).join("")}<span><b style="color:var(--red)">✕</b> objectif</span><button class="en-i" style="width:24px;height:24px;min-width:24px;font-size:12px" data-en-info="phases">?</button></div>
-  <span class="hint">Hauteur = heures prévues dans la semaine. Contour rouge : cette semaine.</span></div>
+  <span class="hint">Hauteur : heures prévues. Contour rouge : cette semaine.</span></div>
   ${dm.length?`<div class="card"><h2>Mes demandes</h2>${dm.map(x=>`<div class="en-dem" style="border-color:${x.statut==="acceptee"?"var(--ok)":x.statut==="refusee"?"var(--line)":"var(--warn)"}">${libDem(x)}<b>${x.statut==="acceptee"?"Acceptée":x.statut==="refusee"?"Refusée":"En attente du coach"}</b></div>`).join("")}</div>`:""}
   ${W.map(w=>`<details class="en-wk" ${w.w===Math.max(1,TW)?"open":""}><summary><b>S${w.w}</b><span><span class="hint" style="color:var(--ink);font-weight:600">${fwk(w.mon)}</span><br><span class="pill">${esc(phn(w.phase))}</span></span><span>${w.ses.some(s=>/OBJECTIF/.test(s.texte))?'<b style="color:var(--red);font-size:14px">objectif</b>':dec(w.ses.reduce((x,s)=>x+(s.duree||0),0)/60)+" h"}</span></summary>
     ${w.ses.map(s=>{const r=resOf(s.id),p=attente(id).some(x=>x.seance_id==s.id||x.autre_seance_id==s.id);return`<button class="en-ses ${s.cle?"cle":""}" data-en-sd="${s.id}"><span>${WK[(pd(s.date).getDay()+6)%7]}${momentDe(id,s)?`<br>${momentDe(id,s)}`:""}</span><span>${esc(clair(s.texte))}${r?` <span class="en-dot" style="background:${r.faite?FEU[r.feu]?.[1]:"var(--red)"}"></span>`:""}${p?'<small>demande en attente</small>':s.date===t?'<small>aujourd\'hui</small>':""}</span></button>`}).join("")}</details>`).join("")}`}
 function aBilan(id,s){const D2=decision(s),faites=s.fx.filter(x=>x.f).length,h=s.wks.reduce((a,w)=>a+w.hr,0),km=s.wks.reduce((a,w)=>a+w.km,0),B=badges(id),G=[...CFG.grades].sort((a,b)=>a[1]-b[1]);
   return`<div class="card"><h2>Mon bilan</h2><div class="en-kpi"><span><strong>${faites}/${s.fx.length}</strong>séances faites</span><span><strong>${dec(h)} h</strong>${km?`· ${dec(km,0)} km`:"d'effort"}</span><span><strong>${s.reg4??"–"}${s.reg4==null?"":" %"}</strong>assiduité 4 sem.</span></div>
     ${s.wks.length?`<div class="en-note" style="border-color:${D2[2]}"><b>Semaine prochaine : ${D2[0].toLowerCase()}</b> (${D2[1]}).</div>`:""}<span class="hint">${B.filter(x=>x.ok).length} badge${B.filter(x=>x.ok).length>1?"s":""} sur ${B.length} · ${s.xp} points</span></div>
-  <div class="card"><div class="en-fig" style="min-height:340px"><svg id="en-track"></svg></div><span class="hint">Ta route jusqu'à l'objectif : un point par semaine, rouge = cette semaine.</span></div>
+  <div class="card"><div class="en-fig" style="min-height:340px"><svg id="en-track"></svg></div><span class="hint">Un point par semaine. Rouge : cette semaine.</span></div>
   <div class="card"><div class="en-ttl"><h2>Mon volume</h2>${chipsH([["h","Heures"],["km","Km"]],v=>A.unit===v,"data-en-unit")}</div><div class="en-fig" style="min-height:200px"><svg id="en-mvol"></svg></div><span class="hint" id="en-mvol-l"></span></div>
   <div class="card"><h2>Mes badges</h2>${medals(B)}</div>
 `}
 function aJeu(){const G=[...CFG.grades].sort((a,b)=>a[1]-b[1]);return`<div class="card"><h2>La règle du jeu</h2><div class="en-rule">
-    <p><span class="k">1. Après chaque séance</span>, note ton ressenti. Il donne un feu qui adapte la séance suivante :</p>
-    ${["vert","bonus","orange","rouge"].map(k=>`<p><span class="en-dot" style="background:${FEU[k][1]}"></span><b style="color:${FEU[k][1]}">${FEU[k][0]}</b> · ${FEU[k][2]}</p>`).join("")}
-    <p><span class="k">2. Séance pas faite ?</span> On ne rattrape pas. Fatigue : la suivante est plus courte. Douleur : repos, et médecin si ça dure plus de 3 jours.</p>
-    <p><span class="k">3. Ton assiduité</span> (séances faites sur 2 semaines) règle la suite :</p>
-    <p><span class="en-dot" style="background:var(--ok)"></span>${CFG.regHigh} % et plus : <b style="color:var(--ok)">le plan progresse</b>.</p>
-    <p><span class="en-dot" style="background:var(--warn)"></span>${CFG.regLow} à ${CFG.regHigh} % : <b style="color:var(--warn)">volume maintenu</b>. 3 feux orange : semaine de récup.</p>
-    <p><span class="en-dot" style="background:var(--red)"></span>Moins de ${CFG.regLow} % : <b style="color:var(--red)">semaine refaite</b>.</p>
-    <p><span class="k">4. Les points.</span> Séance faite : ${CFG.xpBase} pts + 1 pt toutes les ${CFG.xpDiv} min. Semaine pleine (au plus 1 séance manquée) : +${CFG.xpWeek}. Réflexe tenu : +${CFG.xpHab} par jour.</p>
-    <p><span class="k">5. Les grades.</span> ${G.map(g=>`${esc(g[0])} (${g[1]})`).join(" → ")}.</p>
-    <p><span class="k">6. Les badges</span> se débloquent seuls : longues séances, semaines pleines d'affilée, jours avec 2 réflexes tenus, objectif passé.</p>
-</div></div>`}
+    <p><span class="k">1. Après chaque séance</span>, dis comment ça s'est passé. Tu obtiens un feu :</p>
+    ${["vert","bonus","orange","rouge"].map(k=>`<p><span class="en-dot" style="background:${FEU[k][1]}"></span><b style="color:${FEU[k][1]}">${FEU[k][0]}</b> : ${FEU[k][2]}</p>`).join("")}
+    <p><span class="k">2. Séance ratée ?</span> On ne la rattrape pas.</p>
+    <p><span class="k">3. Sur 2 semaines</span>, la part de séances faites décide de la suite :</p>
+    <p><span class="en-dot" style="background:var(--ok)"></span>${CFG.regHigh} % ou plus : <b style="color:var(--ok)">le plan avance</b>.</p>
+    <p><span class="en-dot" style="background:var(--warn)"></span>${CFG.regLow} à ${CFG.regHigh} % : <b style="color:var(--warn)">même volume</b>.</p>
+    <p><span class="en-dot" style="background:var(--red)"></span>Moins de ${CFG.regLow} % : <b style="color:var(--red)">semaine à refaire</b>.</p>
+    <p>3 feux orange dans la semaine : semaine plus légère.</p>
+    <p><span class="k">4. Points.</span> Séance faite : ${CFG.xpBase} + 1 par tranche de ${CFG.xpDiv} min. Semaine pleine (1 séance ratée max) : +${CFG.xpWeek}. Réflexe tenu : +${CFG.xpHab} par jour.</p>
+    <p><span class="k">5. Grades.</span> ${G.map(g=>`${esc(g[0])} (${g[1]})`).join(" → ")}.</p>
+    <p><span class="k">6. Badges.</span> Ils se gagnent seuls : séances longues, semaines pleines, réflexes, objectif.</p></div></div>`}
 function aFuel(id){const a=athOf(id),D2=DAYT[A.dt],lun=monday(auj()),td=(auj().getDay()+6)%7;
   return`<div class="card"><div class="en-ttl"><h2>Ma journée en assiettes</h2><button class="en-i" data-en-info="fuel">?</button></div><div class="en-dt">${chipsH(DAYT.map((x,i)=>[i,x.n]),v=>A.dt==v,"data-en-dt")}</div><div class="en-fig" style="min-height:190px"><svg id="en-day"></svg></div>
   ${MEALS.map((m,i)=>`<div class="en-meal"><span>${m}</span><span><b>${MN[i]}</b> ${D2.m[i][2]}</span></div>`).join("")}<span class="hint"><span class="en-dot" style="background:var(--warn)"></span>Féculents <span class="en-dot" style="background:var(--ok)"></span>Légumes, fruits <span class="en-dot" style="background:var(--red)"></span>Protéines</span></div>
